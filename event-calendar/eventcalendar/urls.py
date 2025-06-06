@@ -24,4 +24,5 @@ urlpatterns = [
     path("admin/", admin.site.urls,name="admin"),
     path("accounts/", include("accounts.urls")),
     path("", include("calendarapp.urls")),
+    #nou path
 ]
