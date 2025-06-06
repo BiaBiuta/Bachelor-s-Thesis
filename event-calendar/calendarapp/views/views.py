@@ -1,3 +1,4 @@
+import json
 import re
 
 from django.contrib import messages
@@ -149,6 +150,44 @@ from pyomo.opt import SolverFactory, SolverStatus, TerminationCondition
 from django.shortcuts import render, redirect
 from calendarapp.models.cereri.shift_option import ShiftOption
 from calendarapp.models.cereri.shift_request import ShiftRequest  # modelul de la pasul anterior
+def schedule_view(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+
+            # Extrage câmpurile din payload
+            employee = data.get("nurse")
+            date = data.get("day")
+            shift_type = data.get("shift_type")
+            req_type = data.get("req_type")
+            weight = data.get("weight")
+            department = data.get("department")
+            nurse=Nurse.get(EmployeeID=int(employee))
+            global_object=GlobalObject.get(id=nurse.GlobalObject_id)
+            # Validare minimală
+            if not (employee and date and shift_type):
+                return JsonResponse({"error": "Missing required fields."}, status=400)
+            num= re.search(r'\d+', global_object.name).group()  # extrage numărul din data
+            # Creează instanța
+            day =int(str(num+int((date.split("-")[2]).split("T")[0])))
+            print ("day",day)
+            day =Day.objects.get(DayID=day)
+            schedule =  ShiftRequest.objects.create(
+                    nurse      = nurse,
+                    department = global_object,
+                    day        = day,
+                    shift_type = shift_type,
+                    req_type   = req_type,    # sau orice logică ai tu
+                    weight     = int(weight),       # poți prelua alt weight, după nevoie
+                    status     = 'P',
+                )
+            schedule.save()
+
+            return JsonResponse({"status": "success", "id": schedule.id})
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"error": "Invalid method"}, status=405)
 @login_required
 def choose_shift_requests(request):
     # 1) Obține shift-urile posibile (tocmai tipurile de shift, nelegat de zi)
