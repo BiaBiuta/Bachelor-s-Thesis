@@ -11,6 +11,16 @@ const debugBtn= document.getElementById("debug-btn");
 
 const USER = JSON.parse(document.getElementById("django-context").textContent);  // vezi §7.4
 
+// Stocăm progresiv datele extrase din conversație pentru a putea
+// finaliza cererea chiar și dacă utilizatorul oferă informațiile
+// în mai multe mesaje succesive.
+const slotStore = {
+  day: null,
+  shiftType: null,
+  reqType: null,
+  weight: null,
+};
+
 /* ───── mici utilitare HTMX ───────────────────────────────────────── */
 function addBubble(message, who="ai", quick=[]){
   htmx.ajax("POST", "/bubble/", {
@@ -61,6 +71,9 @@ sendBtn.addEventListener("click", async () => {
     (parseExplicitRange(text) || [])[0] ||
     (resolveRelativeWeek(text)    || [])[0];
 
+  // Actualizăm slotStore cu informațiile detectate local
+  if (iso) slotStore.day = iso;
+
 const body = {
   message: text,
   currentUserEmail: USER.email || "",    // <- adaugă acest câmp!
@@ -108,32 +121,43 @@ if (data.intent !== "schedule_shift") {
 
   const serverSlots = {
     day:       data.day ? "provided" : null,
-    shiftType: data.shiftType      ? "provided" : null,
-    // serverData nu returnează în mod implicit reqType sau weight —
-    // dacă dorești, extinde FastAPI să le parseze și pe ele.
-    reqType:   data.reqType        ? "provided" : null,
-    weight:    data.weight         ? "provided" : null
+    shiftType: data.shiftType ? "provided" : null,
+    reqType:   data.reqType ? "provided" : null,
+    weight:    data.weight ? "provided" : null,
   };
 
   const localSlots = {
-    day:       partial.day       ? "provided" : null,
+    day:       partial.day ? "provided" : null,
     shiftType: partial.shiftType ? "provided" : null,
-    reqType:   partial.reqType   ? "provided" : null,
-    weight:    partial.weight    ? "provided" : null
+    reqType:   partial.reqType ? "provided" : null,
+    weight:    partial.weight ? "provided" : null,
   };
 
   // combinare cu prioritate pentru valorile din server
   const combinedSlots = {
-    day:       serverSlots.day       || localSlots.day       || null,
-    shiftType: serverSlots.shiftType || localSlots.shiftType || null,
-    reqType:   serverSlots.reqType   || localSlots.reqType   || null,
-    weight:    serverSlots.weight    || localSlots.weight    || null
+    day:       serverSlots.day || localSlots.day || (slotStore.day ? "provided" : null),
+    shiftType: serverSlots.shiftType || localSlots.shiftType || (slotStore.shiftType ? "provided" : null),
+    reqType:   serverSlots.reqType || localSlots.reqType || (slotStore.reqType ? "provided" : null),
+    weight:    serverSlots.weight || localSlots.weight || (slotStore.weight ? "provided" : null)
   };
+
+  // Actualizăm valorile stocate pe baza informațiilor noi
+  if (data.day) slotStore.day = data.day;
+  else if (iso && !slotStore.day) slotStore.day = iso;
+
+  if (data.shiftType) slotStore.shiftType = data.shiftType;
+  else if (partial.shiftType) slotStore.shiftType = partial.shiftType;
+
+  if (data.reqType) slotStore.reqType = data.reqType;
+  else if (partial.reqType) slotStore.reqType = partial.reqType;
+
+  if (data.weight) slotStore.weight = data.weight;
+  else if (partial.weight) slotStore.weight = partial.weight;
 
   console.log("Combined slots:", combinedSlots);
 
   /* ─── 7️⃣ Determinăm care slot-uri lipsesc ───────────────────────────── */
-  const missing = requiredFields.filter((f) => combinedSlots[f] === null);
+  const missing = requiredFields.filter((f) => !slotStore[f]);
   console.log("Missing slots:", missing);
 
   /* ─── 8️⃣ Dacă există slot-uri lipsă, întrebăm utilizatorul și oprim fluxul aici ───── */
@@ -148,37 +172,15 @@ if (data.intent !== "schedule_shift") {
   addBubble("Am toate informațiile necesare. Trimit cererea către server...", "bot");
 
   /* ─── 1️⃣0️⃣ Construim payload-ul final pentru /api/schedule/ ─────────────────── */
-  // Pentru `day`, dacă serverData.ShiftStartDate e prezent, îl folosim; altfel, recurgem la parse local:
-  let isoDate;
-  if (serverSlots.day === "provided") {
-    isoDate = data.day;
-  } else {
-    // rezolvăm local pe baza textului, înțelegem că partial.day === "provided"
-    // de obicei parseAbsDate sau resolveRelativeWeekday returnează un array de [string, Date]
-    const localParsed = parseAbsDate(text) ||
-                        resolveRelativeWeekday(text) ||
-                        (parseExplicitRange(text) || [])[0] ||
-                        (resolveRelativeWeek(text)    || [])[0] ||
-                        null;
-    if (localParsed) {
-      isoDate = localParsed instanceof Date
-                ? localParsed.toISOString()
-                : localParsed;
-    } else {
-      // fallback — nu ar trebui să întâmple dacă combinedSlots.day !== null
-      console.error("Eroare: combinedSlots.day a fost dat ca 'provided' dar n-am putut obține ISO.");
-      addBubble("⚠️ A apărut o eroare la parsarea datei. Te rog încearcă din nou.", "bot");
-      return;
-    }
-  }
+  const isoDate = slotStore.day;
 
   // Construim payload definitiv
   const finalPayload = {
     // Câmpuri obligatorii conform modelului Django:
     day:        isoDate,                      // ex: "2025-06-10T00:00:00Z"
-    shift_type: data.shiftType || /*din local*/ null,
-    req_type:   data.reqType  || partial.reqType,
-    weight:     data.weight   || partial.weight,
+    shift_type: slotStore.shiftType,
+    req_type:   slotStore.reqType,
+    weight:     slotStore.weight,
 
     // Câmpuri redundante (pentru audit/istoric)
     nurse:      USER.id,     // prespunem că USER.id e același ca Nurse.pk
@@ -198,6 +200,11 @@ if (data.intent !== "schedule_shift") {
     const result = await res.json();
     if (result.success) {
       addBubble(result.message || "Cererea a fost înregistrată cu succes!", "bot");
+      // Resetează informațiile colectate pentru o nouă conversație
+      slotStore.day = null;
+      slotStore.shiftType = null;
+      slotStore.reqType = null;
+      slotStore.weight = null;
     } else {
       addBubble(result.message || "A intervenit o eroare la înregistrare.", "bot");
     }
