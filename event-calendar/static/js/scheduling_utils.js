@@ -1,4 +1,7 @@
-export const requiredFields = ["days","shiftType","hours"];
+// Lista completă de slot-uri necesare pentru a crea o cerere
+// de tip `ShiftRequest`. Toate trebuie colectate înainte de
+// a trimite datele către backend.
+export const requiredFields = ["day", "shiftType", "reqType", "weight"];
 
 export function extractSchedulingInfo(message) {
   const info = {};
@@ -10,9 +13,13 @@ export function extractSchedulingInfo(message) {
     info.day = "provided";
   }
 
-  // 2) shiftType: exact la fel ca înainte
-  if (/\b(morning|afternoon|evening|night|day shift|night shift)\b/i.test(message)) {
-    info.shiftType = "provided";
+  // 2) shiftType: detectăm și returnăm valoarea găsită
+  const stMatch = message.match(/\b(morning|afternoon|evening|night|day shift|night shift)\b/i);
+  if (stMatch) {
+    const st = stMatch[1].toLowerCase();
+    // normalizăm la forma "Morning", "Night" etc.
+    info.shiftType = st.replace(" shift", "");
+    info.shiftType = info.shiftType.charAt(0).toUpperCase() + info.shiftType.slice(1);
   }
 
   // 3) reqType: detectăm “on” sau “off” când e clar
