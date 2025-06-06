@@ -10,7 +10,9 @@ from .other_views import (
     delete_event,
     next_week,
     next_day,
-add_shift_request,api_shift_types_with_deficit
+    add_shift_request,
+    api_shift_types_with_deficit,
+    schedule_view,
 
 
 )
@@ -36,6 +38,9 @@ __all__ = {
     delete_event,
     next_week,
     next_day,
+    add_shift_request,
+    api_shift_types_with_deficit,
+    schedule_view,
     ChatView, chat_bubble, shift_table_fragment,
 
 }

@@ -30,6 +30,8 @@ from datetime import timedelta
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from django.views.decorators.http import require_GET
+from django.views.decorators.csrf import csrf_exempt
+import json
 
 
 def get_date(req_day):
@@ -533,3 +535,45 @@ def next_day(request, event_id):
         return JsonResponse({'message': 'Sucess!'})
     else:
         return JsonResponse({'message': 'Error!'}, status=400)
+
+
+@csrf_exempt
+def schedule_view(request):
+    """API endpoint pentru crearea unui ShiftRequest."""
+    if request.method != "POST":
+        return JsonResponse({"error": "Only POST allowed"}, status=405)
+
+    try:
+        data = json.loads(request.body or "{}")
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+    required = ["day", "shift_type", "req_type", "weight", "nurse", "department"]
+    if not all(k in data for k in required):
+        return JsonResponse({"success": False, "message": "Missing fields"}, status=400)
+
+    try:
+        # 1) Parsează data ISO şi calculează PK pentru Day
+        dt = datetime.fromisoformat(data["day"].replace("Z", "+00:00"))
+        num = re.search(r"\d+", GlobalObject.objects.get(pk=data["department"]).Name).group()
+        day_pk = int(f"{num}{dt.day}")
+        day_obj = Day.objects.get(pk=day_pk)
+
+        shift = ShiftType.objects.get(pk=data["shift_type"])
+        nurse = Nurse.objects.get(pk=data["nurse"])
+        dept = GlobalObject.objects.get(pk=data["department"])
+
+        ShiftRequest.objects.create(
+            nurse=nurse,
+            department=dept,
+            day=day_obj,
+            shift_type=shift,
+            req_type=data["req_type"],
+            weight=float(data["weight"]),
+            status="P",
+        )
+    except Exception as e:
+        logging.exception("schedule_view error")
+        return JsonResponse({"success": False, "message": "Eroare la salvare."}, status=400)
+
+    return JsonResponse({"success": True, "message": "Cererea a fost înregistrată."})

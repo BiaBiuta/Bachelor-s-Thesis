@@ -72,8 +72,11 @@ path(
         views.unit_details_ajax,
         name='unit_details_ajax'
     ),
-path('api/shift_types_with_deficit/', views.api_shift_types_with_deficit, name='api_shift_types_with_deficit'),
-path("api/schedule/", views.schedule_view),
+
+    path('api/shift_types_with_deficit/', views.api_shift_types_with_deficit, name='api_shift_types_with_deficit'),
+    path('api/schedule/', views.schedule_view, name='schedule_view'),
+
+
     # path('domains/', views.DomainDashboardView.as_view(), name='domain_dashboard'),
     # path('domains/<int:pk>/', views.DomainCalendarView.as_view(), name='domain_schedule'),
     path("chat/", views.ChatView.as_view(), name="chat"),
