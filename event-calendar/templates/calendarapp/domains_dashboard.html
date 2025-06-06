@@ -1,0 +1,64 @@
+{% extends 'base/base.html' %}
+{% load instance_extras %}
+{% block content %}
+<h1>Unitati medicale</h1>
+
+<div class="grid grid-cols-3 gap-4">
+  {% for domain in domains %}
+      <a href="{% url 'calendarapp:calendar_user' domain.pk %}">
+
+      <div class="card p-4 shadow hover:shadow-lg transition flex">
+  <!-- Coloana stângă: datele existente -->
+  <div class="flex-1">
+    <h2 class="text-xl font-medium">Unitate medicală {{ domain.Name| instance_number }}</h2>
+        <p>
+          <strong>Minute până la minim (domeniu):</strong>
+          {{ domain.TotalMinutesToMin }}
+        </p>
+        <p>
+          <strong>Minute până la maxim (domeniu):</strong>
+          {{ domain.TotalMinutesToMax }}
+        </p>
+      <p>
+          <strong>TotalMins:</strong>
+          {{ domain.TotalMinutes }}
+        </p>
+
+        <p class="mt-2 font-semibold">Asistente care pot face ore suplimentare:</p>
+        <ul class="list-disc list-inside">
+          {% for nurse in domain.nurses_with_deficit %}
+            <li>
+              {{ nurse.EmployeeID }}:
+              {{ nurse.minutes_to_max}} ore până la maxim
+            </li>
+          {% empty %}
+            <li>Toate asistentele sunt în regulă.</li>
+          {% endfor %}
+        </ul>
+  </div>
+
+  <!-- Coloana dreaptă: zile cu nevoie de ture -->
+  <div class="flex-1 ml-4">
+    <p class="mt-2 font-semibold text-red-600">Zile cu deficit de ture:</p>
+    <ul class="list-disc list-inside">
+      {% for day_def in domain.shift_deficits %}
+        <li>
+          <strong>Ziua {{ day_def.day_id }}:</strong>
+          <ul class="list-inside ml-4">
+            {% for need in day_def.needs %}
+              <li>
+                {{ need.shift_type }} &minus; {{ need.gap }} ture necesare
+              </li>
+            {% endfor %}
+          </ul>
+        </li>
+      {% empty %}
+        <li>Toate zilele sunt acoperite.</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+    </a>
+  {% endfor %}
+</div>
+{% endblock %}

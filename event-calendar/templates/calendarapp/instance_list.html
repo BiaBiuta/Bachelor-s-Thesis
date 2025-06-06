@@ -1,0 +1,46 @@
+{# templates/calendarapp/instance_list.html #}
+{% extends 'base/base.html' %}
+
+{% block content %}
+  <h1>Unitati medicale </h1>
+
+  <style>
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+    }
+    .card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      transition: transform 0.1s ease-in-out, box-shadow 0.1s;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .card a {
+      display: block;
+      color: #333;
+      font-weight: bold;
+      text-decoration: none;
+      margin: 8px 0;
+    }
+  </style>
+
+  <div class="grid-container">
+    {% for path, display in instances %}
+      <div class="card"><i class="fa fa-download" aria-hidden="true"></i></i>
+        <a href="{% url 'calendarapp:instance_detail' path %}">
+            {{ display }}
+        </a>
+      </div>
+    {% empty %}
+      <p>Nu am găsit niciun fișier .txt.</p>
+    {% endfor %}
+  </div>
+{% endblock %}

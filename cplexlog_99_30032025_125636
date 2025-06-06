@@ -1,0 +1,129 @@
+Solver command line: ['C:\\Program Files\\IBM\\ILOG\\CPLEX_Studio2212\\cplex\\bin\\x64_win64\\cplex.exe']
+
+
+Welcome to IBM(R) ILOG(R) CPLEX(R) Interactive Optimizer 22.1.2.0
+  with Simplex, Mixed Integer & Barrier Optimizers
+5725-A06 5725-A29 5724-Y48 5724-Y49 5724-Y54 5724-Y55 5655-Y21
+Copyright IBM Corp. 1988, 2024.  All Rights Reserved.
+
+Type 'help' for a list of available commands.
+Type 'help' followed by a command name for more
+information on commands.
+
+CPLEX> Logfile 'cplex.log' closed.
+Logfile 'cplexlog_99_30032025_125636' open.
+CPLEX> Problem 'C:\Users\bianc\AppData\Local\Temp\tmphv322tsv.pyomo.lp' read.
+Read time = 0.00 sec. (0.22 ticks)
+CPLEX> Problem name         : C:\Users\bianc\AppData\Local\Temp\tmphv322tsv.pyomo.lp
+Objective sense      : Minimize
+Variables            :    1807  [Nneg: 910,  Fix: 1,  Binary: 896]
+Objective nonzeros   :     854
+Linear constraints   :    2282  [Less: 1044,  Greater: 168,  Equal: 1070]
+  Nonzeros           :    6352
+  RHS nonzeros       :    1058
+
+Variables            : Min LB: 0.000000         Max UB: 1.000000       
+Objective nonzeros   : Min   : 1.000000         Max   : 1000.000       
+Linear constraints   :
+  Nonzeros           : Min   : 1.000000         Max   : 480.0000       
+  RHS nonzeros       : Min   : 1.000000         Max   : 4320.000       
+CPLEX> Version identifier: 22.1.2.0 | 2024-11-25 | 0edbb82fd
+Tried aggregator 3 times.
+MIP Presolve eliminated 1345 rows and 991 columns.
+MIP Presolve modified 30 coefficients.
+Aggregator did 300 substitutions.
+Reduced MIP has 637 rows, 516 columns, and 2994 nonzeros.
+Reduced MIP has 446 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 0.02 sec. (5.17 ticks)
+Found incumbent of value 2.3768187e+07 after 0.02 sec. (8.04 ticks)
+Probing time = 0.00 sec. (0.57 ticks)
+Tried aggregator 1 time.
+Detecting symmetries...
+Reduced MIP has 637 rows, 516 columns, and 2994 nonzeros.
+Reduced MIP has 446 binaries, 70 generals, 0 SOSs, and 0 indicators.
+Presolve time = 0.02 sec. (1.96 ticks)
+Probing time = 0.00 sec. (0.57 ticks)
+Clique table members: 823.
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 8 threads.
+Root relaxation solution time = 0.00 sec. (6.98 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0+    0                       2.37682e+07        0.0000           100.00%
+*     0+    0                      1189768.0000        0.0000           100.00%
+*     0+    0                       698768.0000        0.0000           100.00%
+*     0+    0                       685768.0000        0.0000           100.00%
+*     0+    0                       672768.0000        0.0000           100.00%
+*     0+    0                       659768.0000        0.0000           100.00%
+*     0+    0                       646768.0000        0.0000           100.00%
+*     0+    0                       633768.0000        0.0000           100.00%
+*     0+    0                       620768.0000        0.0000           100.00%
+*     0+    0                       607768.0000        0.0000           100.00%
+      0     0      722.9667   113   607768.0000      722.9667      419   99.88%
+*     0+    0                         1629.0000      722.9667            55.62%
+      0     0      728.3333   110     1629.0000      Cuts: 51      485   55.29%
+      0     0      730.3333   119     1629.0000      Cuts: 63      606   55.17%
+      0     0      730.9500   129     1629.0000      Cuts: 28      649   55.13%
+      0     0      731.7429   137     1629.0000      Cuts: 47      710   55.08%
+      0     0      733.2111   140     1629.0000      Cuts: 48      792   54.99%
+Detecting symmetries...
+      0     0      733.8678   156     1629.0000      Cuts: 32      858   54.95%
+      0     0      735.4130   179     1629.0000      Cuts: 36      933   54.85%
+*     0+    0                          946.0000      735.4130            22.26%
+      0     0      737.1241   171      946.0000      Cuts: 28      990   22.08%
+      0     0      740.0000   120      946.0000      Cuts: 32     1032   21.78%
+      0     0      742.9000   150      946.0000      Cuts: 34     1115   21.47%
+      0     0      744.1833   164      946.0000      Cuts: 41     1185   21.33%
+      0     0      745.4167   140      946.0000      Cuts: 34     1250   21.20%
+      0     0      750.6667   202      946.0000      Cuts: 50     1341   20.65%
+      0     0      758.2436   179      946.0000      Cuts: 38     1383   19.85%
+      0     0      764.7250   171      946.0000      Cuts: 38     1433   19.16%
+      0     0      769.8333   147      946.0000      Cuts: 31     1483   18.62%
+      0     0      781.8571   151      946.0000  ZeroHalf: 18     1520   17.35%
+      0     0      781.9286   169      946.0000      Cuts: 28     1545   17.34%
+*     0+    0                          935.0000      781.9286            16.37%
+      0     0      782.7198   163      935.0000  ZeroHalf: 10     1569   16.29%
+      0     0      786.1821   166      935.0000  ZeroHalf: 19     1653   15.92%
+      0     0      787.8667   113      935.0000  ZeroHalf: 25     1699   15.74%
+      0     0      788.5432   117      935.0000      Cuts: 26     1723   15.66%
+      0     0      790.9583   128      935.0000  ZeroHalf: 14     1756   15.41%
+      0     0      793.2000   143      935.0000  ZeroHalf: 31     1780   15.17%
+      0     0      795.6389   145      935.0000  ZeroHalf: 19     1804   14.90%
+      0     0      796.3611   154      935.0000  ZeroHalf: 24     1859   14.83%
+      0     0      797.4000   135      935.0000  ZeroHalf: 23     1887   14.72%
+      0     0      797.7143   155      935.0000  ZeroHalf: 19     1913   14.68%
+      0     0      798.0000   138      935.0000  ZeroHalf: 18     1931   14.65%
+      0     0      798.1429   141      935.0000  ZeroHalf: 17     1943   14.64%
+*     0+    0                          833.0000      798.1429             4.18%
+Detecting symmetries...
+      0     2      798.1429   141      833.0000      798.1429     1943    4.18%
+Elapsed time = 0.91 sec. (330.04 ticks, tree = 0.02 MB, solutions = 14)
+*     8+    2                          832.0000      798.3333             4.05%
+*    10     6      integral     0      830.0000      798.3333     2238    3.82%
+*    49    17      integral     0      828.0000      799.5000     2876    3.44%
+
+Clique cuts applied:  11
+Implied bound cuts applied:  3
+Zero-half cuts applied:  75
+Gomory fractional cuts applied:  1
+
+Root node processing (before b&c):
+  Real time             =    0.91 sec. (329.85 ticks)
+Parallel b&c, 8 threads:
+  Real time             =    0.05 sec. (17.76 ticks)
+  Sync time (average)   =    0.02 sec.
+  Wait time (average)   =    0.00 sec.
+                          ------------
+Total (root+branch&cut) =    0.95 sec. (347.61 ticks)
+
+Solution pool: 18 solutions saved.
+
+MIP - Integer optimal solution:  Objective =  8.2800000000e+02
+Solution time =    0.97 sec.  Iterations = 4005  Nodes = 80
+Deterministic time = 347.62 ticks  (358.74 ticks/sec)
+
+CPLEX> Incumbent solution written to file 'C:\Users\bianc\AppData\Local\Temp\tmp1swkyu0l.cplex.sol'.
+CPLEX> 

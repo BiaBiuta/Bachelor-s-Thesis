@@ -1,0 +1,11 @@
+{# calendarapp/templates/calendarapp/instance_detail.html #}
+{% extends 'base/base.html' %}
+{% block content %}
+  <h1>Conținutul {{ file_name }}</h1>
+  <pre>
+{% for line in data.lines %}
+{{ line|escape }}
+{% endfor %}
+  </pre>
+  <p><a href="{% url 'calendarapp:instance_list' %}">&larr; Înapoi la listă</a></p>
+{% endblock %}

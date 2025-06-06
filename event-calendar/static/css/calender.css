@@ -1,0 +1,116 @@
+.calendar {
+    width: 98%;
+    margin: auto;
+    font-size: 13px;
+  }
+
+  .calendar tr, .calendar td {
+    border: 1px solid black;
+  }
+
+  .calendar th {
+    padding: 10px;
+    text-align: center;
+    font-size: 18px;
+  }
+
+  .calendar td {
+    width: 200px;
+    height: 150px;
+    padding: 20px 0px 0px 5px;
+  }
+
+  .month {
+    font-size: 25px;
+  }
+
+  .date {
+    font-size: 16px;
+  }
+
+  ul {
+    height: 100%;
+    padding: 0px 5px 0px 20px;
+  }
+
+  a {
+    color: #17a2b8;
+  }
+
+  .left {
+    float: left;
+  }
+
+  .right {
+    float: right;
+  }
+
+  .btn {
+    outline: none;
+    color: black;
+    background-color: transparent;
+    box-shadow: 0 0 0 0;
+  }
+
+  .clearfix {
+    margin: 15px;
+  }
+
+  .form {
+    margin: auto;
+  }
+
+  .form input, .form select, .form textarea {
+    border-radius: 5px;
+    border: 1px solid #17a2b8;
+    outline: none;
+    background: none;
+    padding: 5px;
+    width: 100%;
+  }
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.card {
+  background: #fff;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease-in-out;
+}
+.card:hover {
+  transform: translateY(-4px);
+}
+
+.card-title {
+  margin-bottom: 0.5rem;
+  font-size: 1.25rem;
+}
+.card-title a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.card-meta {
+  list-style: none;
+  padding: 0;
+  font-size: 0.9rem;
+  color: #555;
+}
+.card-meta li {
+  margin-bottom: 0.3rem;
+}
+/*.chat-wrapper{display:flex;flex-direction:column;min-height:70vh;background:#fff;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,.12);}*/
+/*.chat-header{display:flex;justify-content:space-between;padding:8px 12px;font-weight:600}*/
+/*.chat-pane{flex:1 1 0;overflow-y:auto;padding:0 12px 72px;position:relative}*/
+/*.bubble{max-width:80%;margin:6px 0;padding:6px 10px;border-radius:6px;background:#f3f3f3;font-size:14px}*/
+/*.bubble.user{margin-left:auto;background:#0078d4;color:#fff}*/
+/*.quick-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}*/
+/*.chat-input-row{display:flex;gap:6px;padding:8px 12px;border-top:1px solid #f0f0f0;background:#fff;height:56px}*/
+/*.modal_chat{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center}*/
+/*.modal-body_chat{background:#fff;padding:1rem;border-radius:8px;min-width:280px}*/
+

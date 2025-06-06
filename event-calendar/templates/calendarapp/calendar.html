@@ -1,0 +1,590 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block title %}Event Calendar{% endblock title %}
+
+{% block extracss %}
+  <link href="{% static 'calender/main.css' %}" rel="stylesheet" />
+{% endblock extracss %}
+
+{% block breadcrumb %}
+  <div>
+      <h1><i class="fa fa-calendar"></i> Calendar</h1>
+      <p>Event Calendar</p>
+  </div>
+  <ul class="app-breadcrumb breadcrumb">
+      <li class="breadcrumb-item"><i class="fa fa-home fa-lg"></i></li>
+      <li class="breadcrumb-item"><a >Calendar</a></li>
+  </ul>
+{% endblock breadcrumb %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="tile row">
+            <div class="col-md-3">
+                <div id="external-events">
+                    <h4 class="mb-4">Turele mele </h4>
+                    {% for event in events_month %}
+                      <div class="fc-event">
+                          <h4>{{ event.title }}</h4>
+                          <p>From: {{ event.start_time }}</p>
+                      </div>
+                    {% empty %}
+                      <p>No Running Events Found</p>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col-md-9">
+                <div id="calendar"></div>
+            </div>
+
+            <div class="modal fade show" id="eventModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header bg-primary">
+                            <h5 class="modal-title text-white" id="exampleModalLongTitle">Add New Event</h5>
+                            <button id="modalClose1" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <form id="event-form" method="post">
+                            {% csrf_token %}
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <label for="recipient-name" class="col-form-label">Event Title:</label>
+                                    {{ form.title }}
+                                </div>
+                                <div class="form-group">
+                                    <label for="message-text" class="col-form-label">Description:</label>
+                                    {{ form.description }}
+                                </div>
+                                <div class="form-group">
+                                    <label for="message-text" class="col-form-label">Start Date:</label>
+                                    {{ form.start_time }}
+                                </div>
+                                <div class="form-group">
+                                    <label for="message-text" class="col-form-label">End Date:</label>
+                                    {{ form.end_time }}
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button id="modalClose2" type="button" class="btn btn-danger">Close</button>
+                                <button type="submit" class="btn btn-primary">Save</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {# --- Modal Intermediar de Alegere --- #}
+            <div class="modal fade" id="chooseModal" tabindex="-1" role="dialog" aria-labelledby="chooseModalLabel" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                  <!-- Header cu titlu clar -->
+                  <div class="modal-header bg-secondary">
+                    <h5 class="modal-title text-white" id="chooseModalLabel">Ce doriți să creați?</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Închide">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+
+                  <!-- Body cu două butoane de alegere -->
+                  <div class="modal-body text-center">
+                    <p class="mb-3">Alegeți tipul de acțiune:</p>
+                    <button id="chooseEventBtn" type="button" class="btn btn-primary mr-3">
+                      Creează Eveniment
+                    </button>
+                    <button id="chooseRequestBtn" type="button" class="btn btn-warning">
+                      Solicitare Shift
+                    </button>
+                  </div>
+
+                  <!-- Footer gol sau cu buton de închidere simplă -->
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Anulează</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+        {# modal de request #}
+            <div class="modal fade" id="requestModal" tabindex="-1" role="dialog" aria-labelledby="requestModalTitle" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header bg-warning">
+                      <h5 class="modal-title text-white" id="requestModalTitle">Solicitare Shift</h5>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Închide">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                    <form id="request-form" method="post" action="{% url 'calendarapp:add_shift_request' %}">
+                      {% csrf_token %}
+                      <div class="modal-body">
+                        <div class="form-group">
+                          <label for="id_nurse">Asistent:</label>
+                          {{ form_request.nurse }}
+                        </div>
+                        <div class="form-group">
+                          <label for="id_department">Departament:</label>
+                          {{ domain_pk}}
+                            <input type="hidden" name="department" value="{{ domain_pk }}" />
+                        </div>
+                        <div class="form-group">
+                          <label for="id_day">Zi (Day):</label>
+                          {{ form_request.day }}
+                        </div>
+                        <div class="form-group">
+                          <label for="id_shift_type">Tip Tură:</label>
+                          {{ form_request.shift_type }}
+                        </div>
+                        <div class="form-group">
+                          <label for="id_req_type">Tip Cerere:</label>
+{#                          {{ form_request.req_type }}#}ON
+                            <input type="hidden" name="req_type" value="ON" />
+
+                        </div>
+                        <div class="form-group">
+                          <label for="id_weight">Prioritate (weight):</label>
+                          {{ form_request.weight }}
+                        </div>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">Închide</button>
+                        <button type="submit" class="btn btn-warning">Trimite Cererea</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+            </div>
+            <div class="modal fade show" id="detailModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered" role="document">
+                  <div class="modal-content">
+                      <div class="modal-header bg-primary">
+                          <h5 class="modal-title text-white" id="title_event_detail"></h5>
+                          <button id="modalDetailClose" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                              <span aria-hidden="true">&times;</span>
+                          </button>
+                      </div>
+                      <form method="">
+                          {% csrf_token %}
+                          <div class="modal-body">
+                              
+                              <div class="form-group">
+                                  <label for="message-text" class="col-form-label">Description:</label>
+                                  <p id = "description_event_detail">
+
+                                  </p>
+                              </div>
+                              <div class="form-group">
+                                  <label for="message-text" class="col-form-label">Start:</label>
+                                  <p id = "start_event_detail">
+                              </div>
+                              <div class="form-group">
+                                  <label for="message-text" class="col-form-label">End:</label>
+                                  <p id = "end_event_detail">
+                              </div>
+                          </div>
+                          <div class="modal-footer">
+                              <button id="delete-event-button" data-event-id="" type="button" class="btn btn-danger">Delete</button>
+                              <button id="add-to-next-week" data-event-id-week="" type="button" class="btn btn-success">Next Week</button>
+                              <button id="add-to-next-day" data-event-id-day="" type="button" class="btn btn-primary">Next Day</button>
+
+                          </div>
+                      </form>
+                  </div>
+              </div>
+          </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+
+{% block extrascripts %}
+
+<script src="{% static 'calender/main.js' %}"></script>
+
+
+    <script>
+    window.currentUser = "{{ request.user }}";
+    var fcSelectStart = null;
+    var fcSelectEnd   = null;
+  </script>
+<script>
+  function converterDataParaDjangoFormat(data) {
+      const dataJS = new Date(data);
+      const year = dataJS.getFullYear();
+      const month = (dataJS.getMonth() + 1).toString().padStart(2, '0');
+      const day = dataJS.getDate().toString().padStart(2, '0');
+      const hour = dataJS.getHours().toString().padStart(2, '0');
+      const minute = dataJS.getMinutes().toString().padStart(2, '0');
+      const second = dataJS.getSeconds().toString().padStart(2, '0');
+      const formatoDjango = `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+      return formatoDjango;
+      
+  }
+  const deficitDates = {{ deficit_dates|safe }};
+    document.addEventListener('DOMContentLoaded', function() {
+      var calendarEl = document.getElementById('calendar');
+      var today = new Date();
+
+      var calendar = new FullCalendar.Calendar(calendarEl, {
+        headerToolbar: {
+          left: 'prev,next today',
+          center: 'title',
+          right: 'dayGridMonth,timeGridWeek,timeGridDay,list'
+        },
+        initialDate: today,
+        navLinks: true, // can click day/week names to navigate views
+        selectable: true,
+        selectMirror: true,
+        select: function(arg) {
+  // 1) Salvăm datele selectate în variabilele globale
+  fcSelectStart = arg.start;   // JS Date
+  fcSelectEnd   = arg.end;     // JS Date (poate fi null)
+
+  // 2) Deschidem modalul intermediar de alegere (chooseModal)
+  $('#chooseModal').modal('show');
+
+  // 3) Renunțăm la evidențierea zonei selectate în calendar
+  calendar.unselect();
+},
+
+
+        
+        // THIS KEY WON'T WORK IN PRODUCTION!!!
+        // To make your own Google API key, follow the directions here:
+        // http://fullcalendar.io/docs/google_calendar/
+        // googleCalendarApiKey: 'AIzaSyCqCxjjLtjbtkX37aOtWB8OfwBLy_6QuYk',
+
+        // bangladesh Holidays
+        // events: 'bn.bd#holiday@group.v.calendar.google.com',
+        eventClick: function(arg) {
+          
+          console.log('clicked')
+          var title = arg.event.title;
+          var start = formatDateTime(arg.event.start) ;
+          var end = formatDateTime(arg.event.end);
+          var description = arg.event.extendedProps.description || '';
+          var id = arg.event.id;
+
+          var modalInputEnd = document.getElementById('end_event_detail'); 
+
+          var modal = document.getElementById('detailModal')
+          var modalTitle = document.getElementById('title_event_detail'); 
+          var modalStart = document.getElementById('start_event_detail'); 
+          var modalEnd = document.getElementById('end_event_detail'); 
+          var modalDescripition = document.getElementById('description_event_detail'); 
+          var deleteButton = document.getElementById("delete-event-button");
+          var nextWeek = document.getElementById("add-to-next-week");
+          var nextDay = document.getElementById("add-to-next-day");
+
+          deleteButton.setAttribute("data-event-id", id);
+          nextWeek.setAttribute("data-event-id-week", id);
+          nextDay.setAttribute("data-event-id-day", id);
+          modal.style.display = 'block' 
+          
+          modalTitle.textContent = title;
+          modalStart.textContent = start;
+          modalEnd.textContent = end;
+          modalDescripition.textContent = description;
+          
+         
+          modal.style.display = 'block';
+        },
+        editable: true,
+        dayMaxEvents: true, // allow "more" link when too many events
+         eventSources: [
+
+          // 1) sursa de background events pentru zilele cu deficit
+          {
+            events: deficitDates.map(d => ({
+              start: d,
+              display: 'background',
+              color: '#ffcccc'      // culoarea de umbrire
+            }))
+          },
+
+          // 2) sursa ta principală de evenimente
+          {
+            events: {{ events|safe }}
+          }
+        ]
+      });
+
+
+      calendar.render();
+    });
+    const closeBtn1 = document.getElementById('modalClose1');
+    const closeBtn2 = document.getElementById('modalClose2');
+    const closeBtn3 = document.getElementById('modalDetailClose');
+    closeBtn1.addEventListener('click',()=>{
+      const eventModal = document.getElementById('eventModal')
+      eventModal.style.display = 'none';
+    });
+    closeBtn2.addEventListener('click',()=>{
+      const eventModal = document.getElementById('eventModal')
+      eventModal.style.display = 'none';
+    });
+    closeBtn3.addEventListener('click',()=>{
+      const eventModal = document.getElementById('detailModal')
+      eventModal.style.display = 'none';
+    });
+    function formatDateTime(dateTime) {
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', timeZoneName: 'short' };
+      const dataFormatada = new Date(dateTime).toLocaleDateString('en-US', options);
+      return dataFormatada;
+    };
+{#     const socket = new WebSocket('ws://' + window.location.hostname + ':5000/ws/notifications/');#}
+{#    socket.onopen = function() {#}
+{#        console.log('WebSocket connection established');#}
+{#    };#}
+{#   socket.onmessage = function(e) {#}
+{#    console.log('Message received:', e.data);#}
+{#    const data = JSON.parse(e.data);#}
+{#    alert(data.message);#}
+
+{#    socket.onclose = function(e) {#}
+{#        console.error('WebSocket closed unexpectedly');#}
+{#    };#}
+{#    socket.onerror = function(error) {#}
+{#        console.error('WebSocket error:', error);#}
+{#    };#}
+  // 4) Când utilizatorul apasă „Creează Eveniment” în chooseModal
+document.getElementById('chooseEventBtn').addEventListener('click', function() {
+  // 4.1) Închidem modalul de alegere
+  $('#chooseModal').modal('hide');
+
+  // 4.2) Deschidem modalul de eveniment
+  $('#eventModal').modal('show');
+
+  // 4.3) Dacă datele globale au fost setate, le copiem în câmpurile form-ului de eveniment
+  if (fcSelectStart !== null) {
+    document.getElementById('id_start_time').value = converterDataParaDjangoFormat(fcSelectStart);
+
+    if (fcSelectEnd !== null) {
+      document.getElementById('id_end_time').value = converterDataParaDjangoFormat(fcSelectEnd);
+    } else {
+      // Dacă end e null (ex: simplu click fără drag), setăm un default (start + 1 oră)
+      var plusOora = new Date(fcSelectStart.getTime() + 60*60*1000);
+      document.getElementById('id_end_time').value = converterDataParaDjangoFormat(plusOora);
+    }
+  }
+
+  // 4.4) Resetăm variabilele globale
+  fcSelectStart = null;
+  fcSelectEnd   = null;
+});
+
+    // 5) Când utilizatorul apasă „Solicitare Shift” în chooseModal
+     $('#chooseRequestBtn').on('click', function() {
+      $('#chooseModal').modal('hide');
+
+      if (!fcSelectStart) {
+        alert("Te rog, selectează o zi din calendar înainte.");
+        return;
+      }
+      var nurse="{{ nurse }}";
+      var ziSelectata = converterDataParaDjangoFormat(fcSelectStart);
+      // Setează ModelChoiceField‐ul #id_day (ModelChoiceField va trimite la POST PK-ul exact)
+      $('#id_day').val(ziSelectata);
+      $('#id_nurse').val(nurse);
+
+      // Setează departamentul și tipul cererii (exemplu)
+      //document.getElementById('id_department').value={{ domain_pk }};
+      $('#id_req_type').val('ON');
+      // Dacă fișa nurse e un <select> sau <input>, setează-l corespunzător
+      {#// $('#id_nurse').val(<ID nurse>);#}
+
+      // Golim momentan <select id="id_shift_type"> (ca să afișăm “Încarcare…”)
+      $('#id_shift_type').html('<option value="">Încarcare tipuri de tură …</option>');
+
+      // Deschide modal‐ul de request
+      $('#requestModal').modal('show');
+
+      // 4.d.i) Când modalul #requestModal e afișat (shown.bs.modal), atașează handler pe <select>
+      $('#requestModal').on('shown.bs.modal.shifts', function() {
+        // Acum există #id_shift_type în DOM. Dacă sunt deja opțiuni, nu mai facem AJAX
+        $('#id_shift_type').off('mousedown.ajax').on('mousedown.ajax', function() {
+          if ($(this).find('option').length > 1) {
+            return;
+          }
+          console.log("Ajax SHIFT_TYPE – zi:", ziSelectata, "departament:", {{domain_pk}});
+
+          $.ajax({
+            url: "{% url 'calendarapp:api_shift_types_with_deficit' %}",
+            method: 'GET',
+            data: {
+              department_id: {{ domain_pk }},
+              day_id:ziSelectata  // dacă DayID e de forma “2025-06-15”, endpoint ar trebui să accepte string
+            },
+            success: function(response) {
+              var optionsHtml = '<option value="">--- Selectează tură ---</option>';
+              if (response.shift_types && response.shift_types.length > 0) {
+                response.shift_types.forEach(function(item) {
+                  optionsHtml += '<option value="' + item.id + '">' + item.name + '</option>';
+                });
+              } else {
+                optionsHtml = '<option value="">(Nu există ture cu deficit pentru ' + ziSelectata + ')</option>';
+              }
+              $('#id_shift_type').html(optionsHtml);
+            },
+            error: function(xhr) {
+              console.error("Eroare AJAX:", xhr);
+              $('#id_shift_type').html('<option value="">Eroare la încărcare</option>');
+            }
+          });
+        });
+      });
+
+      // 4.d.ii) Când modalul #requestModal se închide, scoatem handler-ul atașat
+      $('#requestModal').on('hidden.bs.modal.shifts', function() {
+        $('#id_shift_type').off('mousedown.ajax');
+        $('#requestModal').off('.shifts');
+      });
+
+      fcSelectStart = null; fcSelectEnd = null;
+    });
+
+
+    document.getElementById('delete-event-button').addEventListener('click', function() {
+      const eventId = this.getAttribute('data-event-id');
+      {#const currentUser = document.querySelector('meta[name="current-user"]').content;#}
+
+      if (confirm('Are you sure you want to delete this event?')) {
+          $.ajax({
+              url: `/delete_event/${eventId}/`,
+              type: 'POST',
+              data: {
+                  csrfmiddlewaretoken: '{{ csrf_token }}',
+              },
+              success: function(response) {
+
+                  if (window.socket ) {
+
+                      console.log('am intrat in if ');
+                      window.socket.send(JSON.stringify({
+                          type: 'delete_event',
+                          sender: '{{ request.user }}',
+                          eventId: eventId
+                      }));
+                  }
+                  else {
+                    console.warn("Socket not open yet");
+                    }
+                  alert(response.message);
+                  window.location.reload();
+              },
+              error: function(xhr, status, error) {
+                  alert('Error!');
+              }
+
+          });
+      }});
+    const form = document.getElementById("event-form");
+    form.addEventListener("submit", function(e) {
+      e.preventDefault();  // opreşte trimiterea normală
+      console.log('Form submitted');
+      // extragi valorile câmpurilor din formă
+      const title = form.querySelector('input[name="title"]').value;
+      const description = form.querySelector('textarea[name="description"]').value;
+      const start = form.querySelector('input[name="start_time"]').value;
+      const end = form.querySelector('input[name="end_time"]').value;
+      // 3) trimiţi payload-ul pe WebSocket
+      socket.send(JSON.stringify({
+          type: 'addEvent',
+          sender: '{{ request.user }}',        // definit deja în JS
+          event: {
+              title, description, start, end
+          }
+      }));
+      form.submit()
+    });
+
+      document.getElementById('add-to-next-week').addEventListener('click', function() {
+          const eventId = this.getAttribute('data-event-id-week');
+          if (confirm('Are you sure you want add this event to next week?')) {
+              $.ajax({
+                url: `/next_week/${eventId}/`,
+                  type: 'POST',
+                  data: {
+                      csrfmiddlewaretoken: '{{ csrf_token }}',
+                  },
+                  success: function(response) {
+                      alert(response.message);
+                      window.location.reload();
+                  },
+                  error: function(xhr, status, error) {
+                      alert('Error!');
+                  }
+              });
+          }
+  });
+
+  document.getElementById('add-to-next-day').addEventListener('click', function() {
+    const eventId = this.getAttribute('data-event-id-day');
+    if (confirm('Are you sure you want add this event to next day?')) {
+        $.ajax({
+          url: `/next_day/${eventId}/`,
+            type: 'POST',
+            data: {
+                csrfmiddlewaretoken: '{{ csrf_token }}',
+            },
+            success: function(response) {
+                alert(response.message);
+                window.location.reload();
+            },
+            error: function(xhr, status, error) {
+                alert('Error!');
+            }
+        });
+    }
+});
+$(document).ready(function() {
+    console.log("În document-ready, leg handler pe #request-form");
+
+  $('#request-form').on('submit', function(event) {
+      let raw = $('#id_shift_type').val();
+      console.log("Valoarea selectată pentru shift_type:", raw);
+      event.preventDefault();
+      console.log('Form-request submitted');
+      if (!raw) {
+        // Dacă nu a fost selectată nicio opțiune validă
+        event.preventDefault();
+        alert("Vă rugăm să selectați un tip de tură înainte de a trimite.");
+      }
+      socket.send(JSON.stringify({
+          type: 'shift_request_add',
+          sender: '{{ request.user }}',        // definit deja în JS
+          event: {
+              raw
+          }
+      }));
+      this.submit()
+
+  //event.preventDefault();
+  // În rest – NU mai apelați this.submit() și NU faceți preventDefault().
+  // Browser-ul va include automat în POST: shift_type=<valoarea selectată>
+});
+
+
+});
+
+
+
+</script>
+
+
+    <script>
+    console.log("am intrat in script sa ma conectez")
+    const worker = new SharedWorker("{% static 'js/socketWorker.js' %}");
+
+    worker.port.onmessage = function (e) {
+        const data = e.data;
+        console.log('Message received from WebSocket:', data);
+        alert(data.message);
+    };
+
+    worker.port.start(); // Start the communication with the worker
+</script>
+{% endblock extrascripts %}
+

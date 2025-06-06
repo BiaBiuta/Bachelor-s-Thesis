@@ -1,0 +1,31 @@
+<!-- wrapper ascuns; JS adaugă/înlătură clase fadeIn/fadeOut -->
+<div id="modal-overlay" class="modalOverlay" hidden>
+  <div class="modalContent">
+    <h2 id="modal-title" class="modalTitle">Title</h2>
+    <form id="modal-form" class="modalForm" hx-post="." hx-swap="none">
+      <label class="modalLabel">
+        Shift Date:
+        <input type="date" name="shiftDate" required class="modalInput">
+      </label>
+
+      <label class="modalLabel" data-shift-type>
+        Shift Type:
+        <select name="shiftType" class="modalSelect">
+          <option value="Morning">Morning</option>
+          <option value="Evening">Evening</option>
+          <option value="Night">Night</option>
+        </select>
+      </label>
+
+      <label class="modalLabel" data-work-hours>
+        Work Hours:
+        <input type="number" name="workHours" min="1" value="8" class="modalInput">
+      </label>
+
+      <div class="modalButtons">
+        <button type="submit" class="submitButton">Submit</button>
+        <button type="button" id="modal-cancel" class="cancelButton">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,111 @@
+{# templates/calendarapp/choose_emergency_requests.html #}
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}Cerere Urgență{% endblock title %}
+
+{% block extracss %}
+  <style>
+    .select-date-container {
+      max-width: 400px;
+      margin: 2rem auto;
+    }
+    .lists-container {
+      max-width: 900px;
+      margin: 2rem auto;
+    }
+    .list-box {
+      height: 200px;
+    }
+  </style>
+{% endblock extracss %}
+
+{% block content %}
+  <div class="container py-4">
+    <h1 class="mb-4 text-center">Cerere de Urgență</h1>
+
+    {% if stage == 'select_date' %}
+      <!-- Etapa 1: Alege data de urgență -->
+      <div class="select-date-container">
+        <form method="get">
+          <div class="mb-3">
+            <label for="id_date" class="form-label">Selectează data</label>
+            <input
+              type="date"
+              class="form-control"
+              id="id_date"
+              name="date"
+              {% if date_error %} 
+                aria-invalid="true" 
+              {% endif %}
+            />
+            {% if date_error %}
+              <div class="text-danger mt-1">{{ date_error }}</div>
+            {% endif %}
+          </div>
+          <button type="submit" class="btn btn-primary">Continuă</button>
+        </form>
+      </div>
+
+    {% elif stage == 'show_lists' %}
+      <!-- Etapa 2: Afișează cele două liste de asistenți -->
+      <div class="lists-container">
+        <h4 class="mb-3">Data selectată: <strong>{{ chosen_date }}</strong></h4>
+
+        <form method="post" id="emergency-form">
+          {% csrf_token %}
+          <!-- Păstrăm data într-un hidden -->
+          <input type="hidden" name="date" value="{{ chosen_date }}" />
+
+          <div class="row">
+            <!-- Lista asistenților care au tură în ziua respectivă -->
+            <div class="col-md-6 mb-4">
+              <h5>Asistenți pe tură (mută OFF):</h5>
+              {% if nurses_on_shift %}
+                <select
+                  multiple
+                  class="form-select list-box"
+                  name="remove_nurses"
+                  id="id_remove_nurses"
+                >
+                  {% for nurse in nurses_on_shift %}
+                    <option value="{{ nurse.EmployeeID }}">{{ nurse }}</option>
+                  {% endfor %}
+                </select>
+                <div class="form-text">Selectează unul sau mai mulți asistenți pe care să îi pui OFF.</div>
+              {% else %}
+                <div class="alert alert-warning">Niciun asistent nu are tură în această zi.</div>
+              {% endif %}
+            </div>
+
+            <!-- Lista asistenților cu zi liberă aprobată -->
+            <div class="col-md-6 mb-4">
+              <h5>Asistenți cu zi liberă (cheamă ON):</h5>
+              {% if nurses_on_dayoff %}
+                <select
+                  multiple
+                  class="form-select list-box"
+                  name="call_nurses"
+                  id="id_call_nurses"
+                >
+                  {% for nurse in nurses_on_dayoff %}
+                    <option value="{{ nurse.EmployeeID }}">{{ nurse }}</option>
+                  {% endfor %}
+                </select>
+                <div class="form-text">Selectează unul sau mai mulți asistenți pe care să îi chemi să acopere.</div>
+              {% else %}
+                <div class="alert alert-info">Niciun asistent nu are zi liberă aprobată în această zi.</div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="text-center mt-3">
+            <button type="submit" class="btn btn-danger btn-lg">
+              Trimite Cererea de Urgență
+            </button>
+          </div>
+        </form>
+      </div>
+    {% endif %}
+  </div>
+{% endblock content %}

@@ -1,0 +1,127 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Event List{% endblock title %}
+
+{% block breadcrumb %}
+    <div>
+        <h1><i class="fa fa-dashboard"></i> Dashboard</h1>
+        <p>Event List</p>
+    </div>
+    <ul class="app-breadcrumb breadcrumb">
+        <li class="breadcrumb-item"><i class="fa fa-home fa-lg"></i></li>
+        <li class="breadcrumb-item"><a>Event List</a></li>
+    </ul>
+{% endblock breadcrumb %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="tile">
+            <div class="tile-body">
+                <div class="table-responsive">
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <table class="table table-hover table-bordered dataTable no-footer" id="sampleTable" role="grid" aria-describedby="sampleTable_info">
+                                    <thead>
+                                        <tr role="row">
+                                            <th>SL</th>
+                                            <th>Event Name</th>
+                                            <th>Start Time</th>
+                                            <th>End Time</th>
+                                            <th>Status</th>
+                                            {% if user.is_superuser %}
+                                            <th>Actions</th>
+                                            {% endif %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for event in object_list %}
+                                            <tr role="row" class="odd">
+                                                <td>{{ forloop.counter }}</td>
+                                                <td>{{ event.title }}</td>
+                                                <td>{{ event.start_time }}</td>
+                                                <td>{{ event.end_time }}</td>
+                                                <td>
+                                                    {% if event.is_approved %}
+                                                        <span class="badge badge-success">Approved</span>
+                                                    {% else %}
+                                                        <span class="badge badge-warning">Pending</span>
+                                                    {% endif %}
+                                                </td>
+                                             {% if user.is_superuser %}
+                                                <td>
+                                                    {% if not event.is_approved %}
+                                                        <form class="approve-form"  data-owner="{{ event.user.id }}" method="post" action="{% url 'calendarapp:approve-event' event.id %}" style="display:inline;">
+                                                            {% csrf_token %}
+                                                            <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                                                        </form>
+                                                        <form class="deny-form"  data-owner="{{ event.user.id }}" method="post" action="{% url 'calendarapp:deny-event' event.id %}" style="display:inline;">
+                                                            {% csrf_token %}
+                                                            <button type="submit" class="btn btn-danger btn-sm">Deny</button>
+                                                        </form>
+                                                    {% else %}
+                                                        <span class="text-muted">No actions available</span>
+                                                    {% endif %}
+                                                </td>
+                                            {% endif %}
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block extrascripts %}
+    <script type="text/javascript" src="{% static 'js/plugins/jquery.dataTables.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/plugins/dataTables.bootstrap.min.js' %}"></script>
+    <script type="text/javascript">$('#sampleTable').DataTable();</script>
+    <script>
+  // presupunem că ai deja:
+  // const socket = new WebSocket(...);
+
+  // 1) selectăm toate form‑urile de approve şi de deny
+ document
+    .getElementById('sampleTable')
+    .addEventListener('submit', function(evt) {
+      const form = evt.target;
+      // e un submit pe un <form> ?
+      if (!form.matches('form.approve-form') && !form.matches('form.deny-form')) {
+        return;
+      }
+      evt.preventDefault();
+
+      const action = form.getAttribute('action');
+      let type, verb;
+      if (form.matches('form.approve-form')) {
+        type = 'event_approved';
+        verb = 'aprobat';
+      } else {
+        type = 'event_denied';
+        verb = 'respins';
+      }
+
+      const eventId = action.match(/\/(?:approve|deny)-event\/(\d+)/)[1];
+      const ownerId = form.dataset.owner;  // trebuie să pui în template: data-owner="{{ event.user.id }}"
+
+      // 1) trimitem WS
+      socket.send(JSON.stringify({
+        type:     type,
+        event_id: eventId,
+        ownerId:  ownerId,
+        sender:   '{{ request.user }}'
+      }));
+
+      // 2) după WS (sau imediat dacă vrei) trimitem HTTP
+      form.submit();
+  });
+</script>
+
+{% endblock extrascripts %}

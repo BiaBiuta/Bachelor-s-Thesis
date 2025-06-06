@@ -1,0 +1,85 @@
+{% extends "admin/change_list.html" %}
+{% load i18n admin_urls static %}
+
+{# --- 1) Eliminăm complet zona de filtru (sidebar) --- #}
+{% block sidebar %}
+{% endblock %}
+
+
+{# --- 2) Adăugăm fișierul nostru CSS extern după stilurile Admin standard --- #}
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'css/admin_emergency_site.css' %}">
+{% endblock %}
+
+
+{# --- 3) Suprascriem blocul “result_list” pentru a afișa grid‐ul de carduri #}
+{% block result_list %}
+
+  {# Titlul paginii (ex: “Select emergency request to change”) #}
+  <h1 class="page-title">{{ cl.title }}</h1>
+
+  {# Containerul principal de carduri #}
+  <div class="site-cards-container">
+    {% for obj in cl.result_list %}
+      <div class="site-emergency-card">
+        {# – Data cererii, ca link către pagina de editare #}
+        <h2 class="card-title">
+          <a href="{% url 'admin:calendarapp_emergencyrequest_change' obj.pk %}">
+            {{ obj.date }}
+          </a>
+        </h2>
+
+        {# – “Nurse de chemat” #}
+        <div class="card-section">
+          <span class="section-label">{% trans "Nurse de chemat:" %}</span>
+          {% if obj.call_nurses.count %}
+            <span class="section-content">
+              {{ obj.call_nurses.all|join:", " }}
+            </span>
+          {% else %}
+            <span class="section-empty">{% trans "– niciuna –" %}</span>
+          {% endif %}
+        </div>
+
+        {# – “Nurse de scos din tură” #}
+        <div class="card-section">
+          <span class="section-label">{% trans "Nurse de scos din tură:" %}</span>
+          {% if obj.remove_nurses.count %}
+            <span class="section-content">
+              {{ obj.remove_nurses.all|join:", " }}
+            </span>
+          {% else %}
+            <span class="section-empty">{% trans "– niciuna –" %}</span>
+          {% endif %}
+        </div>
+
+        {# – “Status” (badge colorat) #}
+        <div class="card-section">
+          <span class="section-label">{% trans "Status:" %}</span>
+          <span class="status-badge {{ obj.status }}">
+            {{ obj.get_status_display }}
+          </span>
+        </div>
+
+        {# – Butonul “Edit” #}
+        <div class="card-footer">
+          <a href="{% url 'admin:calendarapp_emergencyrequest_change' obj.pk %}"
+             class="edit-button">
+            {% trans "Edit" %}
+          </a>
+        </div>
+      </div>
+    {% empty %}
+      <div class="no-objects-msg">
+        <p>{% trans "Nu există cereri de urgență în acest moment." %}</p>
+      </div>
+    {% endfor %}
+  </div>
+
+  {# --- 4) Păstrăm paginația standard, dar o ancorăm aici #}
+  {% block pagination %}
+    {{ block.super }}
+  {% endblock %}
+
+{% endblock %}

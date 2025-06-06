@@ -1,0 +1,73 @@
+{# templates/admin/calendarapp/shiftrequest/change_list.html#}
+{% extends "admin/change_list.html" %}
+{% load i18n admin_urls static %}
+{##}
+{##}
+{# ----------------------------------------------------------#}
+{# 1) Blocul extrastyle: încărcăm CSS-ul propriu DUPĂ cel standard#}
+{# ----------------------------------------------------------#}
+{#{% block extrastyle %}#}
+{#  {{ block.super }}#}
+{#  <link rel="stylesheet" href="{% static 'css/shiftrequest_admin.css' %}">#}
+{#{% endblock %}#}
+{##}
+{##}
+{# ----------------------------------------------------------#}
+{# 2) Override‐ul blocului „content” pentru a rearanja conţinutul#}
+{# ----------------------------------------------------------#}
+{#{% block content %}#}
+{#   <div class="shiftwrapper">#}
+{##}
+    {# === 2.a) Zona TABEL (stânga) === #}
+{#    <div class="main-content">#}
+      {# Block‐ul “result_list” tale rămâne neschimbat: afișează tabelul #}
+{#      {% block result_list %}#}
+{#        {{ block.super }}#}
+{#      {% endblock %}#}
+{#    </div>#}
+{##}
+    {# === 2.b) Zona FILTRE (dreapta) === #}
+{#    <div class="filter-right">#}
+      {# În loc să apelăm “{{ block.super }}” (care include <details>…), #}
+      {# vom itera direct peste cl.filter_specs și ne definim propriul markup #}
+{##}
+{#      {% block changelist  %}#}
+{#          {{ block.super }}#}
+{#          {% endblock %}#}
+{#    </div>#}
+{##}
+{#  </div>#}
+{#{% endblock %}#}
+{% block extrahead %}
+  {{ block.super }}
+
+{% endblock %}
+{% block content %}
+    {{ block.super }}
+{% endblock %}
+{% block extrascripts %}
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var changeListForm = document.getElementById('changelist-form');
+        console.log("sunt in script de js ")
+        if (changeListForm) {
+
+            changeListForm.addEventListener('submit', function(event) {
+                // Colectați datele care vă interesează: de exemplu, toate rândurile modificate
+                // În exemplu trimitem un mesaj generic
+                console.log("am intrat in js")
+                var payload = {
+                    action: 'save_shift_requests',
+                    timestamp: new Date().toISOString()
+                };
+                socket.send(JSON.stringify({
+                    type:'save_shift_requests',
+                    payload:payload}));
+                console.log("am trimis!")
+            });
+        }
+    });
+</script>
+{%endblock%}

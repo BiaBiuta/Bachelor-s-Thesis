@@ -1,0 +1,18 @@
+<table>
+    <thead>
+        <tr>
+            <th>Time</th>
+            <th>Shift</th>
+            <th>Role</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in schedule %}
+        <tr>
+            <td>{{ item.time }}</td>
+            <td>{{ item.shift }}</td>
+            <td>{{ item.role }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

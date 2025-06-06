@@ -1,0 +1,62 @@
+/* static/css/admin_emergency_cards.css */
+
+/* Container pentru carduri – flex wrap, cu spaţiu între ele */
+.emergency-cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* Stil de bază pentru fiecare card */
+.emergency-card {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 1rem;
+  width: 300px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  background-color: #fff;
+}
+
+/* Titlul cardului (data) */
+.emergency-card .card-title {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Listă simplificată, fără marcatori de tip bullet */
+.emergency-card .card-meta {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.75rem 0;
+}
+
+/* Elemente din card: listele de asistenți */
+.emergency-card .card-meta li {
+  margin-bottom: 0.5rem;
+}
+
+/* Stil badge pentru status */
+.emergency-card .status-badge {
+  display: inline-block;
+  color: white;
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.9rem;
+}
+
+/* Culori pentru fiecare status */
+.emergency-card .status-badge.P { background-color: #ffc107; }
+.emergency-card .status-badge.A { background-color: #28a745; }
+.emergency-card .status-badge.D { background-color: #dc3545; }
+
+/* Buton pentru editare */
+.emergency-card .edit-button {
+  display: inline-block;
+  background-color: #2a6ebb;
+  color: white;
+  padding: 0.4rem 0.8rem;
+  text-decoration: none;
+  border-radius: 3px;
+  font-size: 0.9rem;
+  text-align: center;
+}

@@ -1,0 +1,38 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'css/scheduler.css' %}">
+  <script defer type="module" src="{% static 'js/scheduler.js' %}"></script>
+  <script defer type="module" src="{% static 'js/form_modal.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<section id="scheduler-agent" class="schedulerAgent{% if request.GET.teams %} teams{% endif %}">
+  <div class="container">
+
+    <!-- buton toggle prompts -->
+    <div class="promptToggleWrapper">
+      <button id="toggle-prompts" class="promptToggleBtn">View prompts</button>
+    </div>
+
+    <!-- grilă carduri -->
+    <div id="card-grid" class="cardGrid" hidden>
+      {% include "partials/card.html" with icon="🗓️" title="Schedule a Shift" desc="Tell me when you’d like to work." mode="schedule" %}
+      {% include "partials/card.html" with icon="👀" title="Check Availability" desc="See if you’re free this weekend." mode="check" %}
+      {% include "partials/card.html" with icon="🔄" title="Swap a Shift" desc="Switch shifts with someone else." mode="swap" %}
+      {% include "partials/card.html" with icon="❌" title="Cancel a Shift" desc="Let me know which one to remove." mode="cancel" %}
+    </div>
+
+    <!-- chat reutilizat -->
+    {% include "chat.html" %}
+
+    <!-- debug -->
+    <div id="debug-holder"></div>
+
+    <!-- modal (hidden by default) -->
+    {% include "partials/form_modal.html" %}
+  </div>
+</section>
+
+<script id="django-user" type="application/json">{{ USER|json_script }}</script>
+{% endblock %}

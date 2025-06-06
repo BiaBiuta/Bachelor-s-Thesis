@@ -1,0 +1,35 @@
+
+{% extends "admin/calendarapp/base.html" %}
+{% load i18n static admin_urls %}
+
+{% block title %}{{ site_title|default:_('Django administration') }}{% endblock %}
+
+{% block branding %}
+  <a class="app-header__logo" href="{% url 'admin:index' %}">
+    {{ site_header|default:_('Django Admin') }}
+  </a>
+{% endblock %}
+
+{% block nav-global %}
+  <ul class="app-nav">
+    <li>
+      <a class="app-nav__item" href="{% url 'admin:logout' %}">
+        <i class="fa fa-sign-out fa-lg"></i> {% trans "Log out" %}
+      </a>
+    </li>
+  </ul>
+{% endblock %}
+
+{% block sidebar %}
+  <aside class="app-sidebar">
+    {% block app_list %}
+      {{ block.super }}
+    {% endblock %}
+  </aside>
+{% endblock %}
+
+{% block content %}
+  <main class="app-content">
+    {{ block.super }}
+  </main>
+{% endblock %}

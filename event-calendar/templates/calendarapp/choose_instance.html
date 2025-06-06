@@ -1,0 +1,401 @@
+{# templates/calendarapp/choose_instance.html #}
+{% extends 'base/base.html' %}
+{% block title %}Generează Orar – Unitate Medicală{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+
+  <h1 class="mb-4">Panou Generare Orar</h1>
+
+  <div class="row gy-4">
+    <!-- Col 1: Control Panel -->
+    <div class="col-lg-4">
+      <div class="card shadow-sm">
+        <div class="card-header">
+          <strong>Selectare Unitate</strong>
+        </div>
+        <div class="card-body">
+          <form  id="gen-form" method="post" action="{% url 'calendarapp:select_instance' %}">
+            {% csrf_token %}
+           <input type="hidden" name="request_ids" id="hid_requests" value="" />
+            <div class="mb-3">
+              <label for="unitate" class="form-label">Unitate medicală</label>
+              <select id="unitate" name="unitate" class="form-select">
+                {% for go in global_objects %}
+                  <option value="{{ go.object.id }}">Unitate {{ go.number }}</option>
+                {% endfor %}
+              </select>
+              <div class="form-text">Alege unitatea pentru care generezi orarul.</div>
+            </div>
+            <button id="genBtn" type="button" class="btn btn-primary w-100">
+              <span id="btnText">Generează orar</span>
+              <span id="btnSpinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status"></span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+<!-- Col 2: Informații despre unitate (revizuit) -->
+    <div class="col-lg-8">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header ">
+          <strong>Detalii Unitate Medicală</strong>
+        </div>
+        <div class="card-body">
+          <table class="table table-borderless mb-0">
+            <tbody>
+              <tr>
+                <th scope="row">Medici</th>
+                <td id="badgeNurses">–</td>
+                <th>Ture</th>
+                <td id="badgeShiftTypes">–</td>
+              </tr>
+              <tr>
+                <th>Total minute</th>
+                <td id="badgeTotalMin">–</td>
+                <th>Până la min</th>
+                <td id="badgeToMin">–</td>
+              </tr>
+              <tr>
+                <th>Până la max</th>
+                <td id="badgeToMax">–</td>
+                <th>Ultima generare</th>
+                <td id="badgeLastGen">–</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  <!-- Istoric generări -->
+<div class="card shadow-sm">
+  <div class="card-header bg-white">
+    <strong>Istoric Generări Orar</strong>
+  </div>
+  <ul class="list-group list-group-flush">
+    {# 1) Primii 3 items afișați mereu #}
+    {% for log in generate_logs %}
+      {% if forloop.counter <= 3 %}
+        <li
+          class="list-group-item d-flex justify-content-between align-items-center"
+        >
+          <div>
+            <i class="bi bi-calendar-check me-2"></i>
+            {{ log.generated_at|date:"d.m.Y H:i" }} – Unitate medicală {{ log.department.Name }}
+          </div>
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-primary btn-load-log"
+            data-url="{% url 'calendarapp:schedule_log_events' log.id %}"
+          >
+            Vizualizează
+          </button>
+        </li>
+      {% else %}
+        {# 2) Restul elementelor punem într-un container collapse, ascuns inițial #}
+        {% if forloop.counter == 4 %}
+          <div class="collapse" id="moreLogs">
+        {% endif %}
+            <li
+              class="list-group-item d-flex justify-content-between align-items-center"
+            >
+              <div>
+                <i class="bi bi-calendar-check me-2"></i>
+                {{ log.generated_at|date:"d.m.Y H:i" }} – Unitate medicală {{ log.department.Name }}
+              </div>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-primary btn-load-log"
+                data-url="{% url 'calendarapp:schedule_log_events' log.id %}"
+              >
+                Vizualizează
+              </button>
+            </li>
+        {% if forloop.last %}
+          </div>
+        {% endif %}
+      {% endif %}
+    {% empty %}
+      <li class="list-group-item text-muted">
+        Nu există generări anterioare.
+      </li>
+    {% endfor %}
+  </ul>
+
+  {# 3) Dacă există mai mult de 3 elemente, afișăm butonul de toggle #}
+  {% if generate_logs|length > 3 %}
+    <div class="card-footer bg-white text-center">
+      <button
+        id="toggle-more-logs"
+        class="btn btn-sm btn-outline-secondary"
+        data-bs-toggle="collapse"
+        data-bs-target="#moreLogs"
+        aria-expanded="false"
+        aria-controls="moreLogs"
+      >Arată mai multe</button>
+    </div>
+  {% endif %}
+</div>
+
+    </div>
+<!-- Buton care deschide modalul de cereri -->
+<!-- butonul care deschide modalul (disabled implicit) -->
+<button
+  id="btn-show-reqs"
+  class="btn btn-outline-primary mb-3"
+  data-bs-toggle="modal"
+  data-bs-target="#requestsModal"
+  disabled>
+  Vezi cereri shift
+</button>
+
+<!-- Modal Bootstrap (fără loop în template) -->
+<div class="modal fade" id="requestsModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cererile tale de shift</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <table class="table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Asistentă</th>
+              <th>Zi</th>
+              <th>Shift</th>
+              <th>Tip</th>
+            </tr>
+          </thead>
+          <tbody id="requests-tbody">
+            <!-- rândurile vor fi generate din JS -->
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          data-bs-dismiss="modal">Închide</button>
+          <button
+          type="button"
+          id="apply-requests"
+          class="btn btn-primary"
+          data-bs-dismiss="modal">
+          Aplică cereri
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+    <!-- Col 3: Calendar Preview -->
+  <div class="col-12" id="calendarCard" style="display:none;">
+  <div class="card shadow-sm mt-4">
+    <div class="card-header"><strong>Orar</strong></div>
+    <div class="card-body">
+      <div id="calendarMaster" style="min-height:400px;"></div>
+
+      {% if request.session.preview_events %}
+      <div class="mt-3">
+        <form method="post" action="{% url 'calendarapp:confirm_schedule' %}" class="d-inline">
+          {% csrf_token %}
+          <button class="btn btn-success">Acceptă</button>
+        </form>
+        <form method="post" action="{% url 'calendarapp:cancel_schedule' %}" class="d-inline">
+          {% csrf_token %}
+          <button class="btn btn-danger">Anulează</button>
+        </form>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+</div>
+
+
+
+
+
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <!-- Bootstrap 5 JS bundle (Popper inclus) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+
+        crossorigin="anonymous"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const selectUnit   = document.getElementById('unitate');
+  const badgeNurses  = document.getElementById('badgeNurses');
+  const badgeShifts  = document.getElementById('badgeShiftTypes');
+  const badgeTotal   = document.getElementById('badgeTotalMin');
+  const badgeToMin   = document.getElementById('badgeToMin');
+  const badgeToMax   = document.getElementById('badgeToMax');
+  const badgeLastGen = document.getElementById('badgeLastGen');
+  const btnShowReqs  = document.getElementById('btn-show-reqs');
+  const tbodyReqs    = document.getElementById('requests-tbody');
+
+  function loadUnitDetails(unitId) {
+    fetch(`/ajax/unit_details/${unitId}/`)
+      .then(resp => resp.json())
+      .then(data => {
+        // actualizează badge-uri
+        badgeNurses.textContent  = data.nurses;
+        badgeShifts.textContent  = data.shifttypes;
+        badgeTotal.textContent   = data.total_minutes;
+        badgeToMin.textContent   = data.to_min;
+        badgeToMax.textContent   = data.to_max;
+        badgeLastGen.textContent = data.last_generation;
+
+        // populează tabelul din modal
+        tbodyReqs.innerHTML = '';
+        if (data.shift_requests.length) {
+          btnShowReqs.disabled = false;
+          data.shift_requests.forEach(req => {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td>
+      <input
+        type="checkbox"
+        name="request_ids"
+        value="${req.id}"
+      />
+    </td>
+    <td>${req.nurse}</td>
+    <td>${req.day}</td>
+    <td>${req.shift}</td>
+    <td>${req.type}</td>
+  `;
+  tbodyReqs.appendChild(tr);
+});
+
+        } else {
+          btnShowReqs.disabled = true;
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td colspan="5" class="text-center">Nu există cereri în aşteptare.</td>`;
+          tbodyReqs.appendChild(tr);
+        }
+      })
+      .catch(err => console.error('Eroare AJAX unit_details:', err));
+  }
+
+  // la schimbarea unității
+  selectUnit.addEventListener('change', () => {
+    loadUnitDetails(selectUnit.value);
+  });
+
+  // la încărcare, încarcă detaliile curente
+  if (selectUnit.value) {
+    loadUnitDetails(selectUnit.value);
+  }
+});
+document.addEventListener('DOMContentLoaded', function() {
+     // Găsim butonul de toggle și containerul collapse
+  const toggleBtn = document.getElementById('toggle-more-logs');
+  const collapseDiv = document.getElementById('moreLogs');
+
+  if (!toggleBtn || !collapseDiv) {
+    // Dacă nu există în pagină, nu facem nimic
+    return;
+  }
+
+  // Când începe animația de expandare/collapse, schimbăm textul butonului
+  collapseDiv.addEventListener('shown.bs.collapse', function () {
+    toggleBtn.textContent = 'Colapsează';
+    toggleBtn.setAttribute('aria-expanded', 'true');
+  });
+
+  collapseDiv.addEventListener('hidden.bs.collapse', function () {
+    toggleBtn.textContent = 'Arată mai multe';
+    toggleBtn.setAttribute('aria-expanded', 'false');
+
+});
+  const calendarEl = document.getElementById('calendarMaster');
+  const calendarCard = document.getElementById('calendarCard');
+  const initialSources = [];
+
+  // Dacă există preview în sesiune, îl afișăm automat
+  {% if request.session.preview_events %}
+    initialSources.push({
+      id: 'preview',
+      events: {{ request.session.preview_events|safe }},
+      color: '#3788d8'
+    });
+    calendarCard.style.display = 'block';
+  {% endif %}
+
+  // Inițializează FullCalendar
+  const masterCalendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'dayGridMonth',
+    headerToolbar: {
+      left:  'prev,next today',
+      center:'title',
+      right: 'dayGridMonth,timeGridWeek'
+    },
+    eventSources: initialSources
+  });
+  masterCalendar.render();
+
+  // La click pe fiecare buton “Vizualizează”, folosim data-url
+  document.querySelectorAll('.btn-load-log').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      const url = btn.dataset.url;
+      calendarCard.style.display = 'block';
+
+      // Șterge preview-ul, dacă există
+      const prev = masterCalendar.getEventSourceById('preview');
+      if (prev) prev.remove();
+
+      // Fetch evenimentele și adaugă-le
+      fetch(url)
+        .then(resp => {
+          if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+          return resp.json();
+        })
+        .then(events => {
+          // Șterge orice sursă cu id 'log'
+          const old = masterCalendar.getEventSourceById('log');
+          if (old) old.remove();
+
+          masterCalendar.addEventSource({
+            id: 'log',
+            events: events,
+            color: '#28a745'
+          });
+        })
+        .catch(err => {
+          console.error('Eroare la încărcarea evenimentelor:', err);
+          alert('Nu am putut încărca evenimentele. Vezi consola pentru detalii.');
+        });
+    });
+  });
+});
+document.getElementById('apply-requests').addEventListener('click', () => {
+    // adună toate checkbox-urile bifate
+    const ids = Array.from(
+      document.querySelectorAll('input[name="request_ids"]:checked')
+    ).map(cb => cb.value);
+    document.getElementById('hid_requests').value = ids.join(',');
+  });
+
+  document.getElementById('genBtn').addEventListener('click', () => {
+    // înainte de submit, ne asigurăm că hidden e setat
+    document.getElementById('apply-requests').click();
+    document.getElementById('gen-form').submit();
+  });
+
+
+
+
+
+</script>
+
+
+{% endblock %}

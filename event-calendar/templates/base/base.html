@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+    {% load static %}
+    <head>
+        <meta name="description" content="Event Dashboard" />
+        <!-- Twitter meta-->
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:site" content="@sajib1066" />
+        <meta property="twitter:creator" content="@sajib1066" />
+        <!-- Open Graph Meta-->
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Vali Admin" />
+        <meta property="og:title" content="Vali - Free Bootstrap 4 admin theme" />
+        <meta property="og:url" content="https://sajib1066.github.io/" />
+        <meta property="og:image" content="https://sajib1066.github.io/images/me.jpg" />
+        <meta property="og:description" content="Event Dashboard" />
+        <title>{% block title %}{% endblock title  %}</title>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <!-- Main CSS-->
+        <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}" />
+  {{ USER|json_script:"django-context" }}
+      <link rel="stylesheet" type ="text/css" href="{% static 'css/css_chat.css' %}">
+
+        <!-- Font-icon css-->
+        <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <script src="https://unpkg.com/htmx.org"></script>
+     <script type="module">
+    /* utilitar mic pt. cookie */
+    function getCookie(name){
+      return document.cookie
+        .split("; ")
+        .find(row => row.startsWith(name + "="))
+        ?.split("=")[1];
+    }
+    document.addEventListener("htmx:configRequest", e=>{
+      const tok = getCookie("csrftoken");
+      if(tok) e.detail.headers["X-CSRFToken"] = tok;
+    });
+  </script>
+
+        <script  src="/static/js/socketWorker.js"></script>
+
+        <script  src="static/js/shiftrequest_admin.js"></script>
+{#<script type ="module" src="/static/js/calendar_modal.js"></script>#}
+<script type ="module" src="/static/js/scheduling_utils.js"></script>
+
+  <script  type="module" src="/static/js/chat.js"></script>
+
+    <style>
+
+        .chat-wrapper {
+
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .chat-pane {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            background: #f8fafc;
+            scroll-behavior: smooth;
+        }
+
+        .chat-input-row input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 0.5rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input-row input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .chat-input-row button {
+            padding: 0.75rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        #send-btn {
+            background: #667eea;
+            color: white;
+        }
+
+        #send-btn:hover {
+            background: #5a6fd8;
+        }
+
+        #mic-btn, #debug-btn {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        #mic-btn:hover, #debug-btn:hover {
+            background: #cbd5e0;
+        }
+
+        /* Chat bubbles */
+        .bubble {
+            margin: 0.5rem 0;
+            padding: 1rem;
+            border-radius: 1rem;
+            max-width: 80%;
+            word-wrap: break-word;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .bubble.user {
+            background: #667eea;
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 0.25rem;
+        }
+
+        .bubble.ai {
+            background: white;
+            color: #2d3748;
+            border: 1px solid #e2e8f0;
+            border-bottom-left-radius: 0.25rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .quick-row {
+            margin-top: 0.75rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .quick-row button {
+            padding: 0.5rem 0.75rem;
+            background: #f7fafc;
+            border: 1px solid #cbd5e0;
+            border-radius: 1rem;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-row button:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+
+        /* Calendar modal styles */
+        .calendar-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .calendar-modal.show {
+            display: flex;
+        }
+
+        .calendar-content {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow: auto;
+        }
+
+        /* Calendar styles */
+        .calendar {
+            font-family: Arial, sans-serif;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .calendar-nav {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.25rem;
+        }
+
+        .calendar-day {
+            padding: 0.75rem;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .calendar-day.header {
+            background: #f7fafc;
+            font-weight: bold;
+            cursor: default;
+        }
+
+        .calendar-day.other-month {
+            color: #a0aec0;
+        }
+
+        .calendar-day.today {
+            background: #fef5e7;
+            border-color: #ed8936;
+        }
+
+        .calendar-day:hover:not(.header) {
+            background: #667eea;
+            color: white;
+        }
+
+        .calendar-day.selected {
+            background: #667eea;
+            color: white;
+        }
+    </style>
+        {% block extracss %}
+        {% endblock extracss %}
+    </head>
+    <body class="app sidebar-mini">
+        <!-- Navbar-->
+        <header class="app-header">
+            <a class="app-header__logo" href="{% url 'calendarapp:dashboard'   %}">Event Calendar</a>
+            <!-- Sidebar toggle button-->
+            <a class="app-sidebar__toggle" href="#" data-toggle="sidebar" aria-label="Hide Sidebar"></a>
+            <!-- Navbar Right Menu-->
+            <ul class="app-nav">
+
+                <!--Notification Menu-->
+                 <li class="dropdown">
+                    <a class="app-nav__item" href="#" data-toggle="dropdown" aria-label="Show notifications"><i class="fa fa-bell-o fa-lg"></i></a>
+                    <ul class="app-notification dropdown-menu dropdown-menu-right">
+                        <li class="app-notification__title">You have 4 new notifications.</li>
+                        <div class="app-notification__content">
+                            <li>
+                                <a class="app-notification__item" href="javascript:;">
+                                    <span class="app-notification__icon">
+                                        <span class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x text-primary"></i><i class="fa fa-envelope fa-stack-1x fa-inverse"></i></span>
+                                    </span>
+                                    <div>
+                                        <p class="app-notification__message">Lisa sent you a mail</p>
+                                        <p class="app-notification__meta">2 min ago</p>
+                                    </div>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="app-notification__item" href="javascript:;">
+                                    <span class="app-notification__icon">
+                                        <span class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x text-danger"></i><i class="fa fa-hdd-o fa-stack-1x fa-inverse"></i></span>
+                                    </span>
+                                    <div>
+                                        <p class="app-notification__message">Mail server not working</p>
+                                        <p class="app-notification__meta">5 min ago</p>
+                                    </div>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="app-notification__item" href="javascript:;">
+                                    <span class="app-notification__icon">
+                                        <span class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x text-success"></i><i class="fa fa-money fa-stack-1x fa-inverse"></i></span>
+                                    </span>
+                                    <div>
+                                        <p class="app-notification__message">Transaction complete</p>
+                                        <p class="app-notification__meta">2 days ago</p>
+                                    </div>
+                                </a>
+                            </li>
+                            <div class="app-notification__content">
+                                <li>
+                                    <a class="app-notification__item" href="javascript:;">
+                                        <span class="app-notification__icon">
+                                            <span class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x text-primary"></i><i class="fa fa-envelope fa-stack-1x fa-inverse"></i></span>
+                                        </span>
+                                        <div>
+                                            <p class="app-notification__message">Lisa sent you a mail</p>
+                                            <p class="app-notification__meta">2 min ago</p>
+                                        </div>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="app-notification__item" href="javascript:;">
+                                        <span class="app-notification__icon">
+                                            <span class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x text-danger"></i><i class="fa fa-hdd-o fa-stack-1x fa-inverse"></i></span>
+                                        </span>
+                                        <div>
+                                            <p class="app-notification__message">Mail server not working</p>
+                                            <p class="app-notification__meta">5 min ago</p>
+                                        </div>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="app-notification__item" href="javascript:;">
+                                        <span class="app-notification__icon">
+                                            <span class="fa-stack fa-lg"><i class="fa fa-circle fa-stack-2x text-success"></i><i class="fa fa-money fa-stack-1x fa-inverse"></i></span>
+                                        </span>
+                                        <div>
+                                            <p class="app-notification__message">Transaction complete</p>
+                                            <p class="app-notification__meta">2 days ago</p>
+                                        </div>
+                                    </a>
+                                </li>
+                            </div>
+                        </div>
+                        <li class="app-notification__footer"><a href="#">See all notifications.</a></li>
+                    </ul>
+                </li>
+                <!-- User Menu-->
+                <li class="dropdown">
+                    <a class="app-nav__item" href="#" data-toggle="dropdown" aria-label="Open Profile Menu"><i class="fa fa-user fa-lg"></i> {{ request.user.email }}</a>
+                    <ul class="dropdown-menu settings-menu dropdown-menu-right">
+                         <li>
+                            <a class="dropdown-item" href="#"><i class="fa fa-cog fa-lg"></i> Settings</a>
+                        </li>
+{#                        <li>#}
+{#                            <a class="dropdown-item" href="javascript:void(0);" id="profileButton"><i class="fa fa-user fa-lg"></i> Profile</a>#}
+{#                        </li>#}
+                        <li>
+                            <a class="dropdown-item" href="{% url 'accounts:signout' %}"><i class="fa fa-sign-out fa-lg"></i> Sign Out</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </header>
+        <!-- Sidebar menu-->
+        <div class="app-sidebar__overlay" data-toggle="sidebar"></div>
+        <aside class="app-sidebar">
+            <ul class="app-menu">
+                <li>
+                    <a class="app-menu__item" href="{% url 'dashboard' %}"><i class="app-menu__icon fa fa-dashboard"></i><span class="app-menu__label">Dashboard</span></a>
+                </li>
+
+                {% if not request.user.is_staff %}
+                <li>
+                    <a class="app-menu__item" href="{% url 'calendarapp:calendar_user' current_global_object_id    %}"><i class="app-menu__icon fa fa-calendar"></i><span class="app-menu__label">CalendarUser</span></a>
+                </li>
+                <li>
+                    <a class="app-menu__item" href="{% url 'calendarapp:choose_dayoff_requests' %}"><i class="app-menu__icon fa fa-calendar"></i><span class="app-menu__label">Concedii</span></a>
+                </li>
+                <li>
+                    <a class="app-menu__item" href="{% url 'calendarapp:choose_shift_requests' %}"><i class="app-menu__icon fa fa-calendar"></i><span class="app-menu__label">Preferinte</span></a></li>
+
+
+                     <li>
+                    <a class="app-menu__item" href="{% url 'calendarapp:chat' %}"><i class="app-menu__icon fa fa-calendar"></i><span class="app-menu__label">Chat</span></a>
+                     </li>
+
+{#                </li>#}
+{#                     <li>#}
+{#                    <a class="app-menu__item" href="{% url 'calendarapp:chat2' %}"><i class="app-menu__icon fa fa-calendar"></i><span class="app-menu__label">Chat2</span></a>#}
+{##}
+{#                </li>#}
+                    <li>
+                    <a class="app-menu__item" href="{% url 'calendarapp:choose_emergency_requests' %}"><i class="app-menu__icon fa fa-calendar"></i><span class="app-menu__label">Emergency</span></a>
+
+                </li>
+
+
+                 {% endif %}
+                {% if request.user.is_staff %}
+                     <li>
+                    <a class="app-menu__item" href="{% url 'calendarapp:instance_list' %}"><i class="app-menu__icon fa fa-building" aria-hidden="true"></i><span class="app-menu__label">Unitati medicale</span></a>
+                </li>
+                <li>
+                    <a class="app-menu__item" href="javascript:void(0);" id="profileButton"><i class="app-menu__icon fa fa-clock-o" aria-hidden="true"></i><span class="app-menu__label">  Generare Orar</span></a>
+                </li>
+                    <li>
+                    <a class="app-menu__item" href="{% url 'admin:index' %}"><i class="app-menu__icon fa fa-folder-open-o" aria-hidden="true"></i><span class="app-menu__label">Admin</span></a>
+                </li>
+                {% endif %}
+
+                <li class="treeview">
+                    <a class="app-menu__item" href="#" data-toggle="treeview"><i class="app-menu__icon fa fa-th-list"></i><span class="app-menu__label">Unitati medicale</span><i class="treeview-indicator fa fa-angle-right"></i></a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a class="treeview-item" href="{% url 'calendarapp:running_events' %}"><i class="icon fa fa-circle-o"></i> Running</a>
+                        </li>
+                        <li>
+                            <a class="treeview-item" href="{% url 'calendarapp:upcoming_events' %}"><i class="icon fa fa-circle-o"></i> Upcoming</a>
+                        </li>
+                        <li>
+                            <a class="treeview-item" href="{% url 'calendarapp:completed_events' %}"><i class="icon fa fa-circle-o"></i> Completed</a>
+                        </li>
+                        <li>
+                            <a class="treeview-item" href="{% url 'calendarapp:all_events' %}"><i class="icon fa fa-circle-o"></i> All</a>
+                        </li>
+
+                    </ul>
+                </li>
+                <!-- <li>
+                    <a class="app-menu__item" href="#"><i class="app-menu__icon fa fa-file-code-o"></i><span class="app-menu__label">Docs</span></a>
+                </li> -->
+            </ul>
+        </aside>
+        <main class="app-content">
+            <div class="app-title">
+                {% block breadcrumb %}
+                {% endblock breadcrumb %}
+            </div>
+            {% block content %}
+            {% endblock content %}
+        </main>
+        <!-- Essential javascripts for application to work-->
+        {% include 'base/js.html' %}
+        {% block extrascripts %}
+{#            <script src="{% static 'js/main.js' %}" defer></script>#}
+   #         <script src="/static/js/socketWorker.js"></script>
+
+{#            <script type="module" src="/static/js/calendar_modal.js"></script>#}
+{#<script  type="module" src="/static/js/scheduling_utils.js"></script>#}
+{##}
+{#  <script  type="module"  src="/static/js/chat.js"></script>#}
+
+        {% endblock extrascripts %}
+    </body>
+</html>
+<script>
+    window.currentUser = "{{ request.user }}";
+  </script>
+<script>
+
+
+document
+  .getElementById("profileButton")
+  .addEventListener("click", () => {
+    window.location.href = "{% url 'calendarapp:choose_instance' %}";
+  });
+
+</script>

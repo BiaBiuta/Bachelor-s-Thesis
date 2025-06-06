@@ -1,0 +1,10 @@
+<table class="shift-table">
+  <tr><th>Time</th><th>Shift</th><th>Role</th></tr>
+  {% for i in items %}
+  <tr>
+    <td>{{ i.ShiftDate|date:"H:i" }}</td>
+    <td>{{ i.ShiftType }}</td>
+    <td>{{ i.Role }}</td>
+  </tr>
+  {% endfor %}
+</table>

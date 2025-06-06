@@ -1,0 +1,193 @@
+{# templates/calendarapp/choose_shift_requests_calendar.html #}
+{% extends "base/base.html" %}
+
+{% block title %}Selectare Zile și Shift-uri{% endblock title %}
+
+{% block extracss %}
+  <!-- FullCalendar CSS -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css"
+    rel="stylesheet"
+  />
+
+  <!-- Stiluri personalizate pentru calendar și panou -->
+  <style>
+    /* Mărime și centru pentru calendar */
+    #calendar {
+      max-width: 900px;
+      margin: 1.5rem auto;
+      background: #fff;
+      border-radius: 4px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+    /* Zile selectate (culoare de fundal) */
+    .fc-daygrid-day.selected-day {
+      background-color: #d1ecf1 !important;  /* un albastru deschis */
+    }
+    /* Panoul pentru shift-uri */
+    #shifts-panel {
+      max-width: 900px;
+      margin: 2rem auto;
+      background: #f8f9fa;
+      border-radius: 4px;
+      padding: 1rem 1.5rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+    .day-shifts {
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid #dee2e6;
+      padding-bottom: 1rem;
+    }
+    .day-shifts:last-child {
+      border-bottom: none;
+    }
+  </style>
+{% endblock extracss %}
+
+{% block content %}
+  <div class="container py-4">
+    <h1 class="mb-4 text-center">Selectează zile și shift-uri</h1>
+    <div id="calendar"></div>
+    <div id="shifts-panel">
+      <h4>Zile selectate și shift-uri</h4>
+      <p class="text-muted">
+        Fă click pe o zi din calendar pentru a o selecta/deselecta. Apoi, bifează shift-urile dorite.
+      </p>
+      <form method="post" id="shifts-form">
+        {% csrf_token %}
+        <div id="days-container"></div>
+        <div class="text-center mt-4">
+          <button type="submit" class="btn btn-primary btn-lg">Trimite cereri</button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock content %}
+
+{% block extrascripts %}
+  <!-- FullCalendar JS (varianta globală) -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 1) Preluăm lista de shift-uri primită din view (JSON serializat)
+      const shiftTypes = JSON.parse('{{ shift_types_json|escapejs }}');
+      console.log("shiftTypes:", shiftTypes);
+
+      // 2) Selectările de zile vor sta într-un obiect: cheia = "YYYY-MM-DD",
+      //    valoarea = un Set() de shiftID-uri pentru fiecare zi.
+      const selectedDays = {};
+
+      // 3) Inițializăm FullCalendar
+      const calendarEl = document.getElementById('calendar');
+      const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+          left: 'prev,next today',
+          center: 'title',
+          right: 'dayGridMonth,timeGridWeek'
+        },
+        selectable: false,
+        dateClick: function(info) {
+          console.log("Clicked date:", info.dateStr);
+          toggleDaySelection(info.dateStr, info.dayEl);
+        }
+      });
+      calendar.render();
+
+      // 4) Funcție care marchează sau demarchează ziua în calendar
+      function toggleDaySelection(dateStr, dayEl) {
+        if (selectedDays[dateStr]) {
+          // deja exista – o demarchează
+          delete selectedDays[dateStr];
+          dayEl.classList.remove('selected-day');
+        } else {
+          // adaugă ziua cu un Set gol de shift-uri
+          selectedDays[dateStr] = new Set();
+          dayEl.classList.add('selected-day');
+        }
+        renderShiftsPanel();
+      }
+
+      // 5) Reconstruim conținutul panoului de shift-uri (#days-container)
+      function renderShiftsPanel() {
+        const container = document.getElementById('days-container');
+        container.innerHTML = ''; // golim conținutul
+
+        Object.keys(selectedDays).sort().forEach(dateStr => {
+          const dayDiv = document.createElement('div');
+          dayDiv.className = 'day-shifts';
+
+          // Titlul zilei
+          const title = document.createElement('h5');
+          title.textContent = `Zi: ${dateStr}`;
+          dayDiv.appendChild(title);
+
+          // Wrapper pentru checkbox-uri
+          const shiftsWrapper = document.createElement('div');
+          shiftsWrapper.className = 'row row-cols-1 row-cols-md-2 g-2';
+
+          shiftTypes.forEach(st => {
+            const col = document.createElement('div');
+            col.className = 'col';
+            const checkboxId = `chk-${dateStr}-${st.id}`.replace(/:/g, '-');
+            const isChecked = selectedDays[dateStr].has(st.id) ? 'checked' : '';
+
+            const html = `
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="${checkboxId}"
+                  data-date="${dateStr}"
+                  data-shift="${st.id}"
+                  ${isChecked}
+                />
+                <label class="form-check-label" for="${checkboxId}">
+                  ${st.name} (${st.id})
+                </label>
+              </div>`;
+            col.innerHTML = html;
+            shiftsWrapper.appendChild(col);
+          });
+
+          dayDiv.appendChild(shiftsWrapper);
+          container.appendChild(dayDiv);
+        });
+
+        attachCheckboxListeners();
+      }
+
+      // 6) Attachează listener pe toate checkbox-urile din panou
+      function attachCheckboxListeners() {
+        document.querySelectorAll('#days-container .form-check-input').forEach(chk => {
+          chk.onchange = function() {
+            const dateStr = this.getAttribute('data-date');
+            const shiftID = this.getAttribute('data-shift');
+            if (this.checked) {
+              selectedDays[dateStr].add(shiftID);
+            } else {
+              selectedDays[dateStr].delete(shiftID);
+            }
+          };
+        });
+      }
+
+      // 7) Înainte de submit, construim input-urile hidden “selections”
+      document.getElementById('shifts-form').addEventListener('submit', function(e) {
+        // Șterge input-urile hidden anterioare
+        document.querySelectorAll('input[name="selections"]').forEach(el => el.remove());
+
+        Object.keys(selectedDays).forEach(dateStr => {
+          selectedDays[dateStr].forEach(shiftID => {
+            const inp = document.createElement('input');
+            inp.type = 'hidden';
+            inp.name = 'selections';
+            inp.value = `${dateStr}|${shiftID}`;
+            this.appendChild(inp);
+          });
+        });
+      });
+    });
+  </script>
+{% endblock extrascripts %}

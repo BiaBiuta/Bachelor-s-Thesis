@@ -1,0 +1,17 @@
+{# variabile de context: message, who, quick (listă) #}
+
+<div class="bubble {{ who }}">
+  {{ message|safe }}
+  {% if quick %}
+  <div class="quick-row">
+    {% for q in quick %}
+      <button 
+        hx-post="{% url 'bubble' %}" 
+        hx-vals='{"message":"{{ q.payload }}","who":"user"}'
+        hx-target="#chat-pane" hx-swap="afterend">
+        {{ q.title }}
+      </button>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>

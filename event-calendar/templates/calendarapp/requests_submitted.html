@@ -1,0 +1,14 @@
+{# templates/calendarapp/requests_submitted.html #}
+
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}Cererile au fost trimise{% endblock %}
+
+{% block content %}
+  <div class="text-center py-10">
+    <h2 class="text-3xl mb-4">Mulțumim!</h2>
+    <p class="mb-6">Cererile tale au fost înregistrate cu succes și urmează să fie revizuite de administrator.</p>
+    <a href="{% url 'calendarapp:calendar' current_global_object_id %}" class="btn px-4 py-2 border rounded">Înapoi la calendar</a>
+  </div>
+{% endblock %}
