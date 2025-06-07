@@ -5,8 +5,8 @@
   {% if quick %}
   <div class="quick-row">
     {% for q in quick %}
-      <button 
-        hx-post="{% url 'bubble' %}" 
+      <button
+        hx-post="{% url 'calendarapp:bubble' %}"
         hx-vals='{"message":"{{ q.payload }}","who":"user"}'
         hx-target="#chat-pane" hx-swap="afterend">
         {{ q.title }}
