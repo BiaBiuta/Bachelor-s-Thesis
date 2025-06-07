@@ -24,6 +24,7 @@ from calendarapp.models.nurse import Nurse
 from calendarapp.models.day_shift_type import DayShiftType
 from calendarapp.models.day import Day
 from calendarapp.models.shift_type import ShiftType
+from calendarapp.models.cereri.shift_request import ShiftRequest
 from calendarapp.models.global_object import GlobalObject
 from collections import defaultdict
 from datetime import timedelta

@@ -151,10 +151,11 @@ from django.shortcuts import render, redirect
 from calendarapp.models.cereri.shift_option import ShiftOption
 from calendarapp.models.cereri.shift_request import ShiftRequest  # modelul de la pasul anterior
 def schedule_view(request):
+    print("am intrat in post")
     if request.method == "POST":
         try:
             data = json.loads(request.body)
-
+            print("data ",data)
             # Extrage câmpurile din payload
             employee = data.get("nurse")
             date = data.get("day")

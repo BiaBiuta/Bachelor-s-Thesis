@@ -172,12 +172,13 @@ if (data.intent !== "schedule_shift") {
   addBubble("Am toate informațiile necesare. Trimit cererea către server...", "bot");
 
   /* ─── 1️⃣0️⃣ Construim payload-ul final pentru /api/schedule/ ─────────────────── */
-  const isoDate = slotStore.day;
+
+  //const isoDate = slotStore.day;
 
   // Construim payload definitiv
   const finalPayload = {
     // Câmpuri obligatorii conform modelului Django:
-    day:        isoDate,                      // ex: "2025-06-10T00:00:00Z"
+    day:        slotStore.day,                      // ex: "2025-06-10T00:00:00Z"
     shift_type: slotStore.shiftType,
     req_type:   slotStore.reqType,
     weight:     slotStore.weight,
@@ -186,6 +187,7 @@ if (data.intent !== "schedule_shift") {
     nurse:      USER.id,     // prespunem că USER.id e același ca Nurse.pk
     department: 0, // dacă ai department în context; altfel, adaugi un pas să-l ceri
   };
+    console.log("Final payload:", finalPayload);
 function getCookie(name) {
   return document.cookie
     .split('; ')
