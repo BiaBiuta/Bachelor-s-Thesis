@@ -16,7 +16,22 @@ from .other_views import (
 
 
 )
-from .views import (timetable,instance_list,instance_detail,choose_instance,select_instance,choose_shift_requests,choose_dayoff_requests,requests_submitted,DashboardView,confirm_schedule,cancel_schedule,schedule_log_events,unit_details_ajax,choose_emergency_requests,schedule_view as schedule_logic_view)
+from .views import (timetable,
+                    timetable_without_algorithm,
+                    instance_list,
+                    instance_detail,
+                    choose_instance,
+                    select_instance,
+                    choose_shift_requests,
+                    choose_dayoff_requests,
+                    requests_submitted,
+                    DashboardView,
+                    confirm_schedule,
+                    cancel_schedule,
+                    schedule_log_events,
+                    unit_details_ajax,
+                    choose_emergency_requests,
+                    schedule_view as schedule_logic_view)
 from .views_chat import(
     ChatView,
     chat_bubble,

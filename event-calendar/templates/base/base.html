@@ -343,6 +343,9 @@
                 <li>
                     <a class="app-menu__item" href="javascript:void(0);" id="profileButton"><i class="app-menu__icon fa fa-clock-o" aria-hidden="true"></i><span class="app-menu__label">  Generare Orar</span></a>
                 </li>
+                <li>
+                    <a class="app-menu__item" href="javascript:void(0);" id="profileButtonNoAlg"><i class="app-menu__icon fa fa-clock-o" aria-hidden="true"></i><span class="app-menu__label">  Generare Orar without alghorithm</span></a>
+                </li>
                     <li>
                     <a class="app-menu__item" href="{% url 'admin:index' %}"><i class="app-menu__icon fa fa-folder-open-o" aria-hidden="true"></i><span class="app-menu__label">Admin</span></a>
                 </li>
@@ -404,6 +407,11 @@ document
   .getElementById("profileButton")
   .addEventListener("click", () => {
     window.location.href = "{% url 'calendarapp:choose_instance' %}";
+  });
+document
+  .getElementById("profileButtonNoAlg")
+  .addEventListener("click", () => {
+    window.location.href = "{% url 'calendarapp:timetable_without_algorithm' %}";
   });
 
 document.addEventListener("DOMContentLoaded", function() {

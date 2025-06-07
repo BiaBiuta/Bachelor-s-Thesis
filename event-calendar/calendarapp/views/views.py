@@ -1137,6 +1137,12 @@ def timetable(request):
     request.session['preview_events'] = preview_events
     return redirect('calendarapp:choose_instance')
 
+
+@login_required
+def timetable_without_algorithm(request):
+    """Placeholder view for schedule generation without algorithm."""
+    pass
+
 @login_required
 def confirm_schedule(request):
     # 1) Preia lista din sesiune
