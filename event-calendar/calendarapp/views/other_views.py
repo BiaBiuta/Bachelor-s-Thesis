@@ -14,7 +14,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy, reverse
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
-
+from accounts.models.user import User
 from calendarapp.models import EventMember, Event
 from calendarapp.utils import Calendar
 from calendarapp.forms import EventForm, AddMemberForm,ShiftRequestForm
@@ -546,6 +546,15 @@ def schedule_view(request):
 
     try:
         data = json.loads(request.body or "{}")
+        employee = data.get("nurse")
+        date = data.get("day")
+        shift_type = data.get("shift_type")
+        req_type = data.get("req_type")
+        weight = data.get("weight")
+        department = data.get("department")
+        user=User.objects.get(pk=int(employee))
+        nurse = Nurse.objects.get(EmployeeID=user.username)
+        global_object = GlobalObject.objects.get(id=nurse.GlobalObject_id)
     except json.JSONDecodeError:
         return JsonResponse({"error": "Invalid JSON"}, status=400)
 
@@ -556,13 +565,13 @@ def schedule_view(request):
     try:
         # 1) Parsează data ISO şi calculează PK pentru Day
         dt = datetime.fromisoformat(data["day"].replace("Z", "+00:00"))
-        num = re.search(r"\d+", GlobalObject.objects.get(pk=data["department"]).Name).group()
-        day_pk = int(f"{num}{dt.day}")
+        num= re.search(r'\d+', global_object.Name).group()
+        day_pk = int(num+str(int((date.split("-")[2]).split("T")[0])))
         day_obj = Day.objects.get(pk=day_pk)
 
-        shift = ShiftType.objects.get(pk=data["shift_type"])
-        nurse = Nurse.objects.get(pk=data["nurse"])
-        dept = GlobalObject.objects.get(pk=data["department"])
+        shift = ShiftType.objects.get(ShiftID="D1")
+        # nurse = Nurse.objects.get(EmployeeID=data["nurse"])
+        dept = global_object
 
         ShiftRequest.objects.create(
             nurse=nurse,
