@@ -186,12 +186,12 @@ if (data.intent !== "schedule_shift") {
     nurse:      USER.id,     // prespunem că USER.id e același ca Nurse.pk
     department: 0, // dacă ai department în context; altfel, adaugi un pas să-l ceri
   };
-
+const csrftoken = document.querySelector('[name=csrf-token]').content;
   /* ─── 1️⃣1️⃣ Apelăm endpoint-ul real de creare `ShiftRequest` în Django ───────── */
   try {
     const res = await fetch("/api/schedule/", {
       method:  "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json","X-CSRFToken": csrftoken },
       body:    JSON.stringify(finalPayload)
     });
     if (!res.ok) {
