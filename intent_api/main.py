@@ -35,6 +35,22 @@ MONTH_WORDS = {
     "july","august","september","october","november","december",
 }
 
+# Map month names to their respective numbers for easier conversion
+MONTH_NAME_TO_NUM = {
+    "january": 1,
+    "february": 2,
+    "march": 3,
+    "april": 4,
+    "may": 5,
+    "june": 6,
+    "july": 7,
+    "august": 8,
+    "september": 9,
+    "october": 10,
+    "november": 11,
+    "december": 12,
+}
+
 class PredictRequest(BaseModel):
     message: str
     currentUserEmail: str
@@ -180,17 +196,24 @@ def predict(req: PredictRequest):
                 elif dt:
                     parsed_date = dt
         if not parsed_date:
+            month_regex = "|".join(MONTH_NAME_TO_NUM.keys())
             date_patterns = [
-                r"\b(\d{1,2})(?:st|nd|rd|th)?\s+(may)\b",
-                r"\b(may)\s+(\d{1,2})(?:st|nd|rd|th)?\b",
-                r"\b(may)\s+(\d{1,2})(?:st|nd|rd|th)?,\s+(\d{4})\b",
+                rf"\b(\d{{1,2}})(?:st|nd|rd|th)?\s+({month_regex})\b",
+                rf"\b({month_regex})\s+(\d{{1,2}})(?:st|nd|rd|th)?\b",
+                rf"\b({month_regex})\s+(\d{{1,2}})(?:st|nd|rd|th)?,\s+(\d{{4}})\b",
             ]
             for pattern in date_patterns:
                 match = re.search(pattern, m_lower)
                 if match:
-                    day_str = match.group(1) if match.group(1).isdigit() else match.group(2)
+                    if match.group(1).isdigit():
+                        day_str = match.group(1)
+                        month_word = match.group(2)
+                    else:
+                        month_word = match.group(1)
+                        day_str = match.group(2)
                     year = match.group(3) if len(match.groups()) == 3 else datetime.now().year
-                    parsed_date = datetime(year=int(year), month=5, day=int(day_str))
+                    month_num = MONTH_NAME_TO_NUM.get(month_word, datetime.now().month)
+                    parsed_date = datetime(year=int(year), month=month_num, day=int(day_str))
                     break
 
     iso_date = parsed_date.isoformat() if parsed_date else None
