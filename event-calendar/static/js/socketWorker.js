@@ -34,14 +34,28 @@
   }
     console.log("socketWorker.js loaded");
   // Wait until the page is parsed
-  document.addEventListener("DOMContentLoaded", function() {
+  function renderStoredNotifications() {
     const stored = loadStoredNotifications();
-    stored.forEach(function(n){ adaugaNotificareInDropdown(n, false); });
+    var contentContainer = document.querySelector('.app-notification__content');
+    if (contentContainer) {
+      contentContainer.innerHTML = '';
+      stored.forEach(function(n){ adaugaNotificareInDropdown(n, false); });
+    }
     setNotificationCount(stored.length);
+  }
+
+  document.addEventListener("DOMContentLoaded", function() {
+    renderStoredNotifications();
+
+    window.addEventListener('storage', function(e) {
+      if (e.key === STORAGE_KEY || e.key === COUNT_KEY) {
+        renderStoredNotifications();
+      }
+    });
 
     // build the correct ws:// or wss:// URL
    const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
-         window.socket = new WebSocket(  "ws://" + window.location.hostname + ":5000/ws/notifications/");
+         window.socket = new WebSocket(wsScheme + "://" + window.location.hostname + ":5000/ws/notifications/");
 
     window.socket.onopen = () => {
       console.log("[WS] connected");
