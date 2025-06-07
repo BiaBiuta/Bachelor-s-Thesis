@@ -3,6 +3,12 @@
   "use strict";
   const STORAGE_KEY = "last_notifications";
   const COUNT_KEY = "notification_count";
+  function actualizeazaNumarNotificari(increment) {
+      var current = loadNotificationCount();
+      if (isNaN(current)) current = 0;
+      current += increment;
+      setNotificationCount(current);
+    }
 function adaugaNotificareInDropdown(data, store) {
       if (store === undefined) store = true;
       var contentContainer = document.querySelector('.app-notification__content');
@@ -104,7 +110,7 @@ function adaugaNotificareInDropdown(data, store) {
 
     // build the correct ws:// or wss:// URL
    const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
-         window.socket = new WebSocket(wsScheme + "://" + window.location.hostname + ":5000/ws/notifications/");
+         window.socket = new WebSocket( "ws://" + window.location.hostname + ":5000/ws/notifications/");
 
     window.socket.onopen = () => {
       console.log("[WS] connected");
@@ -137,12 +143,7 @@ function adaugaNotificareInDropdown(data, store) {
     /**
      * Crește contorul de notificări cu un anumit increment (de obicei +1).
      */
-    function actualizeazaNumarNotificari(increment) {
-      var current = loadNotificationCount();
-      if (isNaN(current)) current = 0;
-      current += increment;
-      setNotificationCount(current);
-    }
+
 
         window.socket.onerror = function(error) {
             console.error("WebSocket error:", error);
