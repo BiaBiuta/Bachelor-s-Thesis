@@ -3,7 +3,56 @@
   "use strict";
   const STORAGE_KEY = "last_notifications";
   const COUNT_KEY = "notification_count";
+function adaugaNotificareInDropdown(data, store) {
+      if (store === undefined) store = true;
+      var contentContainer = document.querySelector('.app-notification__content');
+      if (!contentContainer) {
+        console.warn("Container '.app-notification__content' nu a fost găsit pe pagină.");
+        return;
+      }
 
+      // Creăm elementele HTML
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.classList.add('app-notification__item');
+      a.href = 'javascript:;';
+
+      // Icon (folosind FontAwesome stacked icons)
+      var spanIcon = document.createElement('span');
+      spanIcon.classList.add('app-notification__icon');
+      var iconClass = data.iconClass || 'fa fa-bell';
+      spanIcon.innerHTML =
+        '<span class="fa-stack fa-lg">' +
+          '<i class="fa fa-circle fa-stack-2x text-primary"></i>' +
+          '<i class="' + iconClass + ' fa-stack-1x fa-inverse"></i>' +
+        '</span>';
+
+      // Mesaj + metadate
+      var wrapperDiv = document.createElement('div');
+      var pMessage = document.createElement('p');
+      pMessage.classList.add('app-notification__message');
+      pMessage.textContent = data.message || 'Notificare nouă';
+      var pMeta = document.createElement('p');
+      pMeta.classList.add('app-notification__meta');
+      pMeta.textContent = data.timestamp || new Date().toLocaleString();
+
+      wrapperDiv.appendChild(pMessage);
+      wrapperDiv.appendChild(pMeta);
+
+      // Asamblăm structura
+      a.appendChild(spanIcon);
+      a.appendChild(wrapperDiv);
+      li.appendChild(a);
+
+      // Adăugăm la container
+      contentContainer.appendChild(li);
+
+      if (store) {
+        // Actualizăm contorul numeric și salvăm
+        actualizeazaNumarNotificari(1);
+        storeNotification(data);
+      }
+    }
   function loadStoredNotifications() {
     try {
       return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
@@ -83,56 +132,7 @@
              alert(data.message);
     }
         };
-    function adaugaNotificareInDropdown(data, store) {
-      if (store === undefined) store = true;
-      var contentContainer = document.querySelector('.app-notification__content');
-      if (!contentContainer) {
-        console.warn("Container '.app-notification__content' nu a fost găsit pe pagină.");
-        return;
-      }
 
-      // Creăm elementele HTML
-      var li = document.createElement('li');
-      var a = document.createElement('a');
-      a.classList.add('app-notification__item');
-      a.href = 'javascript:;';
-
-      // Icon (folosind FontAwesome stacked icons)
-      var spanIcon = document.createElement('span');
-      spanIcon.classList.add('app-notification__icon');
-      var iconClass = data.iconClass || 'fa fa-bell';
-      spanIcon.innerHTML =
-        '<span class="fa-stack fa-lg">' +
-          '<i class="fa fa-circle fa-stack-2x text-primary"></i>' +
-          '<i class="' + iconClass + ' fa-stack-1x fa-inverse"></i>' +
-        '</span>';
-
-      // Mesaj + metadate
-      var wrapperDiv = document.createElement('div');
-      var pMessage = document.createElement('p');
-      pMessage.classList.add('app-notification__message');
-      pMessage.textContent = data.message || 'Notificare nouă';
-      var pMeta = document.createElement('p');
-      pMeta.classList.add('app-notification__meta');
-      pMeta.textContent = data.timestamp || new Date().toLocaleString();
-
-      wrapperDiv.appendChild(pMessage);
-      wrapperDiv.appendChild(pMeta);
-
-      // Asamblăm structura
-      a.appendChild(spanIcon);
-      a.appendChild(wrapperDiv);
-      li.appendChild(a);
-
-      // Adăugăm la container
-      contentContainer.appendChild(li);
-
-      if (store) {
-        // Actualizăm contorul numeric și salvăm
-        actualizeazaNumarNotificari(1);
-        storeNotification(data);
-      }
-    }
 
     /**
      * Crește contorul de notificări cu un anumit increment (de obicei +1).
