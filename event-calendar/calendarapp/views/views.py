@@ -635,8 +635,9 @@ def select_instance(request):
     # salvează-le în sesiune
     request.session['picked_shift_reqs'] = selected_req_ids
     print(selected_req_ids)
-    # return True
-    # acum apelăm timetable (GET!)
+    without_algo = request.POST.get('without_algorithm') == 'true'
+    if without_algo:
+        return redirect('calendarapp:timetable_without_algorithm')
     return redirect('calendarapp:timetable')
 
 
@@ -1140,8 +1141,8 @@ def timetable(request):
 
 @login_required
 def timetable_without_algorithm(request):
-    """Placeholder view for schedule generation without algorithm."""
-    pass
+    """Redirect to manual scheduler when generation without algorithm is chosen."""
+    return redirect('calendarapp:scheduler')
 
 @login_required
 def confirm_schedule(request):

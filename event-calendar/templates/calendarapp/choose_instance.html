@@ -31,6 +31,10 @@
               <span id="btnText">Generează orar</span>
               <span id="btnSpinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status"></span>
             </button>
+            <button id="genBtnNoAlg" type="button" class="btn btn-secondary w-100 mt-2">
+              Generează fără algoritm
+            </button>
+            <input type="hidden" name="without_algorithm" id="without_algorithm" value="false" />
           </form>
         </div>
       </div>
@@ -409,6 +413,13 @@ document.getElementById('apply-requests').addEventListener('click', () => {
 
   document.getElementById('genBtn').addEventListener('click', () => {
     // înainte de submit, ne asigurăm că hidden e setat
+    document.getElementById('without_algorithm').value = 'false';
+    document.getElementById('apply-requests').click();
+    document.getElementById('gen-form').submit();
+  });
+
+  document.getElementById('genBtnNoAlg').addEventListener('click', () => {
+    document.getElementById('without_algorithm').value = 'true';
     document.getElementById('apply-requests').click();
     document.getElementById('gen-form').submit();
   });
