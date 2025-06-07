@@ -55,7 +55,13 @@ function adaugaNotificareInDropdown(data, store) {
     }
   function loadStoredNotifications() {
     try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      parsed.sort(function(a, b) {
+        if (!a.timestamp) return 1;
+        if (!b.timestamp) return -1;
+        return new Date(b.timestamp) - new Date(a.timestamp);
+      });
+      return parsed;
     } catch (err) {
       console.warn("Failed to parse stored notifications", err);
       return [];
@@ -64,10 +70,31 @@ function adaugaNotificareInDropdown(data, store) {
 
   function storeNotification(data) {
     const list = loadStoredNotifications();
+
+    if (!data.timestamp) {
+      data.timestamp = new Date().toISOString();
+    }
+
     list.push(data);
-    while (list.length > 5) list.shift();
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-    localStorage.setItem(COUNT_KEY, list.length.toString());
+
+    // sort by timestamp descending
+    list.sort(function(a, b) {
+      return new Date(b.timestamp) - new Date(a.timestamp);
+    });
+
+    const unique = [];
+    const seen = new Set();
+    list.forEach(function(n) {
+      if (!seen.has(n.timestamp)) {
+        unique.push(n);
+        seen.add(n.timestamp);
+      }
+    });
+
+    while (unique.length > 10) unique.pop();
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(unique));
+    localStorage.setItem(COUNT_KEY, unique.length.toString());
   }
 
   function loadNotificationCount() {
