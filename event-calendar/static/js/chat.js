@@ -188,6 +188,7 @@ if (data.intent !== "schedule_shift") {
   };
 const csrftoken = document.querySelector('[name=csrf-token]').content;
   /* ─── 1️⃣1️⃣ Apelăm endpoint-ul real de creare `ShiftRequest` în Django ───────── */
+  print("Final payload:", finalPayload);
   try {
     const res = await fetch("/api/schedule/", {
       method:  "POST",
