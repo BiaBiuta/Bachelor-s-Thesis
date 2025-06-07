@@ -46,7 +46,7 @@
 
 /* Culori pentru fiecare status */
 .emergency-card .status-badge.P { background-color: #ffc107; }
-.emergency-card .status-badge.A { background-color: #28a745; }
+.emergency-card .status-badge.A { background-color: #0078d4; }
 .emergency-card .status-badge.D { background-color: #dc3545; }
 
 /* Buton pentru editare */

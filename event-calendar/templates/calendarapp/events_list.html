@@ -54,7 +54,7 @@
                                                     {% if not event.is_approved %}
                                                         <form class="approve-form"  data-owner="{{ event.user.id }}" method="post" action="{% url 'calendarapp:approve-event' event.id %}" style="display:inline;">
                                                             {% csrf_token %}
-                                                            <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                                                            <button type="submit" class="btn btn-primary btn-sm">Approve</button>
                                                         </form>
                                                         <form class="deny-form"  data-owner="{{ event.user.id }}" method="post" action="{% url 'calendarapp:deny-event' event.id %}" style="display:inline;">
                                                             {% csrf_token %}
