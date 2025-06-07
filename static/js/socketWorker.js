@@ -2,6 +2,7 @@
 ;(function() {
   "use strict";
   const STORAGE_KEY = "last_notifications";
+  const COUNT_KEY = "notification_count";
 
   function loadStoredNotifications() {
     try {
@@ -17,11 +18,26 @@
     list.push(data);
     while (list.length > 5) list.shift();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    localStorage.setItem(COUNT_KEY, list.length.toString());
+  }
+
+  function loadNotificationCount() {
+    return parseInt(localStorage.getItem(COUNT_KEY) || "0", 10);
+  }
+
+  function setNotificationCount(count) {
+    var countSpan = document.getElementById('notification-count');
+    if (countSpan) {
+      countSpan.textContent = count.toString();
+    }
+    localStorage.setItem(COUNT_KEY, count.toString());
   }
     console.log("socketWorker.js loaded");
   // Wait until the page is parsed
   document.addEventListener("DOMContentLoaded", function() {
-    loadStoredNotifications().forEach(adaugaNotificareInDropdown);
+    const stored = loadStoredNotifications();
+    stored.forEach(function(n){ adaugaNotificareInDropdown(n, false); });
+    setNotificationCount(stored.length);
 
     // build the correct ws:// or wss:// URL
    const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
@@ -35,7 +51,7 @@
     window.socket.onmessage = function(e) {
             const data = JSON.parse(e.data);
             console.log("Mesaj primit:", data);
-            adaugaNotificareInDropdown(data);
+            adaugaNotificareInDropdown(data, true);
             // Dacă expeditorul este altul decât utilizatorul curent, afișăm notificarea
             if (data.sender !== currentUser) {
                 //document.getElementById("notifications").innerText = data.message;
@@ -53,7 +69,8 @@
              alert(data.message);
     }
         };
-    function adaugaNotificareInDropdown(data) {
+    function adaugaNotificareInDropdown(data, store) {
+      if (store === undefined) store = true;
       var contentContainer = document.querySelector('.app-notification__content');
       if (!contentContainer) {
         console.warn("Container '.app-notification__content' nu a fost găsit pe pagină.");
@@ -96,21 +113,21 @@
       // Adăugăm la container
       contentContainer.appendChild(li);
 
-      // Actualizăm contorul numeric
-      actualizeazaNumarNotificari(1);
-
-      storeNotification(data);
+      if (store) {
+        // Actualizăm contorul numeric și salvăm
+        actualizeazaNumarNotificari(1);
+        storeNotification(data);
+      }
     }
 
     /**
      * Crește contorul de notificări cu un anumit increment (de obicei +1).
      */
     function actualizeazaNumarNotificari(increment) {
-      var countSpan = document.getElementById('notification-count');
-      if (!countSpan) return;
-      var current = parseInt(countSpan.textContent, 10);
+      var current = loadNotificationCount();
       if (isNaN(current)) current = 0;
-      countSpan.textContent = (current + increment).toString();
+      current += increment;
+      setNotificationCount(current);
     }
 
         window.socket.onerror = function(error) {
