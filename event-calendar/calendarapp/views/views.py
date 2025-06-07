@@ -10,6 +10,7 @@ from django.shortcuts import render, get_object_or_404
 from django.core.cache import cache
 from pathlib import Path
 from django.db.models import Q
+import time
 from calendarapp.models import Event
 from calendarapp.models.nurse_day import NurseDay
 from calendarapp.models.nurse import Nurse
@@ -745,6 +746,7 @@ def timetable(request):
     #citesc_fisier()
 
     print("a fost apelat timetable ")
+    start_time = time.perf_counter()
     picked = request.session.pop('picked_shift_reqs', [])
     if len(picked)>0:
         NurseDayShiftType.objects.all().delete()
@@ -1086,6 +1088,7 @@ def timetable(request):
                           elite_size=3, crossover_rate=0.7,
                           mutation_rate=0.05, stagnation_limit=10)
     best_chrom = ga.run()
+    exec_time = time.perf_counter() - start_time
     # generate_schedule(best_chrom)
     import pandas as pd
     from datetime import datetime, timedelta, time as dt_time
@@ -1107,6 +1110,7 @@ def timetable(request):
     request.session['kpi_results'] = {
         'hard': best_chrom.TotalKPIHard,
         'soft': best_chrom.TotalKPISoft,
+        'exec_time': round(exec_time, 2),
     }
 
     preview_events = []
