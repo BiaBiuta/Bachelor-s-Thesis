@@ -1,4 +1,5 @@
 {% extends "base/base.html" %}
+{% load static %}
 
 {% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
 
@@ -10,3 +11,15 @@
 {% endblock %}
 
 {% block nav-global %}{% endblock %}
+
+{% block admin_css %}
+    <link rel="stylesheet" href="{% static 'admin/css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'admin/css/nav_sidebar.css' %}">
+    <link rel="stylesheet" href="{% static 'admin/css/dashboard.css' %}">
+{% endblock %}
+
+{% block admin_scripts %}
+    <script src="{% static 'admin/js/nav_sidebar.js' %}" defer></script>
+    <script src="{% static 'admin/js/jquery.init.js' %}" defer></script>
+    <script src="{% static 'admin/js/core.js' %}" defer></script>
+{% endblock %}

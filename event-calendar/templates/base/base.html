@@ -258,6 +258,7 @@
     </style>
         {% block extracss %}
         {% endblock extracss %}
+        {% block admin_css %}{% endblock %}
     </head>
     <body class="app sidebar-mini">
         <!-- Navbar-->
@@ -390,6 +391,7 @@
 {#  <script  type="module"  src="/static/js/chat.js"></script>#}
 
         {% endblock extrascripts %}
+        {% block admin_scripts %}{% endblock %}
     </body>
 </html>
 <script>
