@@ -74,7 +74,7 @@ path(
     ),
 
     path('api/shift_types_with_deficit/', views.api_shift_types_with_deficit, name='api_shift_types_with_deficit'),
-    path('api/schedule/', views.schedule_view, name='schedule_view'),
+    path('api/schedule/', views.schedule_api_view, name='schedule_view'),
 
 
     # path('domains/', views.DomainDashboardView.as_view(), name='domain_dashboard'),

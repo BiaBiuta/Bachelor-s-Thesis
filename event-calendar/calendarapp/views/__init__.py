@@ -12,11 +12,11 @@ from .other_views import (
     next_day,
     add_shift_request,
     api_shift_types_with_deficit,
-    schedule_view,
+    schedule_view as schedule_api_view,
 
 
 )
-from .views import (timetable,instance_list,instance_detail,choose_instance,select_instance,choose_shift_requests,choose_dayoff_requests,requests_submitted,DashboardView,confirm_schedule,cancel_schedule,schedule_log_events,unit_details_ajax,choose_emergency_requests,schedule_view)
+from .views import (timetable,instance_list,instance_detail,choose_instance,select_instance,choose_shift_requests,choose_dayoff_requests,requests_submitted,DashboardView,confirm_schedule,cancel_schedule,schedule_log_events,unit_details_ajax,choose_emergency_requests,schedule_view as schedule_logic_view)
 from .views_chat import(
     ChatView,
     chat_bubble,
@@ -40,7 +40,7 @@ __all__ = {
     next_day,
     add_shift_request,
     api_shift_types_with_deficit,
-    schedule_view,
+    schedule_api_view,
     ChatView, chat_bubble, shift_table_fragment,
 
 }
