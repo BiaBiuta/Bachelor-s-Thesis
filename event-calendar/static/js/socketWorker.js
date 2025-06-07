@@ -96,7 +96,7 @@ function adaugaNotificareInDropdown(data, store) {
         seen.add(n.timestamp);
       }
     });
-
+    console.log(unique);
     while (unique.length > 10) unique.pop();
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(unique));
