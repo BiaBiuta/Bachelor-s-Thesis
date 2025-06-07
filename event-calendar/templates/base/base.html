@@ -269,15 +269,18 @@
             <ul class="app-nav">
 
                 <!--Notification Menu-->
-                 <li class="dropdown">
-                    <a class="app-nav__item" href="#" data-toggle="dropdown" aria-label="Show notifications"><i class="fa fa-bell-o fa-lg"></i></a>
+                <li class="dropdown position-relative">
+                    <a class="app-nav__item" href="#" data-toggle="dropdown" aria-label="Show notifications">
+                        <i class="fa fa-bell-o fa-lg"></i>
+                        <span id="notification-count" class="badge badge-pill badge-danger notification-badge">0</span>
+                    </a>
                     <ul class="app-notification dropdown-menu dropdown-menu-right">
                         <li class="app-notification__title">You have 4 new notifications.</li>
                         <div class="app-notification__content">
 
 
                         </div>
-                        <li class="app-notification__footer"><a href="#">See all notifications.</a></li>
+                        <li class="app-notification__footer"><a href="#" id="toggle-all-notifications">See all notifications</a></li>
                     </ul>
                 </li>
                 <!-- User Menu-->
@@ -400,5 +403,18 @@ document
   .addEventListener("click", () => {
     window.location.href = "{% url 'calendarapp:choose_instance' %}";
   });
+
+document.addEventListener("DOMContentLoaded", function() {
+  const toggleLink = document.getElementById("toggle-all-notifications");
+  const content = document.querySelector(".app-notification__content");
+  if (toggleLink && content) {
+    toggleLink.addEventListener("click", function(e) {
+      e.preventDefault();
+      content.classList.toggle("expanded");
+      toggleLink.textContent = content.classList.contains("expanded") ?
+        "Hide notifications" : "See all notifications";
+    });
+  }
+});
 
 </script>

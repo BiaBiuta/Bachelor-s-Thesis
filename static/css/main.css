@@ -15112,6 +15112,17 @@ be a descendant of the grid when it is being dragged.
   overflow-y: auto;
 }
 
+.app-notification__content.expanded {
+  max-height: none;
+}
+
+.notification-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  transform: translate(50%, -50%);
+}
+
 .app-notification__content::-webkit-scrollbar {
   width: 6px;
 }
