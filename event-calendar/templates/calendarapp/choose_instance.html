@@ -212,11 +212,32 @@
           <button class="btn btn-danger">Anulează</button>
         </form>
       </div>
+
       {% endif %}
     </div>
   </div>
 </div>
 </div>
+
+{% if kpi_results %}
+<div class="modal fade" id="kpiModal" tabindex="-1" aria-labelledby="kpiModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="kpiModalLabel">Rezultate KPI</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>KPI Hard: {{ kpi_results.hard }}</p>
+        <p>KPI Soft: {{ kpi_results.soft }}</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Închide</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
 
 
 
@@ -396,6 +417,15 @@ document.getElementById('apply-requests').addEventListener('click', () => {
 
 
 </script>
+{% if kpi_results %}
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    var kpiModal = new bootstrap.Modal(document.getElementById("kpiModal"));
+    kpiModal.show();
+  });
+</script>
+{% endif %}
+
 
 
 {% endblock %}

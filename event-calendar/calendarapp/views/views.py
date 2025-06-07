@@ -728,12 +728,15 @@ def choose_instance(request):
             status='P'  # doar cele în aşteptare
         ).select_related('nurse', 'day', 'shift_type')
 
+    kpi_results = request.session.pop('kpi_results', None)
+
 
         # 5) Dai contextul către template
     return render(request, 'calendarapp/choose_instance.html', {
         'global_objects': gos_with_number,
         'generate_logs': generate_logs,
         "shift_requests": shift_reqs,
+        'kpi_results': kpi_results,
     })
 
 
@@ -1100,6 +1103,12 @@ def timetable(request):
     cache.set(cache_key, best_chrom, timeout=3600)
 
     base_date = datetime(2025, 5, 1)  # sau din request
+    # store KPI results in session for display
+    request.session['kpi_results'] = {
+        'hard': best_chrom.TotalKPIHard,
+        'soft': best_chrom.TotalKPISoft,
+    }
+
     preview_events = []
     for day in sorted(global_object.Day, key=lambda d: d.DayID):
         for nurse in global_object.Nurse:
