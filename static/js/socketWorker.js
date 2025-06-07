@@ -1,9 +1,28 @@
 // static/js/socket.js
 ;(function() {
   "use strict";
+  const STORAGE_KEY = "last_notifications";
+
+  function loadStoredNotifications() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    } catch (err) {
+      console.warn("Failed to parse stored notifications", err);
+      return [];
+    }
+  }
+
+  function storeNotification(data) {
+    const list = loadStoredNotifications();
+    list.push(data);
+    while (list.length > 5) list.shift();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+  }
     console.log("socketWorker.js loaded");
   // Wait until the page is parsed
   document.addEventListener("DOMContentLoaded", function() {
+    loadStoredNotifications().forEach(adaugaNotificareInDropdown);
+
     // build the correct ws:// or wss:// URL
    const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
          window.socket = new WebSocket(  "ws://" + window.location.hostname + ":5000/ws/notifications/");
@@ -79,6 +98,8 @@
 
       // Actualizăm contorul numeric
       actualizeazaNumarNotificari(1);
+
+      storeNotification(data);
     }
 
     /**
