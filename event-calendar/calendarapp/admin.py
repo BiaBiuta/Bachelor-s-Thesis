@@ -423,8 +423,25 @@ class GlobalObjectAdmin(admin.ModelAdmin):
 
 
 # Register any remaining models automatically
-for model in apps.get_app_config('calendarapp').get_models():
-    try:
-        admin.site.register(model)
-    except AlreadyRegistered:
-        pass
+
+def _register_all_models(app_label: str) -> None:
+    """Register any remaining models showing all fields."""
+
+    for model in apps.get_app_config(app_label).get_models():
+        if model in admin.site._registry:
+            continue
+
+        admin_class = type(
+            f"{model.__name__}Admin",
+            (admin.ModelAdmin,),
+            {"list_display": [f.name for f in model._meta.fields]},
+        )
+
+        try:
+            admin.site.register(model, admin_class)
+        except AlreadyRegistered:
+            pass
+
+
+_register_all_models("calendarapp")
+
