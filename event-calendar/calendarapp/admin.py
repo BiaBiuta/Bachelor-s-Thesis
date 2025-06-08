@@ -3,6 +3,8 @@ import re
 from django.contrib import admin
 from calendarapp import models
 from django.contrib import admin
+from django.apps import apps
+from django.contrib.admin.sites import AlreadyRegistered
 from django.contrib.auth.models import Group, Permission, User
 from django.core.checks import messages
 from django.shortcuts import get_object_or_404, redirect
@@ -418,3 +420,11 @@ class GlobalObjectAdmin(admin.ModelAdmin):
     )
     list_editable = ('HorizonLength', 'TotalMinutes', 'TotalMinutesToMin', 'TotalMinutesToMax')
     search_fields = ('Name',)
+
+
+# Register any remaining models automatically
+for model in apps.get_app_config('calendarapp').get_models():
+    try:
+        admin.site.register(model)
+    except AlreadyRegistered:
+        pass
