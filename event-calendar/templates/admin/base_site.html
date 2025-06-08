@@ -10,6 +10,11 @@
   </a>
 {% endblock %}
 
+{% block admin_css %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'css/admin_table_border.css' %}">
+{% endblock %}
+
 {% block nav-global %}
   <ul class="app-nav">
     <li>
