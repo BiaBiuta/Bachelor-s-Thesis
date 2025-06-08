@@ -106,25 +106,42 @@ from calendarapp.models.cereri.shift_request import ShiftRequest
 from calendarapp.models.cereri.dayoff_request import DayOffRequest
 from calendarapp.models.nurse_day_shift_type import NurseDayShiftType
 
-class GlobalObjectFilter(admin.SimpleListFilter):
+class BaseGlobalObjectFilter(admin.SimpleListFilter):
+    """Reusable filter for models related to :class:`GlobalObject`."""
+
     title = _('Global Object')
     parameter_name = 'global_object'
 
     def lookups(self, request, model_admin):
         return [
-            (go.id, f"{go.id} – Department")
+            (go.id, f"{go.id} – {go.Name}")
             for go in GlobalObject.objects.all()
         ]
+
+    field_path = None  # to be defined in subclasses
+
     def queryset(self, request, queryset):
-        if self.value():
-            return queryset.filter(Day__GlobalObject_id=self.value())
+        if self.value() and self.field_path:
+            return queryset.filter(**{f"{self.field_path}_id": self.value()})
         return queryset
+
+
+class DayShiftTypeFilter(BaseGlobalObjectFilter):
+    field_path = 'Day__GlobalObject'
+
+
+class DayOffRequestFilter(BaseGlobalObjectFilter):
+    field_path = 'department'
+
+
+class NurseFilter(BaseGlobalObjectFilter):
+    field_path = 'GlobalObject'
 
 @admin.register(DayShiftType)
 class DayShiftTypeAdmin(admin.ModelAdmin):
     list_display  = ('Day', 'ShiftType', 'NrRequired', 'UnderCoverWeight', 'OverCoverWeight')
     list_editable = ('NrRequired', 'UnderCoverWeight', 'OverCoverWeight')
-    list_filter   = (GlobalObjectFilter, )
+    list_filter   = (DayShiftTypeFilter, )
     ordering      = ('Day__DayID', 'ShiftType__ShiftID')
 
 @admin.register(ShiftRequest)
@@ -169,7 +186,7 @@ class ShiftRequestAdmin(admin.ModelAdmin):
 class DayOffRequestAdmin(admin.ModelAdmin):
     list_display  = ('nurse','department','day','status','from_file')
     list_editable = ('status',)
-    list_filter   = ('department','status','from_file')
+    list_filter   = (DayOffRequestFilter,'status','from_file')
     actions       = ('approve','deny',)
 
     @admin.action(description="Approve selected")
@@ -360,11 +377,14 @@ class NurseAdmin(admin.ModelAdmin):
         'EmployeeID',
         'GlobalObject',
         'MaxShifts',
+        'MaxTotalMins',
+        'MinTotalMins',
         'TotalMins',
         'minutes_to_min',
         'minutes_to_max',
     )
-    list_filter = ('GlobalObject',)
+    list_editable = ('MaxShifts', 'MaxTotalMins', 'MinTotalMins')
+    list_filter = (NurseFilter,)
     search_fields = ('EmployeeID',)
     actions = ['export_nurses_csv']
 
@@ -396,4 +416,5 @@ class GlobalObjectAdmin(admin.ModelAdmin):
         'TotalMinutesToMin',
         'TotalMinutesToMax',
     )
+    list_editable = ('HorizonLength', 'TotalMinutes', 'TotalMinutesToMin', 'TotalMinutesToMax')
     search_fields = ('Name',)
