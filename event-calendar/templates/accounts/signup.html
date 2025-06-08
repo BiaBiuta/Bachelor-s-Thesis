@@ -50,6 +50,20 @@
                                                 </div>
                                                 <div class="col-md-12">
                                                     <div class="form-group">
+                                                        <label class="label" for="username">Username</label>
+                                                        {{ form.username }}
+                                                        <span class="text-danger">{{ form.errors.username }}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-12">
+                                                    <div class="form-group">
+                                                        <label class="label" for="unitate_medicala">Department</label>
+                                                        {{ form.unitate_medicala }}
+                                                        <span class="text-danger">{{ form.errors.unitate_medicala }}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-12">
+                                                    <div class="form-group">
                                                         <label class="label" for="password">Password</label>
                                                         {{ form.password1 }}
                                                         <span class="text-danger">{{ form.errors.password1 }}</span>
@@ -60,6 +74,69 @@
                                                         <label class="label" for="password">Password</label>
                                                         {{ form.password2 }}
                                                         <span class="text-danger">{{ form.errors.password2 }}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-12">
+                                                    <div class="form-group">
+                                                        <label class="label" for="employee_id">Employee ID</label>
+                                                        {{ form.employee_id }}
+                                                        <span class="text-danger">{{ form.errors.employee_id }}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-12">
+                                                    <div class="form-group">
+                                                        <label class="label" for="max_shifts">Max Shifts</label>
+                                                        {{ form.max_shifts }}
+                                                        <span class="text-danger">{{ form.errors.max_shifts }}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-12">
+                                                    <div class="form-group">
+                                                        <label class="label" for="max_total_mins">Max Total Minutes</label>
+                                                        {{ form.max_total_mins }}
+                                                        <span class="text-danger">{{ form.errors.max_total_mins }}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-12">
+                                                    <div class="form-group">
+                                                        <label class="label" for="min_total_mins">Min Total Minutes</label>
+                                                        {{ form.min_total_mins }}
+                                                        <span class="text-danger">{{ form.errors.min_total_mins }}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-12">
+                                                    <div class="form-group">
+                                                        <label class="label" for="max_cons_shifts">Max Consecutive Shifts</label>
+                                                        {{ form.max_cons_shifts }}
+                                                        <span class="text-danger">{{ form.errors.max_cons_shifts }}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-12">
+                                                    <div class="form-group">
+                                                        <label class="label" for="min_cons_shifts">Min Consecutive Shifts</label>
+                                                        {{ form.min_cons_shifts }}
+                                                        <span class="text-danger">{{ form.errors.min_cons_shifts }}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-12">
+                                                    <div class="form-group">
+                                                        <label class="label" for="min_cons_days_off">Min Consecutive Days Off</label>
+                                                        {{ form.min_cons_days_off }}
+                                                        <span class="text-danger">{{ form.errors.min_cons_days_off }}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-12">
+                                                    <div class="form-group">
+                                                        <label class="label" for="max_weekends">Max Weekends</label>
+                                                        {{ form.max_weekends }}
+                                                        <span class="text-danger">{{ form.errors.max_weekends }}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-12">
+                                                    <div class="form-group">
+                                                        <label class="label" for="days_off">Days Off</label>
+                                                        {{ form.days_off }}
+                                                        <span class="text-danger">{{ form.errors.days_off }}</span>
                                                     </div>
                                                 </div>
                                                 <div class="col-md-12 my-4">
