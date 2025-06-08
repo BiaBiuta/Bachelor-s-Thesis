@@ -9,7 +9,7 @@ class SchedulerView(TemplateView):
         user = self.request.user
         ctx = super().get_context_data(**kw)
         ctx["USER"] = {
-            "name":  user.get_full_name() or user.username,
+            "name":   user.username,
             "email": user.email,
             "id":    user.id or 0,
         }
