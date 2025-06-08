@@ -8,6 +8,8 @@ from django.core.checks import messages
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, path
 from django.utils.html import format_html
+from django.http import HttpResponse
+import csv
 
 from calendarapp.models.global_object import GlobalObject
 
@@ -36,7 +38,7 @@ class EventAdmin(admin.ModelAdmin):
     ]
     list_filter = ["is_active", "is_deleted", "is_approved","department_id"]
     search_fields = ["title"]
-    actions = ["approve_events"]
+    actions = ["approve_events", "export_events_csv"]
 
     def get_queryset(self, request):
         """Show only unapproved events to the admin by default."""
@@ -50,6 +52,26 @@ class EventAdmin(admin.ModelAdmin):
         queryset.update(is_approved=True)
         self.message_user(request, "Selected events have been approved.")
     approve_events.short_description = "Approve selected events"
+
+    def export_events_csv(self, request, queryset):
+        """Export selected events to CSV."""
+        field_names = [
+            "id",
+            "title",
+            "user",
+            "start_time",
+            "end_time",
+            "department_id",
+            "is_approved",
+        ]
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = "attachment; filename=events.csv"
+        writer = csv.writer(response)
+        writer.writerow(field_names)
+        for event in queryset:
+            writer.writerow([getattr(event, f) for f in field_names])
+        return response
+    export_events_csv.short_description = "Export selected events to CSV"
 
 
 # @admin.register(models.EventMember)
@@ -327,3 +349,51 @@ class EmergencyRequestAdmin(admin.ModelAdmin):
         )
         emergency.delete()
         return redirect('..')
+
+
+from calendarapp.models.nurse import Nurse
+
+
+@admin.register(Nurse)
+class NurseAdmin(admin.ModelAdmin):
+    list_display = (
+        'EmployeeID',
+        'GlobalObject',
+        'MaxShifts',
+        'TotalMins',
+        'minutes_to_min',
+        'minutes_to_max',
+    )
+    list_filter = ('GlobalObject',)
+    search_fields = ('EmployeeID',)
+    actions = ['export_nurses_csv']
+
+    def export_nurses_csv(self, request, queryset):
+        field_names = [
+            'EmployeeID',
+            'GlobalObject_id',
+            'MaxShifts',
+            'MaxTotalMins',
+            'MinTotalMins',
+        ]
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename=nurses.csv'
+        writer = csv.writer(response)
+        writer.writerow(field_names)
+        for nurse in queryset:
+            writer.writerow([getattr(nurse, f) for f in field_names])
+        return response
+    export_nurses_csv.short_description = 'Export selected nurses to CSV'
+
+
+@admin.register(GlobalObject)
+class GlobalObjectAdmin(admin.ModelAdmin):
+    list_display = (
+        'id',
+        'Name',
+        'HorizonLength',
+        'TotalMinutes',
+        'TotalMinutesToMin',
+        'TotalMinutesToMax',
+    )
+    search_fields = ('Name',)

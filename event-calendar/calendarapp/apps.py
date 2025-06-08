@@ -6,4 +6,4 @@ class CalendarappConfig(AppConfig):
 
 
     def ready(self):
-        import signals
+        from . import signals

@@ -34,3 +34,11 @@ python manage.py createsuperuser
 ```
 python manage.py runserver
 ```
+
+## Admin Features
+
+The project includes several tools for administrators:
+
+* Approve or deny shift requests and emergency requests directly from the admin interface.
+* Export selected events or nurses to CSV from the admin list pages.
+* Manage departments (`GlobalObject`) and nursing staff (`Nurse`) through dedicated admin screens.
