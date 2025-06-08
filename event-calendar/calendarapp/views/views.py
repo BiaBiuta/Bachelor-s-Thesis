@@ -1143,6 +1143,7 @@ def timetable(request):
 def timetable_without_algorithm(request):
     #citesc_fisier()
     print("a fost apelat timetable ")
+    start_time = time.perf_counter()
     go_ids = request.session.get('global_object_ids', [])
     active_go = request.session.get('global_object_id')
 
@@ -1596,10 +1597,18 @@ def timetable_without_algorithm(request):
 
     # Salvează evenimentele în baza de date, folosind modelul Event
     save_schedule_events(global_object, base_date, request.user)
+
+    exec_time = time.perf_counter() - start_time
+    request.session['kpi_results'] = {
+        'hard': global_object.calc_TotalKPIHard(True),
+        'soft': global_object.calc_TotalKPISoft(True),
+        'exec_time': round(exec_time, 2),
+    }
+
     # Deschide Django shell cu `python manage.py shell`
 
-    # Redirecționează către pagina calendarului
-    return HttpResponseRedirect(reverse("calendarapp:calendar"))
+    # Redirecționează către pagina principală pentru a afişa modalul KPI
+    return redirect('calendarapp:choose_instance')
 
 @login_required
 def confirm_schedule(request):
