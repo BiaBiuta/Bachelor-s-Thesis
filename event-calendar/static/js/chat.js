@@ -22,14 +22,20 @@ const slotStore = {
 };
 
 /* ───── mici utilitare HTMX ───────────────────────────────────────── */
-function addBubble(message, who="ai", quick=[]){
+function addBubble(message, who="ai", quick=[]) {
   htmx.ajax("POST", "/bubble/", {
-    values:{message, who, quick:JSON.stringify(quick)},
-    target:"#chat-pane",
-    swap:"beforeend"
+    values: { message, who, quick: JSON.stringify(quick) },
+    target: "#chat-pane",
+    swap: "beforeend",
   });
-  pane.scrollTop = pane.scrollHeight;
 }
+
+// asigură scroll-ul la cea mai recentă bulă după ce htmx actualizează DOM-ul
+document.body.addEventListener("htmx:afterSwap", (evt) => {
+  if (evt.detail.target.id === "chat-pane") {
+    pane.scrollTop = pane.scrollHeight;
+  }
+});
 
 
 /* ───── greeting iniţial ─────────────────────────────────────────── */
