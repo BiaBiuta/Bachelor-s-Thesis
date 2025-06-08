@@ -42,3 +42,10 @@ The project includes several tools for administrators:
 * Approve or deny shift requests and emergency requests directly from the admin interface.
 * Export selected events or nurses to CSV from the admin list pages.
 * Manage departments (`GlobalObject`) and nursing staff (`Nurse`) through dedicated admin screens.
+
+## Customizing the admin dashboard
+
+The default Django admin landing page is overridden by
+`templates/admin/index.html`. This template extends `base/base.html` so the
+dashboard matches the rest of the site design while keeping the standard admin
+functionality. Edit this file if you want to tweak the dashboard further.
