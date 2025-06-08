@@ -365,8 +365,11 @@ class Nurse(models.Model):
         self.NurseDayShiftType = []
         self.NurseShiftType = []
         self.OptScopeNurse = []
-        if self.GlobalObject:
-            self.GlobalObject.set_relation_nurse(self)
+        if getattr(self, "GlobalObject_id", None):
+            try:
+                self.GlobalObject.set_relation_nurse(self)
+            except GlobalObject.DoesNotExist:
+                pass
 
     def __str__(self):
         return f"Nurse {self.EmployeeID}"
