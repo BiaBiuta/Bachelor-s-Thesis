@@ -29,7 +29,7 @@ class RunningEventsListView(ListView):
         if self.request.user.is_superuser:
             logger.debug("Superuser is viewing running events")
             return Event.objects.get_all_running_events()
-        return Event.objects.get_running_events(user=self.request)
+        return Event.objects.get_running_events(user=self.request.user)
 
 class UpcomingEventsListView(ListView):
     """ Upcoming events list view """

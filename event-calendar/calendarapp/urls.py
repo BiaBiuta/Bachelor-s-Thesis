@@ -84,4 +84,6 @@ path(
     path("scheduler/", views.SchedulerView.as_view(), name="scheduler"),
     path("bubble/", views.chat_bubble, name="bubble"),
     path("debug-box/", views.debug_box, name="debug-box"),
+    path("sanitation/", views.SanitationTaskListView.as_view(), name="sanitation_task_list"),
+    path("sanitation/new/", views.sanitation_task_create, name="sanitation_task_new"),
 ]

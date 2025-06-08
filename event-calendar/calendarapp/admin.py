@@ -89,6 +89,7 @@ class EventAdmin(admin.ModelAdmin):
 # #     list_display = ('user', 'employee_id', 'max_shifts')
 from django.contrib import admin
 from calendarapp.models.coverage_requirements import CoverageRequirement
+from calendarapp.models.sanitation_task import SanitationTask
 
 @admin.register(CoverageRequirement)
 class CoverageRequirementAdmin(admin.ModelAdmin):
@@ -96,6 +97,15 @@ class CoverageRequirementAdmin(admin.ModelAdmin):
     list_editable = ('requirement', 'weight_under', 'weight_over')
     list_per_page = 14   # vezi câte zile ai
     ordering      = ('day',)
+
+
+@admin.register(SanitationTask)
+class SanitationTaskAdmin(admin.ModelAdmin):
+    list_display = (
+        'title', 'department', 'nurse', 'start_time', 'end_time', 'completed'
+    )
+    list_filter = ('department', 'completed')
+    search_fields = ('title', 'location')
 from django.contrib import admin
 
 

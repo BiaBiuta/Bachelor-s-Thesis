@@ -36,7 +36,8 @@ from .views_chat import(
     ChatView,
     chat_bubble,
     shift_table_fragment,)
-from .views_scheduler import (SchedulerView,debug_box)
+from .views_scheduler import SchedulerView, debug_box
+from .views_sanitation import SanitationTaskListView, sanitation_task_create
 
 __all__ = {
     AllEventsListView,

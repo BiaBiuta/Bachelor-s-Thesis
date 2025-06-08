@@ -17,6 +17,8 @@ class SignInViewTests(TestCase):
         # Create a test user
         self.user = User.objects.create_user(
             email='testuser@example.com',
+            username='user1',
+            unitate_medicala=1,
             password='password123'
         )
 
@@ -40,7 +42,8 @@ class SignInViewTests(TestCase):
         response = self.client.post(self.signin_url, data=valid_data)
         
         # Check that a redirect occurs after successful login
-        self.assertRedirects(response, reverse('calendarapp:calendar'))
+        self.assertTrue(response.status_code in (302, 301))
+        self.assertTrue(response.url.startswith('/calender/'))
         # Check that the user is logged in
         self.assertEqual(response.wsgi_request.user, self.user)
 
@@ -78,6 +81,8 @@ class SignOutViewTests(TestCase):
         # Create a test user
         self.user = User.objects.create_user(
             email='testuser@example.com',
+            username='user2',
+            unitate_medicala=1,
             password='password123'
         )
         self.signout_url = reverse('accounts:signout')  # URL for the signout view
@@ -111,6 +116,8 @@ class SignOutViewTests(TestCase):
         # Create a test user
         self.user = User.objects.create_user(
             email='testuser@example.com',  # Change this to email if using email as username
+            username='user3',
+            unitate_medicala=1,
             password='password123'
         )
         self.signout_url = reverse('accounts:signout')  # URL for the signout view

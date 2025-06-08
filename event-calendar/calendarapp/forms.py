@@ -4,6 +4,7 @@ from django import forms
 from calendarapp.models.cereri.shift_request import ShiftRequest
 from calendarapp.models.shift_type import ShiftType
 from calendarapp.models.day_shift_type import DayShiftType
+from calendarapp.models.sanitation_task import SanitationTask
 
 
 
@@ -227,4 +228,22 @@ class ShiftRequestForm(forms.ModelForm):
         #     q.append(st.pk)
         # self.fields['shift_type'] = q
 
+
+class SanitationTaskForm(forms.ModelForm):
+    class Meta:
+        model = SanitationTask
+        fields = ["title", "location", "start_time", "end_time", "department", "nurse"]
+        widgets = {
+            "title": forms.TextInput(attrs={"class": "form-control"}),
+            "location": forms.TextInput(attrs={"class": "form-control"}),
+            "start_time": DateInput(attrs={"type": "datetime-local", "class": "form-control"}, format="%Y-%m-%dT%H:%M"),
+            "end_time": DateInput(attrs={"type": "datetime-local", "class": "form-control"}, format="%Y-%m-%dT%H:%M"),
+            "department": forms.Select(attrs={"class": "form-control"}),
+            "nurse": forms.Select(attrs={"class": "form-control"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["start_time"].input_formats = ("%Y-%m-%dT%H:%M",)
+        self.fields["end_time"].input_formats = ("%Y-%m-%dT%H:%M",)
 
