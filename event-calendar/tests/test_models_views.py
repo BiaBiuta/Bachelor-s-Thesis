@@ -3,6 +3,15 @@ from django.test import TestCase, RequestFactory
 from django.http import HttpResponse
 from unittest.mock import patch
 from django.contrib.auth import get_user_model
+from pathlib import Path
+import sys
+
+# Add the parent directory to ``sys.path`` so that ``calendarapp`` and
+# ``eventcalendar`` modules can be imported when tests are executed from the
+# repository root.
+sys.path.append(str(Path(__file__).resolve().parents[1]))
+import django
+django.setup()
 
 from calendarapp.models.global_object import GlobalObject
 from calendarapp.models.nurse import Nurse
@@ -15,7 +24,6 @@ from calendarapp.models.event_member import EventMember
 from calendarapp.models.sanitation_task import SanitationTask
 from eventcalendar.views import DashboardView
 import importlib.util
-from pathlib import Path
 
 spec_ap = importlib.util.spec_from_file_location(
     "approve_event",

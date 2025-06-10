@@ -2,8 +2,17 @@ import datetime
 import os
 import importlib.util
 from pathlib import Path
+import sys
+
+# Ensure the project apps can be imported when running tests directly from the
+# repository root.  The ``calendarapp`` and ``eventcalendar`` packages live one
+# directory up from this ``tests`` package, so add that directory to
+# ``sys.path`` before importing from those packages.
+sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'tests.test_settings')
+import django
+django.setup()
 from django.test import TestCase, RequestFactory
 from django.contrib.auth import get_user_model
 from django.contrib.sessions.middleware import SessionMiddleware
