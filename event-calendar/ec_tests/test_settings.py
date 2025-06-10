@@ -6,7 +6,7 @@ INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.sessions',
     'calendarapp',
-    'eventcalendar'
+    'eventcalendar',
     'accounts',
 ]
 AUTH_USER_MODEL = 'accounts.User'
@@ -22,7 +22,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 ]
-ROOT_URLCONF = 'tests.urls'
+ROOT_URLCONF = 'ec_tests.urls'
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 CHANNEL_LAYERS = {
     'default': {'BACKEND': 'channels.layers.InMemoryChannelLayer'}

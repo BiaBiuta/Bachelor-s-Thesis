@@ -10,7 +10,7 @@ import sys
 # ``sys.path`` before importing from those packages.
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'tests.test_settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ec_tests.test_settings')
 import django
 django.setup()
 from django.test import TestCase, RequestFactory
@@ -18,8 +18,8 @@ from django.contrib.auth import get_user_model
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.utils import timezone
 
-from event-calendar.eventcalendar.helper import get_current_user
-from event-calendar.calendarapp.utils import Calendar
+from eventcalendar.helper import get_current_user
+from calendarapp.utils import Calendar
 
 spec = importlib.util.spec_from_file_location(
     "load_utils",
