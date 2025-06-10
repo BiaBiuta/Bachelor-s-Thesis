@@ -10,7 +10,7 @@ import sys
 # ``sys.path`` before importing from those packages.
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'tests.test_settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ec_tests.test_settings')
 import django
 django.setup()
 from django.test import TestCase, RequestFactory
