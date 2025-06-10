@@ -2362,3 +2362,8 @@ def get_user_id(request):
     # Accesăm ID-ul utilizatorului care este deja salvat în sesiune
     user_id = request.user.id
     return JsonResponse({'user_id': user_id})
+
+
+def guidelines(request):
+    """Render the application usage guidelines."""
+    return render(request, 'pages/guidelines.html')

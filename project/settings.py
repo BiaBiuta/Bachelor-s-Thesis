@@ -207,7 +207,8 @@ JAZZMIN_SETTINGS = {
     "usermenu_links": [
         {"name": "Support", "url": "", "new_window": True},
         {"model": "auth.user", },
-        {"model": "app.TimeTable", }
+        {"model": "app.TimeTable", },
+        {"name": "Guidelines", "url": "guidelines"}
     ],
 
     #############

@@ -8,6 +8,7 @@ urlpatterns = [
      path('/', views.support, name='support'),
     path('generate_timetable/', views.timetable, name='generate_timetable'),
     path('get-user-id/', views.get_user_id, name='get_user_id'),
+    path('guidelines/', views.guidelines, name='guidelines'),
 ]
     
    

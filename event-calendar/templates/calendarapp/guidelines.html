@@ -1,0 +1,48 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Guidelines{% endblock %}
+
+{% block breadcrumb %}
+    <div>
+        <h1><i class="fa fa-question-circle"></i> Guidelines</h1>
+        <p>Instrucțiuni de utilizare a aplicației</p>
+    </div>
+    <ul class="app-breadcrumb breadcrumb">
+        <li class="breadcrumb-item"><i class="fa fa-home fa-lg"></i></li>
+        <li class="breadcrumb-item"><a>Guidelines</a></li>
+    </ul>
+{% endblock breadcrumb %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="tile">
+            <div class="tile-body">
+                <p>Această aplicație te ajută să gestionezi programările și orarele personalului medical.</p>
+                <p>Mai jos găsești o scurtă descriere a principalelor butoane și secțiuni:</p>
+                <ul>
+                    <li><strong>Dashboard</strong> – afișează statisticile generale ale evenimentelor.</li>
+                    <li><strong>CalendarUser</strong> – vezi calendarul personal cu evenimentele planificate.</li>
+                    <li><strong>Concedii</strong> – depune cereri de concediu.</li>
+                    <li><strong>Preferinte</strong> – selectează tipurile de ture preferate.</li>
+                    <li><strong>Chat</strong> – comunică rapid cu administratorul sau colegii.</li>
+                    <li><strong>Emergency</strong> – trimite o cerere de înlocuire într-o situație urgentă.</li>
+                    <li><strong>Unitati medicale</strong> – listează evenimentele din toate unitățile.</li>
+                    <li><strong>Generare Orar</strong> – pentru administratori, creează un program nou folosind algoritmul.</li>
+                    <li><strong>Generare Orar without alghorithm</strong> – pentru administratori, creează un program manual.</li>
+                </ul>
+                <h5 class="mt-4">Pași pentru asistente</h5>
+                <ol>
+                    <li>Autentifică-te cu datele primite.</li>
+                    <li>Accesează <em>CalendarUser</em> pentru a vedea turele.</li>
+                    <li>Dacă ai nevoie de concediu, mergi la secțiunea <strong>Concedii</strong> și completează formularul.</li>
+                    <li>Folosește <strong>Preferinte</strong> pentru a selecta turele dorite.</li>
+                    <li>Pentru situații neprevăzute folosește butonul <strong>Emergency</strong>.</li>
+                </ol>
+                <p class="mt-3">În orice moment, utilizatorul poate accesa acest ghid apăsând pe fotografia de profil și selectând opțiunea <strong>Guidelines</strong>.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

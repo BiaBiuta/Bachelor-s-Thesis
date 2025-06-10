@@ -1,0 +1,36 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card card-outline card-info">
+                <div class="card-header">
+                    <h3 class="card-title">Guidelines</h3>
+                </div>
+                <div class="card-body">
+                    <p>Această aplicație te ajută să gestionezi orarul și programările personalului medical.</p>
+                    <p>Mai jos găsești descrierea principalelor butoane din meniu:</p>
+                    <ul>
+                        <li><strong>Search</strong> – filtrează orarul după program, semestru și an de studiu.</li>
+                        <li><strong>Generează Orar</strong> – creează un orar nou pe baza datelor introduse.</li>
+                        <li><strong>Simple Report</strong> – afișează un raport sumar al programărilor.</li>
+                        <li><strong>Affliction</strong> – accesează modulul de raportare a indisponibilităților.</li>
+                    </ul>
+                    <h5 class="mt-4">Pași pentru utilizarea aplicației de către asistentă</h5>
+                    <ol>
+                        <li>Autentifică-te cu datele furnizate de administrator.</li>
+                        <li>În pagina <em>Home</em> folosește butonul <strong>Search</strong> pentru a vizualiza orarul curent.</li>
+                        <li>Dacă este nevoie de un nou program, apasă <strong>Generează Orar</strong> și urmează instrucțiunile.</li>
+                        <li>Consultă orarul personal în secțiunea <em>Orarul Meu</em>.</li>
+                        <li>Raportează indisponibilități sau zile libere în modulul <strong>Affliction</strong>.</li>
+                        <li>Folosește <strong>Simple Report</strong> pentru a obține un rezumat rapid al programărilor.</li>
+                    </ol>
+                    <p class="mt-3">În orice moment poți reveni la acest ghid apăsând pe fotografia de profil și selectând opțiunea <strong>Guidelines</strong>.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

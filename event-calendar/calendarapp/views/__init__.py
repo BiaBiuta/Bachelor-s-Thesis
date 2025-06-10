@@ -38,6 +38,7 @@ from .views_chat import(
     shift_table_fragment,)
 from .views_scheduler import SchedulerView, debug_box
 from .views_sanitation import SanitationTaskListView, sanitation_task_create
+from .views_guidelines import GuidelinesView
 
 __all__ = {
     AllEventsListView,
@@ -58,6 +59,7 @@ __all__ = {
     api_shift_types_with_deficit,
     schedule_api_view,
     ChatView, chat_bubble, shift_table_fragment,
+    GuidelinesView,
 
 }
 

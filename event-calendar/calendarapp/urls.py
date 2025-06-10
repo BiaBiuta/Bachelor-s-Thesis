@@ -5,6 +5,7 @@ from . import views
 from calendarapp.views.approve_event import approve_event
 from calendarapp.views.deny_event import deny_event
 from calendarapp.views.views_chat import ChatView, chat_bubble, shift_table_fragment
+from calendarapp.views.views_guidelines import GuidelinesView
 app_name = "calendarapp"
 
 
@@ -84,6 +85,7 @@ path(
     path("scheduler/", views.SchedulerView.as_view(), name="scheduler"),
     path("bubble/", views.chat_bubble, name="bubble"),
     path("debug-box/", views.debug_box, name="debug-box"),
+    path("guidelines/", GuidelinesView.as_view(), name="guidelines"),
     path("sanitation/", views.SanitationTaskListView.as_view(), name="sanitation_task_list"),
     path("sanitation/new/", views.sanitation_task_create, name="sanitation_task_new"),
 ]
