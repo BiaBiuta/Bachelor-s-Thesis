@@ -6,6 +6,7 @@ INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.sessions',
     'calendarapp',
+    'eventcalendar'
     'accounts',
 ]
 AUTH_USER_MODEL = 'accounts.User'
