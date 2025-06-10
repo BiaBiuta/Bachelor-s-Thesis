@@ -9,5 +9,5 @@ def approve_event(request, event_id):
     if request.method == "POST":
         event.is_approved = True
         event.save()
-        return redirect('calendarapp:all_events')  # Replace 'all-events' with the correct name of your event list view
+        return redirect('calendarapp:all_events')
     return redirect('calendarapp:all_events')
