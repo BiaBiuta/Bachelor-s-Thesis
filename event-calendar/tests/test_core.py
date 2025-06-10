@@ -18,8 +18,8 @@ from django.contrib.auth import get_user_model
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.utils import timezone
 
-from event-calendar.eventcalendar.helper import get_current_user
-from event-calendar.calendarapp.utils import Calendar
+from eventcalendar.helper import get_current_user
+from calendarapp.utils import Calendar
 
 spec = importlib.util.spec_from_file_location(
     "load_utils",
