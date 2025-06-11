@@ -4,7 +4,10 @@ import time
 from contextlib import contextmanager
 from unittest.mock import patch
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'tests.test_settings')
+# Use the test settings from ``ec_tests`` by default.  This can be overridden
+# by setting the ``DJANGO_SETTINGS_MODULE`` environment variable before running
+# this script.
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ec_tests.test_settings')
 import django
 from django.conf import settings
 from django.test import RequestFactory
