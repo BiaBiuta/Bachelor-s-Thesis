@@ -43,8 +43,15 @@ def run_for_instance(filename):
     with transaction.atomic():
         request = rf.get('/timetable-test')
         request.session = {}
-        request.user = User.objects.create_user(email='tmp@example.com', password='pass')
         go = read_instance_file(file_path)
+        email = 'tmp@example.com'
+        username = email.split('@')[0]
+        request.user = User.objects.create_user(
+            email=email,
+            username=username,
+            unitate_medicala=go.id,
+            password='pass'
+        )
         request.session['global_object_id'] = go.id
         request.session['global_object_ids'] = [go.id]
         timings = {}
