@@ -1,0 +1,36 @@
+{% extends 'base/base.html' %}
+{% block title %}Clock Entries{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-md-12">
+    <div class="tile">
+      <div class="tile-body">
+        <a class="btn btn-primary mb-3" href="{% url 'calendarapp:clock_in' %}">Clock In</a>
+        <a class="btn btn-info mb-3" href="{% url 'calendarapp:clock_in' %}?demo_duration=5">Demo Clock In (5m)</a>
+        <a class="btn btn-secondary mb-3" href="{% url 'calendarapp:clock_out' %}">Clock Out</a>
+        <p>Total hours: {{ total_hours|floatformat:2 }}</p>
+        <table class="table table-hover table-bordered">
+          <thead>
+            <tr>
+              <th>Start</th>
+              <th>End</th>
+              <th>Hours</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for e in entries %}
+            <tr>
+              <td>{{ e.start_time }}</td>
+              <td>{{ e.end_time|default:'-' }}</td>
+              <td>{{ e.duration_hours|floatformat:2 }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="3">No entries</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

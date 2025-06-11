@@ -1,6 +1,11 @@
 from django.urls import path
 
 from . import views
+from calendarapp.views.views_clocking import (
+    ClockEntryListView,
+    clock_in,
+    clock_out,
+)
 
 from calendarapp.views.approve_event import approve_event
 from calendarapp.views.deny_event import deny_event
@@ -88,4 +93,8 @@ path(
     path("guidelines/", GuidelinesView.as_view(), name="guidelines"),
     path("sanitation/", views.SanitationTaskListView.as_view(), name="sanitation_task_list"),
     path("sanitation/new/", views.sanitation_task_create, name="sanitation_task_new"),
+
+    path("clock/entries/", ClockEntryListView.as_view(), name="clock_entries"),
+    path("clock/in/", clock_in, name="clock_in"),
+    path("clock/out/", clock_out, name="clock_out"),
 ]
