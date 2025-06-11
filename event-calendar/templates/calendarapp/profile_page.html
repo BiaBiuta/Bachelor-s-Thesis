@@ -1,0 +1,30 @@
+{% extends 'base/base.html' %}
+{% block title %}Profile{% endblock %}
+
+{% block breadcrumb %}
+<div>
+    <h1><i class="fa fa-user"></i> Profile</h1>
+</div>
+<ul class="app-breadcrumb breadcrumb">
+    <li class="breadcrumb-item"><i class="fa fa-home fa-lg"></i></li>
+    <li class="breadcrumb-item"><a>Profile</a></li>
+</ul>
+{% endblock breadcrumb %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-6 offset-md-3">
+    <div class="tile">
+      <div class="tile-body">
+        <h5 class="mb-3">{{ user_obj.get_full_name|default:user_obj.username }}</h5>
+        <p><strong>Email:</strong> {{ user_obj.email }}</p>
+        {% if nurse %}
+        <p><strong>Employee ID:</strong> {{ nurse.EmployeeID }}</p>
+        <p><strong>Department:</strong> {{ nurse.GlobalObject.Name }}</p>
+        {% endif %}
+        <p><strong>Joined:</strong> {{ user_obj.date_joined|date:'Y-m-d' }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}

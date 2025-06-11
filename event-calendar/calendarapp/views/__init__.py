@@ -14,6 +14,7 @@ from .other_views import (
     api_shift_types_with_deficit,
     schedule_view as schedule_api_view,
     user_profile,
+    UserProfilePageView,
 
 
 )
@@ -60,6 +61,7 @@ __all__ = {
     api_shift_types_with_deficit,
     schedule_api_view,
     user_profile,
+    UserProfilePageView,
     ChatView, chat_bubble, shift_table_fragment,
     GuidelinesView,
 

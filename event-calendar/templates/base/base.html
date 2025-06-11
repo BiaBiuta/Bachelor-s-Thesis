@@ -292,7 +292,7 @@
                             <a class="dropdown-item" href="#"><i class="fa fa-cog fa-lg"></i> Settings</a>
                         </li>
                         <li>
-                            <a class="dropdown-item" href="#" data-user="{{ request.user.id }}" id="openProfile"><i class="fa fa-user fa-lg"></i> Profile</a>
+                            <a class="dropdown-item" href="{% url 'calendarapp:profile_page' %}"><i class="fa fa-user fa-lg"></i> Profile</a>
                         </li>
 {#                        <li>#}
 {#                            <a class="dropdown-item" href="javascript:void(0);" id="profileButton"><i class="fa fa-user fa-lg"></i> Profile</a>#}
@@ -465,26 +465,6 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 
-  const profileBtn = document.getElementById("openProfile");
-  if (profileBtn) {
-    profileBtn.addEventListener("click", async function(e) {
-      e.preventDefault();
-      const userId = profileBtn.dataset.user;
-      try {
-        const resp = await fetch(`/calendarapp/user/${userId}/profile/`);
-        if (!resp.ok) return;
-        const data = await resp.json();
-        document.getElementById('profile-name').textContent = data.name;
-        document.getElementById('profile-email').textContent = data.email;
-        document.getElementById('profile-joined').textContent = 'Joined: ' + data.date_joined;
-        const modalEl = document.getElementById('profileModal');
-        const modal = new bootstrap.Modal(modalEl);
-        modal.show();
-      } catch (err) {
-        console.error('Profile load error', err);
-      }
-    });
-  }
 });
 
 </script>

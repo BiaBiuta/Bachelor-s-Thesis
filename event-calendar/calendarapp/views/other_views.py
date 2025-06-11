@@ -599,3 +599,19 @@ def user_profile(request, user_id):
         "date_joined": user.date_joined.strftime("%Y-%m-%d"),
     }
     return JsonResponse(data)
+
+class UserProfilePageView(LoginRequiredMixin, generic.TemplateView):
+    template_name = 'calendarapp/profile_page.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        user = self.request.user
+        ctx['user_obj'] = user
+        emp_id = user.email.split('@')[0]
+        try:
+            nurse = Nurse.objects.get(EmployeeID=emp_id)
+        except Nurse.DoesNotExist:
+            nurse = None
+        ctx['nurse'] = nurse
+        return ctx
+
