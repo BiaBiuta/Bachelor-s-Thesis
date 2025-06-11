@@ -291,6 +291,9 @@
                          <li>
                             <a class="dropdown-item" href="#"><i class="fa fa-cog fa-lg"></i> Settings</a>
                         </li>
+                        <li>
+                            <a class="dropdown-item" href="#" data-user="{{ request.user.id }}" id="openProfile"><i class="fa fa-user fa-lg"></i> Profile</a>
+                        </li>
 {#                        <li>#}
 {#                            <a class="dropdown-item" href="javascript:void(0);" id="profileButton"><i class="fa fa-user fa-lg"></i> Profile</a>#}
 {#                        </li>#}
@@ -397,6 +400,27 @@
             {% block content %}
             {% endblock content %}
         </main>
+
+        <!-- Modal profil utilizator -->
+        <div class="modal fade" id="profileModal" tabindex="-1">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Profil Utilizator</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                <p id="profile-name" class="mb-1"></p>
+                <p id="profile-email" class="mb-1"></p>
+                <p id="profile-joined" class="mb-0"></p>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Închide</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Essential javascripts for application to work-->
         {% include 'base/js.html' %}
         {% block extrascripts %}
@@ -438,6 +462,27 @@ document.addEventListener("DOMContentLoaded", function() {
       content.classList.toggle("expanded");
       toggleLink.textContent = content.classList.contains("expanded") ?
         "Hide notifications" : "See all notifications";
+    });
+  }
+
+  const profileBtn = document.getElementById("openProfile");
+  if (profileBtn) {
+    profileBtn.addEventListener("click", async function(e) {
+      e.preventDefault();
+      const userId = profileBtn.dataset.user;
+      try {
+        const resp = await fetch(`/calendarapp/user/${userId}/profile/`);
+        if (!resp.ok) return;
+        const data = await resp.json();
+        document.getElementById('profile-name').textContent = data.name;
+        document.getElementById('profile-email').textContent = data.email;
+        document.getElementById('profile-joined').textContent = 'Joined: ' + data.date_joined;
+        const modalEl = document.getElementById('profileModal');
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+      } catch (err) {
+        console.error('Profile load error', err);
+      }
     });
   }
 });

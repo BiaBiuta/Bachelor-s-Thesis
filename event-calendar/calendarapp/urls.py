@@ -97,4 +97,5 @@ path(
     path("clock/entries/", ClockEntryListView.as_view(), name="clock_entries"),
     path("clock/in/", clock_in, name="clock_in"),
     path("clock/out/", clock_out, name="clock_out"),
+    path("user/<int:user_id>/profile/", views.user_profile, name="user_profile"),
 ]

@@ -587,3 +587,15 @@ def schedule_view(request):
         return JsonResponse({"success": False, "message": "Eroare la salvare."}, status=400)
 
     return JsonResponse({"success": True, "message": "Cererea a fost înregistrată."})
+
+
+@login_required
+def user_profile(request, user_id):
+    """Returnează informaţii despre un utilizator în format JSON."""
+    user = get_object_or_404(User, pk=user_id)
+    data = {
+        "name": user.get_full_name() or user.email,
+        "email": user.email,
+        "date_joined": user.date_joined.strftime("%Y-%m-%d"),
+    }
+    return JsonResponse(data)
