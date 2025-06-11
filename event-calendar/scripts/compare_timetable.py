@@ -13,8 +13,10 @@ from django.conf import settings
 from django.test import RequestFactory
 from django.contrib.auth import get_user_model
 from django.db import transaction
+from django.core.management import call_command
 
 django.setup()
+call_command('migrate', interactive=False, run_syncdb=True, verbosity=0)
 
 # Directory with instance files
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'database', 'instances1_24'))
