@@ -49,3 +49,10 @@ The default Django admin landing page is overridden by
 `templates/admin/index.html`. This template extends `base/base.html` so the
 dashboard matches the rest of the site design while keeping the standard admin
 functionality. Edit this file if you want to tweak the dashboard further.
+
+## Clock entry scaling
+
+The clock entries page accepts an optional `scale` query parameter that multiplies
+the displayed hours. For example, visiting `/clock/entries/?scale=60` will render
+one minute of real time as one hour on the page. This can be useful when
+demonstrating the feature without waiting for long periods.

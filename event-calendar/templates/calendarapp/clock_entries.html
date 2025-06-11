@@ -22,7 +22,7 @@
             <tr>
               <td>{{ e.start_time }}</td>
               <td>{{ e.end_time|default:'-' }}</td>
-              <td>{{ e.duration_hours|floatformat:2 }}</td>
+              <td>{{ e.display_hours|floatformat:2 }}</td>
             </tr>
           {% empty %}
             <tr><td colspan="3">No entries</td></tr>

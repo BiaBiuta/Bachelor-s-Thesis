@@ -39,8 +39,14 @@ class ClockEntryListView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        total = sum(e.duration_hours() for e in context["entries"])
-        context["total_hours"] = total
+        scale = float(self.request.GET.get("scale", 1))
+        scaled_entries = []
+        for e in context["entries"]:
+            e.display_hours = e.duration_hours() * scale
+            scaled_entries.append(e)
+        context["entries"] = scaled_entries
+        context["total_hours"] = sum(e.display_hours for e in scaled_entries)
+        context["scale"] = scale
         return context
 
 

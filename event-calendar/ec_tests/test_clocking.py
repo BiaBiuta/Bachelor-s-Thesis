@@ -111,3 +111,34 @@ class ClockingViewTests(TestCase):
         self.assertIsNotNone(entry.end_time)
         delta = entry.end_time - entry.start_time
         self.assertEqual(delta.total_seconds(), 120)
+
+    def test_clock_entries_scale(self):
+        factory = RequestFactory()
+        start = timezone.now()
+        end = start + timezone.timedelta(minutes=1)
+        ClockEntry.objects.create(
+            nurse=self.nurse,
+            department=self.department,
+            start_time=start,
+            end_time=end,
+        )
+
+        request = factory.get("/clock/entries/?scale=60")
+        request.user = self.user
+
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "views_clocking",
+            Path(__file__).resolve().parents[1] / "calendarapp" / "views" / "views_clocking.py",
+        )
+        views_clocking = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(views_clocking)
+
+        view = views_clocking.ClockEntryListView()
+        view.request = request
+        qs = ClockEntry.objects.all()
+        view.object_list = qs
+        context = view.get_context_data(object_list=qs)
+
+        self.assertAlmostEqual(context["total_hours"], 1.0)
+        self.assertAlmostEqual(context["entries"][0].display_hours, 1.0)
