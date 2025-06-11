@@ -41,7 +41,9 @@ def load_intent_module():
     pydantic_module = types.ModuleType("pydantic")
 
     class BaseModel:
-        pass
+        def __init__(self, **data):
+            for k, v in data.items():
+                setattr(self, k, v)
 
     pydantic_module.BaseModel = BaseModel
 
@@ -97,3 +99,17 @@ def test_extract_scheduling_info():
     assert info['shiftType'] == 'provided'
     assert info['reqType'] == 'ON'
     assert info['weight'] == 2.0
+
+
+def test_predict_basic():
+    mod = load_intent_module()
+    req = types.SimpleNamespace(
+        message='shift on Monday morning weight=2',
+        currentUserEmail='u@example.com',
+        currentUserName='User',
+        UserId=1,
+    )
+    resp = mod.predict(req)
+    assert resp.intent == 'schedule_shift'
+    assert resp.Weight == 2.0
+    assert resp.ShiftType == 'Morning'
