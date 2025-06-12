@@ -204,6 +204,9 @@
     <div class="card-header"><strong>Orar</strong></div>
     <div class="card-body">
       <div id="calendarMaster" style="min-height:400px;"></div>
+      {% if request.session.preview_events %}
+        {{ request.session.preview_events|json_script:"preview-events-data" }}
+      {% endif %}
 
       {% if request.session.preview_events %}
 
@@ -349,9 +352,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Dacă există preview în sesiune, îl afișăm automat
   {% if request.session.preview_events %}
+    const previewEvents = JSON.parse(document.getElementById('preview-events-data').textContent);
     initialSources.push({
       id: 'preview',
-      events: {{ request.session.preview_events|safe }},
+      events: previewEvents,
       color: '#3788d8'
     });
     calendarCard.style.display = 'block';
