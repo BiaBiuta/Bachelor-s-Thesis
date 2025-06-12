@@ -199,13 +199,14 @@
 
 
     <!-- Col 3: Calendar Preview -->
-  <div class="col-12" id="calendarCard" style="display:none;">
+  <div class="col-12" id="calendarCard" style="display: {% if request.session.preview_events %}block{% else %}none{% endif %};">
   <div class="card shadow-sm mt-4">
     <div class="card-header"><strong>Orar</strong></div>
     <div class="card-body">
       <div id="calendarMaster" style="min-height:400px;"></div>
 
       {% if request.session.preview_events %}
+
       <div class="mt-3">
         <form method="post" action="{% url 'calendarapp:confirm_schedule' %}" class="d-inline">
           {% csrf_token %}
@@ -429,14 +430,14 @@ document.getElementById('apply-requests').addEventListener('click', () => {
 
 
 </script>
-{% if kpi_results %}
-<script>
-  document.addEventListener("DOMContentLoaded", function() {
-    var kpiModal = new bootstrap.Modal(document.getElementById("kpiModal"));
-    kpiModal.show();
-  });
-</script>
-{% endif %}
+{#{% if kpi_results %}#}
+{#<script>#}
+{#  document.addEventListener("DOMContentLoaded", function() {#}
+{#    var kpiModal = new bootstrap.Modal(document.getElementById("kpiModal"));#}
+{#    kpiModal.show();#}
+{#  });#}
+{#</script>#}
+{#{% endif %}#}
 
 
 

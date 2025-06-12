@@ -7,14 +7,13 @@ from unittest.mock import patch
 # Use the test settings from ``ec_tests`` by default.  This can be overridden
 # by setting the ``DJANGO_SETTINGS_MODULE`` environment variable before running
 # this script.
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ec_tests.test_settings')
+# os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ec_tests.test_settings')
 import django
 from django.conf import settings
 from django.test import RequestFactory
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.core.management import call_command
-
 django.setup()
 call_command('migrate', interactive=False, run_syncdb=True, verbosity=0)
 
@@ -34,7 +33,7 @@ PREFIX2 = "..\\database\\instances1_24\\"
 def patched_open():
     original_open = open
     def _open(path, *args, **kwargs):
-        if path.startswith(PREFIX1) or path.startswith(PREFIX2) or path.startswith('.\\..\\database\\instances1_24\\'):
+        if path.startswith(PREFIX2) or path.startswith(PREFIX2) or path.startswith('.\\..\\database\\instances1_24\\'):
             path = os.path.join(BASE_DIR, os.path.basename(path))
         return original_open(path, *args, **kwargs)
     with patch('builtins.open', _open):

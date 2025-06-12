@@ -17,20 +17,8 @@ class DayShiftType(models.Model):
         self.KPISoftUnderCover = 0
         self.NrSelectedInOptScope = 0
         self.OptScopeDayShiftType = []
-        # The admin instantiates blank objects where FK fields may not be set.
-        # Using ``ShiftType_id`` and ``Day_id`` avoids triggering the FK
-        # descriptors which would raise ``RelatedObjectDoesNotExist`` when those
-        # fields are ``None``.
-        if getattr(self, "ShiftType_id", None):
-            try:
-                self.ShiftType.set_relation_dayshifttype(self)
-            except ShiftType.DoesNotExist:
-                pass
-        if getattr(self, "Day_id", None):
-            try:
-                self.Day.set_relation_dayshifttype(self)
-            except Day.DoesNotExist:
-                pass
+        self.ShiftType.set_relation_dayshifttype(self)
+        self.Day.set_relation_dayshifttype(self)
     def set_relation_optscope_dayshifttype(self, optscope_dayshifttype):
         self.OptScopeDayShiftType.append(optscope_dayshifttype)
 

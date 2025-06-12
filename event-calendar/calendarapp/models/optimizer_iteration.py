@@ -547,7 +547,6 @@ class OptimizerIteration:
             else:
                 return pyo.Constraint.Skip
 
-
         # Constraint 13: UnderCover
         # If the number assigned shifts is below the required number on certain day
         def under_cover(model, s, d):

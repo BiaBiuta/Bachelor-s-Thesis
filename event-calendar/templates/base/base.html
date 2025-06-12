@@ -276,7 +276,7 @@
                         <span id="notification-count" class="badge badge-pill badge-danger notification-badge">0</span>
                     </a>
                     <ul class="app-notification dropdown-menu dropdown-menu-right">
-                        <li class="app-notification__title">You have 4 new notifications.</li>
+                        <li class="app-notification__title">Notifications</li>
                         <div class="app-notification__content">
 
 
@@ -286,7 +286,7 @@
                 </li>
                 <!-- User Menu-->
                 <li class="dropdown">
-                    <a class="app-nav__item" href="#" data-toggle="dropdown" aria-label="Open Profile Menu"><i class="fa fa-user fa-lg"></i> {{ request.user.email }}</a>
+                    <a class="app-nav__item" href="#" data-toggle="dropdown" aria-label="Open Profile Menu"><i class="fa fa-user fa-lg"></i> Hi {{ request.user.username }}</a>
                     <ul class="dropdown-menu settings-menu dropdown-menu-right">
                          <li>
                             <a class="dropdown-item" href="#"><i class="fa fa-cog fa-lg"></i> Settings</a>
@@ -361,9 +361,9 @@
                 <li>
                     <a class="app-menu__item" href="javascript:void(0);" id="profileButton"><i class="app-menu__icon fa fa-clock-o" aria-hidden="true"></i><span class="app-menu__label">  Generare Orar</span></a>
                 </li>
-                <li>
-                    <a class="app-menu__item" href="javascript:void(0);" id="profileButtonNoAlg"><i class="app-menu__icon fa fa-clock-o" aria-hidden="true"></i><span class="app-menu__label">  Generare Orar without alghorithm</span></a>
-                </li>
+{#                <li>#}
+{#                    <a class="app-menu__item" href="javascript:void(0);" id="profileButtonNoAlg"><i class="app-menu__icon fa fa-clock-o" aria-hidden="true"></i><span class="app-menu__label">  Generare Orar without alghorithm</span></a>#}
+{#                </li>#}
                     <li>
                     <a class="app-menu__item" href="{% url 'admin:index' %}"><i class="app-menu__icon fa fa-folder-open-o" aria-hidden="true"></i><span class="app-menu__label">Admin</span></a>
                 </li>

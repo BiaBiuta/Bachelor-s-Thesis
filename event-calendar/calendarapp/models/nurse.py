@@ -37,15 +37,8 @@ class Nurse(models.Model):
         self.NurseDayShiftType = []
         self.NurseShiftType = []
         self.OptScopeNurse = []
-        # Avoid accessing the related object before it's set (e.g. when the
-        # admin creates a blank form instance). Using ``GlobalObject_id``
-        # bypasses the descriptor which would otherwise raise
-        # ``RelatedObjectDoesNotExist`` when the FK is ``None``.
-        if getattr(self, "GlobalObject_id", None):
-            try:
-                self.GlobalObject.set_relation_nurse(self)
-            except GlobalObject.DoesNotExist:
-                pass
+        if self.GlobalObject:
+            self.GlobalObject.set_relation_nurse(self)
 
     def __str__(self):
         return f"Nurse {self.EmployeeID}"

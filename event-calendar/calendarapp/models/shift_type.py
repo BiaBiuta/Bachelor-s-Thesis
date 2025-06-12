@@ -1,15 +1,11 @@
 from django.db import models
 from calendarapp.models.global_object import GlobalObject
-
-
 class ShiftType(models.Model):
     ShiftID = models.CharField(max_length=50,unique=True,primary_key=True)
     LengthInMins = models.FloatField()
     ForbiddenShifts = models.JSONField()
     GlobalObject=models.ForeignKey(GlobalObject, on_delete=models.CASCADE)
     def __init__(self, *args, **kwargs):
-        """Initialize the model without touching the FK when it's not set."""
-        global_object = kwargs.get("GlobalObject")
         super().__init__(*args, **kwargs)
         self.IsInsideOptScope = False
         # Relations
@@ -18,18 +14,8 @@ class ShiftType(models.Model):
         self.DayShiftType = []
         self.NurseShiftType = []
         self.AssignedNurseDay = []
-
-        # Avoid accessing the related object before it's available. Using
-        # ``GlobalObject_id`` bypasses the descriptor, preventing
-        # ``RelatedObjectDoesNotExist`` when the admin instantiates an empty
-        # form.
-        if isinstance(global_object, GlobalObject):
-            global_object.set_relation_shifttype(self)
-        elif getattr(self, "GlobalObject_id", None):
-            try:
-                self.GlobalObject.set_relation_shifttype(self)
-            except GlobalObject.DoesNotExist:
-                pass
+        if self.GlobalObject:
+            self.GlobalObject.set_relation_shifttype(self)
     def set_relation_nursedayshifttype(self, nursedayshifttype):
         self.NurseDayShiftType.append(nursedayshifttype)
 

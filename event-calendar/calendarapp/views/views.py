@@ -1135,6 +1135,7 @@ def timetable(request):
             })
 
     # 3) Salvați în sesiune și redirecționați
+    print("preview_events", preview_events)
     request.session['preview_events'] = preview_events
     return redirect('calendarapp:choose_instance')
 
@@ -1612,6 +1613,7 @@ def timetable_without_algorithm(request):
 
 @login_required
 def confirm_schedule(request):
+    print("AM INTRAT ÎN confirm_schedule")
     # 1) Preia lista din sesiune
     preview = request.session.get('preview_events')
     cache_key = f"unsaved_chrom_{request.session.session_key}"

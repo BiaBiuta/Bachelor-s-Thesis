@@ -1,34 +1,15 @@
 
 from django.db import models
-from calendarapp.models.nurse import Nurse
+from calendarapp.models.nurse import  Nurse
 from calendarapp.models.day import Day
-
-
 class NurseDay(models.Model):
     Nurse = models.ForeignKey(Nurse, to_field="EmployeeID",on_delete=models.CASCADE)
     Day = models.ForeignKey(Day,to_field="DayID", on_delete=models.CASCADE)
     IsDayOff = models.BooleanField()
     def __init__(self, *args, **kwargs):
-        """Initialize without touching FKs when they are not provided."""
-        nurse = kwargs.get("Nurse")
-        day = kwargs.get("Day")
         super().__init__(*args, **kwargs)
-
-        if isinstance(nurse, Nurse):
-            nurse.set_relation_nurseday(self)
-        elif getattr(self, "Nurse_id", None):
-            try:
-                self.Nurse.set_relation_nurseday(self)
-            except Nurse.DoesNotExist:
-                pass
-
-        if isinstance(day, Day):
-            day.set_relation_nurseday(self)
-        elif getattr(self, "Day_id", None):
-            try:
-                self.Day.set_relation_nurseday(self)
-            except Day.DoesNotExist:
-                pass
+        self.Nurse.set_relation_nurseday(self)
+        self.Day.set_relation_nurseday(self)
         self.FirstWorkingBlock_ConsecutiveWorkingDays = 0
         self.FirstDayOffBlock_ConsecutiveDayOffs = 0
         self.KPIHardShiftRotation = 0.0
