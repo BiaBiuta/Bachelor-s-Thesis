@@ -12,6 +12,7 @@ import django
 from django.conf import settings
 from django.test import RequestFactory
 from django.contrib.auth import get_user_model
+from django.contrib.sessions.backends.db import SessionStore
 from django.db import transaction
 from django.core.management import call_command
 django.setup()
@@ -43,7 +44,8 @@ def run_for_instance(filename):
     file_path = os.path.join(BASE_DIR, filename)
     with transaction.atomic():
         request = rf.get('/timetable-test')
-        request.session = {}
+        request.session = SessionStore()
+        request.session.save()
         go = read_instance_file(file_path)
         email = 'tmp@example.com'
         username = email.split('@')[0]
@@ -70,8 +72,17 @@ def run_for_instance(filename):
     return timings
 
 if __name__ == '__main__':
+    import argparse
+
+    parser = argparse.ArgumentParser(description='Compare timetable generation times.')
+    parser.add_argument('--limit', type=int, default=None,
+                        help='Process only the first N instance files.')
+    args = parser.parse_args()
+
     results = []
-    for name in sorted(f for f in os.listdir(BASE_DIR) if f.endswith('.txt')):
+    for idx, name in enumerate(sorted(f for f in os.listdir(BASE_DIR) if f.endswith('.txt'))):
+        if args.limit is not None and idx >= args.limit:
+            break
         try:
             timings = run_for_instance(name)
             results.append((name, timings))

@@ -25,7 +25,6 @@ def build_basic_objects():
         MaxConsShifts=3, MinConsShifts=1, MinConsDaysOff=1, MaxWeekends=2,
         DaysOff=0, GlobalObject=go
     )
-    go.set_relation_nurse(nurse)
     d1 = Day(DayID=0, GlobalObject=go)
     d2 = Day(DayID=1, GlobalObject=go)
     nd1 = NurseDay(Nurse=nurse, Day=d1, IsDayOff=False)
