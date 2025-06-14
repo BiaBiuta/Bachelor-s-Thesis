@@ -1135,8 +1135,11 @@ def timetable(request):
             })
 
     # 3) Salvați în sesiune și redirecționați
-    print("preview_events", preview_events)
+    # print("preview_events", preview_events)
     request.session['preview_events'] = preview_events
+    request.session.modified = True
+    if request.session.get('preview_events'):
+        print ("Preview events already in session, clearing old ones.")
     return redirect('calendarapp:choose_instance')
 
 
@@ -1190,7 +1193,7 @@ def timetable_without_algorithm(request):
 
         # Create new ShiftType object
         new_shifttype = ShiftType(shift_id, length_in_mins, forbidden_shifts, global_object_id)
-        print(new_shifttype.ShiftID, ",", new_shifttype.LengthInMins)
+        #print(new_shifttype.ShiftID, ",", new_shifttype.LengthInMins)
         global_object.set_relation_shifttype(new_shifttype)
     for nurse in nurses:
         employee_id = nurse.EmployeeID
@@ -1304,42 +1307,42 @@ def timetable_without_algorithm(request):
                     ShiftType=shifttype,
                     NurseDay=nurseday
                 )
-    for d in global_object.Day:
-        print(
-            f"\nDay {d.DayID}  (Next: {getattr(d.Next, 'DayID', None)}, Prev: {getattr(d.Previous, 'DayID', None)})")
-        print("  NurseDay-uri:")
-        for nd in d.NurseDay:
-            assigned = nd.AssignedShift.ShiftID if nd.AssignedShift else "None"
-            print(
-                f"    • NurseDay(Nurse={nd.Nurse.EmployeeID}, IsDayOff={nd.IsDayOff}, Assigned={assigned})")
-            print("      ↳ NurseDayShiftType:")
-            for ndst in nd.NurseDayShiftType:
-                print(
-                    f"         - ShiftType={ndst.ShiftType.ShiftID}, OnReq={ndst.IsOnRequest}, OffReq={ndst.IsOffRequest}")
-        print("  DayShiftType-uri:")
-    print("\nNurses:")
-    for n in global_object.Nurse:
-        print(f"\nNurse {n.EmployeeID}  (MinTotal={n.MinTotalMins}, MaxTotal={n.MaxTotalMins})")
-        print("  NurseShiftType-uri:")
-        for nst in n.NurseShiftType:
-            print(f"    • ShiftType={nst.ShiftType.ShiftID}, MaxShifts={nst.MaxShifts}")
-        print("  NurseDay-uri:")
-        for nd in n.NurseDay:
-            assigned = nd.AssignedShift.ShiftID if nd.AssignedShift else "None"
-            print(f"    • Day={nd.Day.DayID}, IsDayOff={nd.IsDayOff}, Assigned={assigned}")
-    print("\nShiftTypes:")
-    for st in global_object.ShiftType:
-        print(f"\nShiftType {st.ShiftID}  (Len={st.LengthInMins}m)")
-        print("  DayShiftType-uri:")
-        for dst in st.DayShiftType:
-            print(f"    • Day={dst.Day.DayID}, Required={dst.NrRequired}")
-        print("  NurseShiftType-uri:")
-        for nst in st.NurseShiftType:
-            print(f"    • Nurse={nst.Nurse.EmployeeID}, MaxShifts={nst.MaxShifts}")
-        print("  NurseDayShiftType-uri:")
-        for ndst in st.NurseDayShiftType:
-            print(
-                f"    • NurseDay(Nurse={ndst.NurseDay.Nurse.EmployeeID}, Day={ndst.NurseDay.Day.DayID}), OnReq={ndst.IsOnRequest}, OffReq={ndst.IsOffRequest}")
+    # for d in global_object.Day:
+    #     print(
+    #         f"\nDay {d.DayID}  (Next: {getattr(d.Next, 'DayID', None)}, Prev: {getattr(d.Previous, 'DayID', None)})")
+    #     print("  NurseDay-uri:")
+    #     for nd in d.NurseDay:
+    #         assigned = nd.AssignedShift.ShiftID if nd.AssignedShift else "None"
+    #         print(
+    #             f"    • NurseDay(Nurse={nd.Nurse.EmployeeID}, IsDayOff={nd.IsDayOff}, Assigned={assigned})")
+    #         print("      ↳ NurseDayShiftType:")
+    #         for ndst in nd.NurseDayShiftType:
+    #             print(
+    #                 f"         - ShiftType={ndst.ShiftType.ShiftID}, OnReq={ndst.IsOnRequest}, OffReq={ndst.IsOffRequest}")
+    #     print("  DayShiftType-uri:")
+    # print("\nNurses:")
+    # for n in global_object.Nurse:
+    #     print(f"\nNurse {n.EmployeeID}  (MinTotal={n.MinTotalMins}, MaxTotal={n.MaxTotalMins})")
+    #     print("  NurseShiftType-uri:")
+    #     for nst in n.NurseShiftType:
+    #         print(f"    • ShiftType={nst.ShiftType.ShiftID}, MaxShifts={nst.MaxShifts}")
+    #     print("  NurseDay-uri:")
+    #     for nd in n.NurseDay:
+    #         assigned = nd.AssignedShift.ShiftID if nd.AssignedShift else "None"
+    #         print(f"    • Day={nd.Day.DayID}, IsDayOff={nd.IsDayOff}, Assigned={assigned}")
+    # print("\nShiftTypes:")
+    # for st in global_object.ShiftType:
+    #     print(f"\nShiftType {st.ShiftID}  (Len={st.LengthInMins}m)")
+    #     print("  DayShiftType-uri:")
+    #     for dst in st.DayShiftType:
+    #         print(f"    • Day={dst.Day.DayID}, Required={dst.NrRequired}")
+    #     print("  NurseShiftType-uri:")
+    #     for nst in st.NurseShiftType:
+    #         print(f"    • Nurse={nst.Nurse.EmployeeID}, MaxShifts={nst.MaxShifts}")
+    #     print("  NurseDayShiftType-uri:")
+    #     for ndst in st.NurseDayShiftType:
+    #         print(
+    #             f"    • NurseDay(Nurse={ndst.NurseDay.Nurse.EmployeeID}, Day={ndst.NurseDay.Day.DayID}), OnReq={ndst.IsOnRequest}, OffReq={ndst.IsOffRequest}")
 
 
     timelimit = dt.timedelta(seconds=120)
@@ -1726,6 +1729,7 @@ def schedule_log_events(request, log_id):
     Returnează JSON-ul cu evenimentele pentru log-ul specificat.
     """
     log = get_object_or_404(ScheduleGenerationLog, pk=log_id)
+    print("log ",log.events_json)
     return JsonResponse(log.events_json, safe=False)
 
 

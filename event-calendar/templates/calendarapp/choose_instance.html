@@ -199,7 +199,7 @@
 
 
     <!-- Col 3: Calendar Preview -->
-  <div class="col-12" id="calendarCard" style="display: {% if request.session.preview_events %}block{% else %}none{% endif %};">
+  <div class="col-12" id="calendarCard" style="display:none">
   <div class="card shadow-sm mt-4">
     <div class="card-header"><strong>Orar</strong></div>
     <div class="card-body">
@@ -258,6 +258,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    console.log( {{ request.session.preview_events|safe }});
   const selectUnit   = document.getElementById('unitate');
   const badgeNurses  = document.getElementById('badgeNurses');
   const badgeShifts  = document.getElementById('badgeShiftTypes');
@@ -323,39 +324,26 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 document.addEventListener('DOMContentLoaded', function() {
+    console.log("2")
      // Găsim butonul de toggle și containerul collapse
   const toggleBtn = document.getElementById('toggle-more-logs');
   const collapseDiv = document.getElementById('moreLogs');
 
-  if (!toggleBtn || !collapseDiv) {
-    // Dacă nu există în pagină, nu facem nimic
-    return;
-  }
 
-  // Când începe animația de expandare/collapse, schimbăm textul butonului
-  collapseDiv.addEventListener('shown.bs.collapse', function () {
-    toggleBtn.textContent = 'Colapsează';
-    toggleBtn.setAttribute('aria-expanded', 'true');
-  });
-
-  collapseDiv.addEventListener('hidden.bs.collapse', function () {
-    toggleBtn.textContent = 'Arată mai multe';
-    toggleBtn.setAttribute('aria-expanded', 'false');
-
-});
   const calendarEl = document.getElementById('calendarMaster');
   const calendarCard = document.getElementById('calendarCard');
   const initialSources = [];
-
+ {#console.log("echo preview_events:", {{ request.session.preview_events|safe }});#}
   // Dacă există preview în sesiune, îl afișăm automat
-  {% if request.session.preview_events %}
+
+      console.log("echo preview_events:", {{ request.session.preview_events|safe }});
     initialSources.push({
       id: 'preview',
       events: {{ request.session.preview_events|safe }},
       color: '#3788d8'
     });
     calendarCard.style.display = 'block';
-  {% endif %}
+
 
   // Inițializează FullCalendar
   const masterCalendar = new FullCalendar.Calendar(calendarEl, {
@@ -375,13 +363,13 @@ document.addEventListener('DOMContentLoaded', function() {
       e.preventDefault();
       const url = btn.dataset.url;
       calendarCard.style.display = 'block';
-
+      console.log("sunt aici te rog printeaza")
       // Șterge preview-ul, dacă există
       const prev = masterCalendar.getEventSourceById('preview');
       if (prev) prev.remove();
 
       // Fetch evenimentele și adaugă-le
-      fetch(url)
+       fetch(url, {credentials: 'same-origin'})
         .then(resp => {
           if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
           return resp.json();
@@ -403,6 +391,23 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
   });
+  if (!toggleBtn || !collapseDiv) {
+      console.log("sunt in if ")
+    // Dacă nu există în pagină, nu facem nimic
+    return;
+  }
+
+  // Când începe animația de expandare/collapse, schimbăm textul butonului
+  collapseDiv.addEventListener('shown.bs.collapse', function () {
+    toggleBtn.textContent = 'Colapsează';
+    toggleBtn.setAttribute('aria-expanded', 'true');
+  });
+
+  collapseDiv.addEventListener('hidden.bs.collapse', function () {
+    toggleBtn.textContent = 'Arată mai multe';
+    toggleBtn.setAttribute('aria-expanded', 'false');
+
+});
 });
 document.getElementById('apply-requests').addEventListener('click', () => {
     // adună toate checkbox-urile bifate
