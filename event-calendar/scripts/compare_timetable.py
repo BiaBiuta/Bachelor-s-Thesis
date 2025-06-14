@@ -12,6 +12,7 @@ import django
 from django.conf import settings
 from django.test import RequestFactory
 from django.contrib.auth import get_user_model
+from django.contrib.sessions.backends.db import SessionStore
 from django.db import transaction
 from django.core.management import call_command
 django.setup()
@@ -43,7 +44,8 @@ def run_for_instance(filename):
     file_path = os.path.join(BASE_DIR, filename)
     with transaction.atomic():
         request = rf.get('/timetable-test')
-        request.session = {}
+        request.session = SessionStore()
+        request.session.save()
         go = read_instance_file(file_path)
         email = 'tmp@example.com'
         username = email.split('@')[0]
