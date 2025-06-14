@@ -70,8 +70,17 @@ def run_for_instance(filename):
     return timings
 
 if __name__ == '__main__':
+    import argparse
+
+    parser = argparse.ArgumentParser(description='Compare timetable generation times.')
+    parser.add_argument('--limit', type=int, default=None,
+                        help='Process only the first N instance files.')
+    args = parser.parse_args()
+
     results = []
-    for name in sorted(f for f in os.listdir(BASE_DIR) if f.endswith('.txt')):
+    for idx, name in enumerate(sorted(f for f in os.listdir(BASE_DIR) if f.endswith('.txt'))):
+        if args.limit is not None and idx >= args.limit:
+            break
         try:
             timings = run_for_instance(name)
             results.append((name, timings))
