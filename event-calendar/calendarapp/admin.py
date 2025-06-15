@@ -18,10 +18,7 @@ from calendarapp.models.global_object import GlobalObject
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
-# Dez‐înregistrăm modelul Group
 admin.site.unregister(Group)
-
-# Dacă vrei să ascunzi și permisiunile din meniul Admin
 
 @admin.register(models.Event)
 class EventAdmin(admin.ModelAdmin):
@@ -43,20 +40,20 @@ class EventAdmin(admin.ModelAdmin):
     actions = ["approve_events", "export_events_csv"]
 
     def get_queryset(self, request):
-        """Show only unapproved events to the admin by default."""
+        """arata doar unnaproved events """
         qs = super().get_queryset(request)
         if request.user.is_superuser:
             return qs.filter(is_approved=False)
         return qs
 
     def approve_events(self, request, queryset):
-        """Approve selected events."""
+        """approve events """
         queryset.update(is_approved=True)
         self.message_user(request, "Selected events have been approved.")
     approve_events.short_description = "Approve selected events"
 
     def export_events_csv(self, request, queryset):
-        """Export selected events to CSV."""
+        """sa exporte in cvs"""
         field_names = [
             "id",
             "title",
@@ -76,17 +73,6 @@ class EventAdmin(admin.ModelAdmin):
     export_events_csv.short_description = "Export selected events to CSV"
 
 
-# @admin.register(models.EventMember)
-# class EventMemberAdmin(admin.ModelAdmin):
-#     model = models.EventMember
-#     list_display = ["id", "event", "user", "created_at", "updated_at"]
-#     list_filter = ["event"]
-# # from django.contrib import admin
-# # from models.nurse import Nurse
-# #
-# # @admin.register(Nurse)
-# # class NurseAdmin(admin.ModelAdmin):
-# #     list_display = ('user', 'employee_id', 'max_shifts')
 from django.contrib import admin
 from calendarapp.models.coverage_requirements import CoverageRequirement
 from calendarapp.models.sanitation_task import SanitationTask
@@ -95,7 +81,7 @@ from calendarapp.models.sanitation_task import SanitationTask
 class CoverageRequirementAdmin(admin.ModelAdmin):
     list_display  = ('day', 'shift_id', 'requirement', 'weight_under', 'weight_over', 'department')
     list_editable = ('requirement', 'weight_under', 'weight_over')
-    list_per_page = 14   # vezi câte zile ai
+    list_per_page = 14
     ordering      = ('day',)
 
 
@@ -108,8 +94,6 @@ class SanitationTaskAdmin(admin.ModelAdmin):
     search_fields = ('title', 'location')
 from django.contrib import admin
 
-
-# admin.py
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 from calendarapp.models.day_shift_type import DayShiftType
@@ -119,7 +103,7 @@ from calendarapp.models.cereri.dayoff_request import DayOffRequest
 from calendarapp.models.nurse_day_shift_type import NurseDayShiftType
 
 class BaseGlobalObjectFilter(admin.SimpleListFilter):
-    """Reusable filter for models related to :class:`GlobalObject`."""
+    """template reutilizabil pentru toate obiectele :`GlobalObject`."""
 
     title = _('Global Object')
     parameter_name = 'global_object'
@@ -130,7 +114,7 @@ class BaseGlobalObjectFilter(admin.SimpleListFilter):
             for go in GlobalObject.objects.all()
         ]
 
-    field_path = None  # to be defined in subclasses
+    field_path = None
 
     def queryset(self, request, queryset):
         if self.value() and self.field_path:
@@ -159,9 +143,9 @@ class DayShiftTypeAdmin(admin.ModelAdmin):
 @admin.register(ShiftRequest)
 class ShiftRequestAdmin(admin.ModelAdmin):
     change_list_template = "admin/calendarapp/shift_request/change_list.html"
-    list_display = ('nurse','get_department_name',    # afișează doar un câmp, nu întreg obiectul
+    list_display = ('nurse','get_department_name',
         'get_day_repr','get_shift_type','req_type','weight','status')
-    list_display_links = ('nurse',)  # sau alt câmp care e și în list_display
+    list_display_links = ('nurse',)
 
     list_editable = ('status',)
     list_filter  = ('department','status','req_type')
@@ -169,16 +153,13 @@ class ShiftRequestAdmin(admin.ModelAdmin):
 
     @admin.display(description='Departament')
     def get_department_name(self, obj):
-        # presupunem că GlobalObject are un câmp 'name'
         return obj.department.Name
 
     @admin.display(description='Zi')
     def get_day_repr(self, obj):
-        # presupunem că Day are un câmp 'date' (sau altceva reprezentativ)
         return obj.day.DayID
     @admin.display(description='Tipul de schimb')
     def get_shift_type(self, obj):
-        # presupunem că ShiftType are un câmp 'name' (sau altceva reprezentativ)
         return obj.shift_type.ShiftID
 
     @admin.action(description="Approve selected")
@@ -225,7 +206,7 @@ class EmergencyRequestAdmin(admin.ModelAdmin):
         'get_call_nurses',
         'get_remove_nurses',
         'status',
-        'process_button',   # noua coloană cu buton
+        'process_button',
     )
     list_editable = ('status',)
     filter_horizontal = ('remove_nurses', 'call_nurses')
@@ -240,9 +221,6 @@ class EmergencyRequestAdmin(admin.ModelAdmin):
         return ", ".join(str(n) for n in obj.remove_nurses.all())
     get_remove_nurses.short_description = 'Nurse de scos din tură'
 
-    # ---------------------------
-    #  Acțiuni existente
-    # ---------------------------
     @admin.action(description="Approve selected Emergency Requests")
     def approve_requests(self, request, queryset):
         pending = queryset.filter(status='P')
@@ -255,25 +233,19 @@ class EmergencyRequestAdmin(admin.ModelAdmin):
         cnt = pending.update(status='D')
         self.message_user(request, f"{cnt} cereri de urgență au fost respinse.")
 
-    # ---------------------------
-    #  1) Adăugarea butonului “Procesează”
-    # ---------------------------
     def process_button(self, obj):
         """
-        Returnează un buton „Procesează” care trimite la URL-ul personalizat.
-        Folosește `reverse('admin:process_emergency_request', args=[obj.pk])`.
+        returneaza  butonul proceseaza pentru verificare date
+        pentru revenire reverse('admin:process_emergency_request', args=[obj.pk])
         """
         url = reverse('admin:process_emergency_request', args=[obj.pk])
         return format_html(
             '<a class="button" href="{}" style="background-color:#5A8DEE; color:white; padding:2px 6px; text-decoration:none; border-radius:4px;">Procesează</a>',
             url
         )
-    process_button.short_description = 'Acțiune'  # antet coloană
+    process_button.short_description = 'Acțiune'
     process_button.allow_tags = True
 
-    # ---------------------------
-    #  2) Definirea rutei personalizate
-    # ---------------------------
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
@@ -283,27 +255,22 @@ class EmergencyRequestAdmin(admin.ModelAdmin):
                 name='process_emergency_request',
             ),
         ]
-        # punem rutele personalizate înainte, ca să le „prindă” înaintea celor standard
-        return custom_urls + urls
 
-    # ---------------------------
-    #  3) Logica de procesare a cererii
-    # ---------------------------
+        return custom_urls + urls
     def process_emergency_request(self, request, pk, *args, **kwargs):
         """
         View personalizat care:
-        - Încarcă EmergencyRequest cu id=pk.
-        - Verifică dacă asistentele din call_nurses și remove_nurses mai sunt disponibile.
-        - Dacă da, caută Evenimentul corespunzător (după asistentă, dată și shift_type) și-l actualizează.
-        - Trimite mesaje de succes sau eroare (message_user).
-        - Redirecționează înapoi la pagina de listare.
+        incarca EmergencyRequest cu id=pk
+        verifica daca asistentele din call_nurses si remove_nurses mai sunt disponibile
+        daca da, cauta Evenimentul corespunzator (dupa asistenta, data si shift_type) si-l actualizeaza.
+        trimite mesaje de succes sau eroare (message_user).
+        redirectioneaza inapoi la pagina de listare
         """
 
         emergency = get_object_or_404(EmergencyRequest, pk=pk)
 
 
         data_tura = emergency.date
-        # shift_type = emergency.shiftType_id  # sau: emergency.get_shift_type_display(), după cum aveți în model
         print("data_tura:", str(data_tura).split("-")[2])
         call_nurses = list(emergency.call_nurses.all())
         remove_nurses = list(emergency.remove_nurses.all())
@@ -311,8 +278,8 @@ class EmergencyRequestAdmin(admin.ModelAdmin):
         unavailable = []
         day=None
         for nurse in call_nurses :
-            # Căutăm evenimente care se suprapun pentru această asistentă în aceeași zi+shift.
-            # Dacă găsim >=1 astfel de evenimente în baza de date, înseamnă că nu e liberă.
+            # caut evenimente care se suprapun pentru aceasta asistenta in aceeasi zi+shift
+            # daca gasim >=1  evenimente in baza de date, inseamna ca nu e libera
             print("Verificăm disponibilitatea asistentei:", nurse)
             global_object=GlobalObject.objects.get(id=nurse.GlobalObject_id)
             num = re.search(r'\d+', global_object.Name).group()
@@ -327,19 +294,19 @@ class EmergencyRequestAdmin(admin.ModelAdmin):
 
         if unavailable:
             print("e unavailable:", unavailable)
-            # Cel puțin o asistentă nu mai e disponibilă.
+            # cel putin o asistenta nu mai e disponibila
             nume_neliberi = ", ".join(str(n) for n in unavailable)
             self.message_user(
                 request,
                 f"Operațiunea a eșuat: următoarea asistentă(ți) nu sunt disponibile pe {data_tura} : {nume_neliberi}.",
                 level=messages.ERROR
             )
-            return redirect('..')  # înseamnă “să revin la lista de obiecte”
+            return redirect('..')  # revin la lista de obiecte
         print("am trecut de verificare ")
 
 
         try:
-            # Vom presupune că pentru fiecare remove_nurse există exact un eveniment.
+            #  pentru fiecare remove_nurse exista exact un eveniment
             for remove_nurse in remove_nurses:
                 print("am intrat in remove_nurses")
                 nurseDayShiftType=NurseDayShiftType.objects.get(Nurse=remove_nurse, Day=day)
@@ -350,19 +317,16 @@ class EmergencyRequestAdmin(admin.ModelAdmin):
                     NurseDayShiftType=nurseDayShiftType,
                 )
                 print("am gasit event_vechi",event_vechi)
-                # Înlocuim cu prima asistentă din call_nurses
-                # (dacă sunt mai multe, poate vreți altă regulă: rotire, ordonare, etc.)
+                # inlocuiesc cu prima asistenta
                 for call_nurse in call_nurses:
                     x=NurseDayShiftType.objects.get(Nurse=call_nurse, Day=day)
                     print(f"x:{x.id} {x.Nurse.EmployeeID} {x.Day.DayID}" )
                     x.IsAssigned = True
-                    x.save()  # face UPDATE pe rândul respectiv
+                    x.save()  # fac update
                     print("am updatat nurseDayShiftType")
-                    # 2. Dacă vreți să legați relația cu event_vechi (presupunând că există un câmp FK sau M2M)
-                    #    presupunem un FK pe event_vechi numit `nurse_day_shift_type`
                     event_vechi.nurse_day_shift_type = x
                     event_vechi.title = f"{call_nurse.EmployeeID}/{x.ShiftType.ShiftID}"
-                    event_vechi.save()  # face UPDATE pe event_vechi
+                    event_vechi.save()  # fac update pe event_vechi
                     print("am updatat event_vechi")
         except Event.DoesNotExist:
             self.message_user(
@@ -432,7 +396,7 @@ class GlobalObjectAdmin(admin.ModelAdmin):
     search_fields = ('Name',)
 
 
-# Register any remaining models automatically
+
 
 def _register_all_models(app_label: str) -> None:
     """Register any remaining models showing all fields."""

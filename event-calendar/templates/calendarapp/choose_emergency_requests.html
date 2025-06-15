@@ -48,17 +48,16 @@
       </div>
 
     {% elif stage == 'show_lists' %}
-      <!-- Etapa 2: Afișează cele două liste de asistenți -->
+
       <div class="lists-container">
         <h4 class="mb-3">Data selectată: <strong>{{ chosen_date }}</strong></h4>
 
         <form method="post" id="emergency-form">
           {% csrf_token %}
-          <!-- Păstrăm data într-un hidden -->
+
           <input type="hidden" name="date" value="{{ chosen_date }}" />
 
           <div class="row">
-            <!-- Lista asistenților care au tură în ziua respectivă -->
             <div class="col-md-6 mb-4">
               <h5>Asistenți pe tură (mută OFF):</h5>
               {% if nurses_on_shift %}
@@ -78,7 +77,7 @@
               {% endif %}
             </div>
 
-            <!-- Lista asistenților cu zi liberă aprobată -->
+
             <div class="col-md-6 mb-4">
               <h5>Asistenți cu zi liberă (cheamă ON):</h5>
               {% if nurses_on_dayoff %}

@@ -21,7 +21,7 @@ const slotStore = {
   weight: null,
 };
 
-/* ───── mici utilitare HTMX ───────────────────────────────────────── */
+
 function addBubble(message, who="ai", quick=[]) {
   htmx.ajax("POST", "/bubble/", {
     values: { message, who, quick: JSON.stringify(quick) },
@@ -30,7 +30,7 @@ function addBubble(message, who="ai", quick=[]) {
   });
 }
 
-// asigură scroll-ul la cea mai recentă bulă după ce htmx actualizează DOM-ul
+
 document.body.addEventListener("htmx:afterSwap", (evt) => {
   if (evt.detail.target.id === "chat-pane") {
     pane.scrollTop = pane.scrollHeight;
@@ -38,23 +38,23 @@ document.body.addEventListener("htmx:afterSwap", (evt) => {
 });
 
 
-/* ───── greeting iniţial ─────────────────────────────────────────── */
+/*greeitng initial*/
 document.addEventListener("DOMContentLoaded", ()=>{
   console.log("ar trebui sa intru aici ")
-  addBubble(initialGreeting());     // << înlocuiește textul fix
+  addBubble(initialGreeting());
 });
 
 
-/* ───── handler send ─────────────────────────────────────────────── */
+/*  handler send */
 sendBtn.addEventListener("click", async () => {
   const text = input.value.trim();
   if (!text) return;
 
-  /* 1️⃣  afişăm imediat bula utilizatorului */
+  /*bula utilizator */
   addBubble(text, "user");
   input.value = "";
 
-  /* 2️⃣  verificăm ce informaţii lipsesc */
+  /* informatii care lipsesc */
   const partial = extractSchedulingInfo(text);
   // const missing = requiredFields.filter(f => !partial[f]);
   console.log(partial)
@@ -65,24 +65,23 @@ sendBtn.addEventListener("click", async () => {
   //   return;                // ieşim din handler
   // }
 
-  /* 3️⃣  indicator “typing…” (opţional) ----------------------------- */
+  /*   indicator “typing…” /
    const ws = new WebSocket('ws://localhost:5000/ws/typing/');
   addBubble("Typing...", 'bot',[true]);
     ws.onopen = () => ws.send(JSON.stringify({ typing: true }));
 
-  /* 4️⃣  parsăm rapid date absolut / relativ ------------------------ */
+  /* parsare*/
   const iso =
     parseAbsDate(text) ||
     resolveRelativeWeekday(text) ||
     (parseExplicitRange(text) || [])[0] ||
     (resolveRelativeWeek(text)    || [])[0];
 
-  // Actualizăm slotStore cu informațiile detectate local
   if (iso) slotStore.day = iso;
 
 const body = {
   message: text,
-  currentUserEmail: USER.email || "",    // <- adaugă acest câmp!
+  currentUserEmail: USER.email || "",
   currentUserName:  USER.name,
   UserId:           USER.id
 };
@@ -95,13 +94,13 @@ try {
     body: JSON.stringify(body)
   });
 
-  /* (a) ­verificăm codul HTTP --------------------------- */
-  if (!response.ok) {                     // 4xx / 5xx / 422 …
+
+  if (!response.ok) {
     throw new Error(`server returned ${response.status}`);
   }
 
-  /* (b) ­parsăm JSON-ul -------------------------------- */
-  data = await response.json();           // (!) nu .then în lanţ
+
+  data = await response.json();
 
 } catch (err) {
   console.error("fetch /predict failed:", err);
@@ -109,13 +108,13 @@ try {
   return;
 }
 
-/* 2️⃣  aici AI deja răspunsul în `data`  ------------------ */
-console.log("FastAPI →", data);           // vezi tot JSON-ul
 
-/* De exemplu… */
+console.log("FastAPI →", data);
+
+
 if (data.intent) {
   addBubble(`🤖 intent: <b>${data.intent}</b>`);
-} else if (data.detail) {                 // eroare de validare 422
+} else if (data.detail) {
   addBubble(`❌ ${data.detail}`);
 } else {
   addBubble("🤔 I didn't understand that.");
@@ -147,7 +146,7 @@ if (data.intent !== "schedule_shift") {
     weight:    serverSlots.weight || localSlots.weight || (slotStore.weight ? "provided" : null)
   };
 
-  // Actualizăm valorile stocate pe baza informațiilor noi
+  // Actuactualizam  valorile stocate pe baza informainformatii  noi
   if (data.day) slotStore.day = data.day;
   else if (iso && !slotStore.day) slotStore.day = iso;
 
@@ -162,36 +161,28 @@ if (data.intent !== "schedule_shift") {
 
   console.log("Combined slots:", combinedSlots);
 
-  /* ─── 7️⃣ Determinăm care slot-uri lipsesc ───────────────────────────── */
+  /*sloturi care lipsesc*/
   const missing = requiredFields.filter((f) => !slotStore[f]);
   console.log("Missing slots:", missing);
 
-  /* ─── 8️⃣ Dacă există slot-uri lipsă, întrebăm utilizatorul și oprim fluxul aici ───── */
+  /* intrebam utilizator despre sloruti lipsa */
   if (missing.length > 0) {
-    // Generăm mesajul de tip follow-up
     const followUpText = getMissingFieldsText(missing);
     addBubble(followUpText, "bot");
     return;
   }
-
-  /* ─── 9️⃣ Dacă am ajuns aici, înseamnă că am toate datele necesare (day, shiftType, reqType, weight) ───────── */
   addBubble("Am toate informațiile necesare. Trimit cererea către server...", "bot");
 
-  /* ─── 1️⃣0️⃣ Construim payload-ul final pentru /api/schedule/ ─────────────────── */
 
   //const isoDate = slotStore.day;
 
-  // Construim payload definitiv
   const finalPayload = {
-    // Câmpuri obligatorii conform modelului Django:
-    day:        slotStore.day,                      // ex: "2025-06-10T00:00:00Z"
+    day:        slotStore.day,
     shift_type: slotStore.shiftType,
     req_type:   slotStore.reqType,
     weight:     slotStore.weight,
-
-    // Câmpuri redundante (pentru audit/istoric)
-    nurse:      USER.id,     // prespunem că USER.id e același ca Nurse.pk
-    department: 0, // dacă ai department în context; altfel, adaugi un pas să-l ceri
+    nurse:      USER.id,
+    department: 0,
   };
     console.log("Final payload:", finalPayload);
 function getCookie(name) {
@@ -202,7 +193,6 @@ function getCookie(name) {
 }
 
 const csrftoken = getCookie('csrftoken');
-  /* ─── 1️⃣1️⃣ Apelăm endpoint-ul real de creare `ShiftRequest` în Django ───────── */
   print("Final payload:", finalPayload);
   try {
     const headers = { "Content-Type": "application/json" };
@@ -219,7 +209,6 @@ const csrftoken = getCookie('csrftoken');
     const result = await res.json();
     if (result.success) {
       addBubble(result.message || "Cererea a fost înregistrată cu succes!", "bot");
-      // Resetează informațiile colectate pentru o nouă conversație
       slotStore.day = null;
       slotStore.shiftType = null;
       slotStore.reqType = null;
@@ -232,11 +221,6 @@ const csrftoken = getCookie('csrftoken');
     addBubble("⚠️ Nu am putut înregistra cererea. Încearcă mai târziu.", "bot");
   }
 });
-
-
-
-
-/* Enter = click Send */
 input.addEventListener("keydown", e=>{
   if(e.key==="Enter") sendBtn.click();
 });

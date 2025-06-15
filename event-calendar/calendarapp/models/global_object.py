@@ -73,7 +73,7 @@ class GlobalObject(models.Model):
     # Hard KPI Calc
     def calc_KPIHardOneShiftOneDay(self):
         self.KPIHardOneShiftOneDay = 0.0
-        return 0.0  # This model cannot assign more than one shifts in a NurseDay
+        return 0.0
 
     def calc_KPIHardShiftRotation(self):
         value = 0
@@ -202,7 +202,7 @@ class GlobalObject(models.Model):
 
 
     def total_to_min(self):
-        # Sumează pentru toate asistentele
+        # suma pentru toate asistentele
         total_min=sum(nurse.MinTotalMins for nurse in self.Nurse)
         print(total_min)
         self.TotalMinutesToMin= total_min-self.TotalMinutes
@@ -218,6 +218,6 @@ class GlobalObject(models.Model):
             self.TotalMinutesToMax=0
         return self.TotalMinutesToMax
     def total_minutes(self):
-        # Sumează pentru toate asistentele
+        # suma pentru toate asistentele
         self.TotalMinutes= sum(nurse.TotalMins for nurse in self.Nurse)
         return self.TotalMinutes

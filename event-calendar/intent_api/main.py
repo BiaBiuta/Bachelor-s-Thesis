@@ -35,7 +35,7 @@ MONTH_WORDS = {
     "july","august","september","october","november","december",
 }
 
-# Map month names to their respective numbers for easier conversion
+
 MONTH_NAME_TO_NUM = {
     "january": 1,
     "february": 2,
@@ -129,10 +129,8 @@ def extract_scheduling_info(message: str) -> Dict[str, Any]:
 def predict(req: PredictRequest):
     message = req.message.strip()
     m_lower = message.lower()
-    # 1) intent classification
+    # intent clasification
     intent = intent_model.predict([m_lower])[0]
-
-    # 2) default slots
     shift_type: Optional[str] = None
     role: Optional[str] = None
     parsed_date: Optional[datetime] = None
@@ -140,7 +138,7 @@ def predict(req: PredictRequest):
     req_type: Optional[str] = None
     weight: Optional[float] = None
 
-    # 3) extract basic shift type and role using spaCy tokens
+
     for tok in nlp(message):
         t = tok.text.lower()
         if t in {"morning", "afternoon", "evening", "night"}:
@@ -156,13 +154,13 @@ def predict(req: PredictRequest):
     if "weight" in info:
         weight = info["weight"]
 
-    # 4) correct intent if user just said some time expression
+
     if intent == "unknown" and (
         "today" in m_lower or "tomorrow" in m_lower or "day" in info or "shiftType" in info
     ):
         intent = "schedule_shift"
 
-    # 5) Try to extract the day information in several ways
+
     m_daycode = re.search(r"\b[dD](\d+)\b", message)
     if m_daycode:
         raw_date_phrase = "D" + m_daycode.group(1)

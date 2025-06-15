@@ -47,15 +47,8 @@ class NurseDayShiftType(models.Model):
         return value
 
     class Meta:
-        # Constrângerea de unicitate – singura modalitate nativă în Django
         unique_together = ('Nurse', 'Day', 'ShiftType')
-        # În Django 2.2+ puteți, alternativ, să folosiți UniqueConstraint:
-        # constraints = [
-        #     models.UniqueConstraint(fields=['nurse', 'day', 'shift_type'],
-        #                              name='unique_nurse_day_shifttype')
-        # ]
         indexes = [
-            # Creăm și un index compus pentru a accelera căutările pe aceste trei coloane
             models.Index(fields=['Nurse', 'Day', 'ShiftType'],
                          name='idx_nurse_day_shift'),
         ]

@@ -6,7 +6,7 @@ from calendarapp.models import Event
 
 logger = logging.getLogger(__name__)
 class AllEventsListView(ListView):
-    """ All event list views """
+    """ toata lista de evenimente """
 
     template_name = "calendarapp/events_list.html"
     model = Event
@@ -20,7 +20,7 @@ class AllEventsListView(ListView):
 
 
 class RunningEventsListView(ListView):
-    """ Running events list view """
+    """ evenimentele care sunt in rulare """
 
     template_name = "calendarapp/events_list.html"
     model = Event
@@ -32,7 +32,7 @@ class RunningEventsListView(ListView):
         return Event.objects.get_running_events(user=self.request.user)
 
 class UpcomingEventsListView(ListView):
-    """ Upcoming events list view """
+    """ evenimentele urmatoare """
 
     template_name = "calendarapp/events_list.html"
     model = Event
@@ -45,7 +45,7 @@ class UpcomingEventsListView(ListView):
         return Event.objects.get_upcoming_events(user=self.request.user)
     
 class CompletedEventsListView(ListView):
-    """ Completed events list view """
+    """ evenimentele trecute si la care s-a participat """
 
     template_name = "calendarapp/events_list.html"
     model = Event

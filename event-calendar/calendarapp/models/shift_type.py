@@ -36,4 +36,3 @@ class ShiftType(models.Model):
                     nds = [ndshift for ndshift in nd.NurseDayShiftType if ndshift.ShiftType == self][0]
                     value = value + nds.NrSelectedInOptScope
         return value
-    # Lista schimburilor interzise

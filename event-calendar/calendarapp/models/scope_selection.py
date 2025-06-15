@@ -123,7 +123,6 @@ class ScopeSelection:
         opt_scope_shifttypes = self.Optimizer.select_top_random(opt_scope_shifttypes,
                                                                 self.Optimizer.TopRandomProbability,
                                                                 min(self.MaxShiftTypes, len(opt_scope_shifttypes)))
-        # Fit in anchor_shifttype if it's not selected yet
         if anchor_shifttype != [] and not anchor_shifttype in opt_scope_shifttypes:
             random_idx = random.randrange(len(opt_scope_shifttypes))
             opt_scope_shifttypes[random_idx] = anchor_shifttype

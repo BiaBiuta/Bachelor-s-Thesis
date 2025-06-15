@@ -49,13 +49,9 @@ class GeneticScheduler:
         self.mutation_rate = mutation_rate
         self.hard_penalty = hard_penalty
         self.stag_limit = stagnation_limit
-
-        # Prepare gene mapping: list of (nurse, day)
         self.gene_map = [(n, d)
                          for n in sorted(self.go.Nurse, key=lambda x: x.EmployeeID)
                          for d in sorted(self.go.Day, key=lambda x: x.DayID)]
-        # Precompute allowed shifts per gene index
-        # 0 => Off; >0 indices map to self.shift_list
         self.shift_list = list(self.go.ShiftType)
         self.allowed = []
         for nurse, _day in self.gene_map:
@@ -141,13 +137,11 @@ class GeneticScheduler:
         # print(f"[GA] {self.stag_limit} gens without improvement → fallback to full MIP solver")
         # decode best GA solution
         self.decode(best_chrom)
-        # put entire horizon into opt-scope
         days = self.go.Day
         nurses = self.go.Nurse
         shifts = self.go.ShiftType
         self.go.reset_isinsideoptscope()
         self.go.set_isinsideoptscope(nurses, days, shifts)
-        # single full-scope iteration
         ss = ScopeSelectionRandom('FullScope', len(nurses), len(days), len(shifts), self.optimizer,self.go)
         oi = OptimizerIteration(1, time.time(), self.optimizer, ss,self.go)
         oi.create_optscope_objects(nurses, days, shifts)
@@ -161,10 +155,7 @@ class GeneticScheduler:
         no_improve = 0
 
         for gen in range(1, self.generations + 1):
-            # 1) Fitness „rapid”
             fits = [self.fitness(ind) for ind in pop]
-
-            # 2) Găsești best-ul
             idx = min(range(len(pop)), key=lambda i: fits[i])
             hard, soft = fits[idx]
             if hard < best_hard or (hard == best_hard and soft < best_soft):
@@ -176,7 +167,6 @@ class GeneticScheduler:
 
             print(f"Gen {gen}: best hard={best_hard}, soft={best_soft}, stagnări={no_improve}")
 
-            # 3) Dacă stagnează pe hard, apelează solver-ul ca remediu
             if no_improve >= self.stag_limit and best_hard > 0:
                 print("[GA] fallback la MIP din cauza stagnării pe hard")
                 self._fallback_to_mip(best)
@@ -185,8 +175,6 @@ class GeneticScheduler:
                 hard, soft = self.fitness(best)
                 best_hard, best_soft = hard, soft
                 break
-
-            # 4) Construiești populația următoare **fără** nicio memetică:
             #    doar tournament, crossover, mutation
             elite_idx = sorted(range(len(pop)), key=lambda i: fits[i])[:self.elite_size]
             new_pop = [pop[i] for i in elite_idx]
@@ -198,8 +186,6 @@ class GeneticScheduler:
                 if len(new_pop) < self.pop_size:
                     new_pop += [self.mutate(c2)]
             pop = new_pop
-
-        # 5) dacă la final tot mai ai hard violations, forțează MIP
         if best_hard > 0:
             print("[GA] fallback final la MIP")
             self._fallback_to_mip(best)
@@ -212,6 +198,4 @@ class GeneticScheduler:
         return self.go
 
     def print_schedule(self):
-        # assume you have a generate_schedule(go) utility
-        # generate_schedule(self.go)
         ''''''

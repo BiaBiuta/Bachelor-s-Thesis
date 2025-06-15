@@ -21,7 +21,6 @@ class DayOffRequest(models.Model):
         unique_together = ('nurse','day')
 
     def save(self, *args, **kwargs):
-        # verifica dacă a fost în fișier
         exists = DayOffOption.objects.filter(
             nurse=self.nurse,
             day=self.day

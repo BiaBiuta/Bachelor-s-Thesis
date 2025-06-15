@@ -4,10 +4,7 @@ import importlib.util
 from pathlib import Path
 import sys
 
-# Ensure the project apps can be imported when running tests directly from the
-# repository root.  The ``calendarapp`` and ``eventcalendar`` packages live one
-# directory up from this ``tests`` package, so add that directory to
-# ``sys.path`` before importing from those packages.
+
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ec_tests.test_settings')
@@ -74,7 +71,6 @@ class HelperTests(TestCase):
         middleware.process_request(request)
         request.session.save()
         request.user = self.user
-        # attach session to backend login
         self.client.login(email="tester@example.com", password="pass")
         return request
 
@@ -199,7 +195,7 @@ class DayShiftTypeTests(TestCase):
             OverCoverWeight=1,
             UnderCoverWeight=1,
         )
-        # no coverage initially
+        #inintila nu am coverage
         self.assertEqual(dst.gap_required_vs_actual(), 1)
         nurseday.assign_shift(shift)
         dst.calc_NrCovered()
@@ -209,7 +205,7 @@ class DayShiftTypeTests(TestCase):
 
 class IntentApiTests(TestCase):
     def test_get_weekday_date(self):
-        base = datetime.datetime(2024, 1, 1)  # Monday
+        base = datetime.datetime(2024, 1, 1)  # de luni
         result = get_weekday_date(base, "friday", "this")
         self.assertEqual(result, base + datetime.timedelta(days=4))
 

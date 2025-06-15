@@ -7,7 +7,7 @@ import json
 # from calendarapp.models.event import Event
 
 
-# Dicționar global pentru a asocia utilizatorii cu channel_name-urile lor.
+# dictionar global pentru a asocia utilizatorii cu channel_name-urile lor.
 CHANNEL_MAP = {}
 logger = logging.getLogger(__name__)
 class RoleBasedNotificationConsumer(AsyncWebsocketConsumer):
@@ -24,7 +24,7 @@ class RoleBasedNotificationConsumer(AsyncWebsocketConsumer):
         await self.accept()
         logger.debug("CONNECT: conexiune acceptată")
     async def disconnect(self, close_code):
-        # La deconectare, elimină utilizatorul din dicționar
+        # la deconectare, elimin utilizator
         logger.debug(f"DISCONNECT: elimin canalul {self.channel_name} din grupul {self.group_name} (code={close_code})")
         await self.channel_layer.group_discard(self.group_name, self.channel_name)
 
@@ -34,10 +34,9 @@ class RoleBasedNotificationConsumer(AsyncWebsocketConsumer):
             return
 
         data = json.loads(text_data)
-        msg_type = data.get('type') # cel mai important câmp
+        msg_type = data.get('type')
         logger.debug(msg_type)
         if msg_type == "notificare":
-            # -- primul tip de mesaj --
             sender = data.get("sender", "Necunoscut")
             message = f"Utilizatorul {sender} a apăsat butonul!"
             await self.channel_layer.group_send(
@@ -62,7 +61,6 @@ class RoleBasedNotificationConsumer(AsyncWebsocketConsumer):
             )
 
         elif msg_type == "delete_event":
-            # -- al doilea tip de mesaj --
             sender = data.get("sender")
             ev_id = data.get("eventId")
             message = f"Evenimentul {ev_id} a fost șters de {sender}"
@@ -76,7 +74,6 @@ class RoleBasedNotificationConsumer(AsyncWebsocketConsumer):
             )
 
         elif msg_type == "custom_type":
-            # -- alt tip de mesaj, poate trimitem alt event --
             payload = data.get("payload", {})
             await self.channel_layer.group_send(
                 self.group_name,
@@ -87,18 +84,16 @@ class RoleBasedNotificationConsumer(AsyncWebsocketConsumer):
             )
         elif msg_type == "save_shift_requests":
             timestamp = data.get("timestamp")
-            # Exemplu: vrem să anunțăm toți ceilalți clienți din același grup
             await self.channel_layer.group_send(
                 self.group_name,
                 {
-                    "type": "shift_saved_notification",  # numele metodei handler din această clasă
+                    "type": "shift_saved_notification",
                     "timestamp": timestamp,
-                    # Dacă vreți, puteți transmite aici și lista ID-urilor modificate
                     # "updated_ids": data.get("ids", [])
                 }
             )
         elif msg_type == "event_approved":
-            owner_id = data["ownerId"]  # îl bagi în payload din JS
+            owner_id = data["ownerId"]
             target_group = f"user_{owner_id}"
             message = f"Evenimentul {data['event_id']} a fost aprobat de {data['sender']}"
             await self.channel_layer.group_send(
@@ -110,7 +105,7 @@ class RoleBasedNotificationConsumer(AsyncWebsocketConsumer):
                 }
             )
         elif msg_type == "event_denied":
-            owner_id = data["ownerId"]  # îl bagi în payload din JS
+            owner_id = data["ownerId"]
             target_group = f"user_{owner_id}"
             message = f"Evenimentul {data['event_id']} a fost denided de {data['sender']}"
             await self.channel_layer.group_send(
@@ -206,7 +201,6 @@ class RoleBasedNotificationConsumer(AsyncWebsocketConsumer):
     async def shift_saved_notification(self, event):
 
         timestamp = event["timestamp"]
-        # Spre exemplu, trimitem înapoi către browser un JSON care să anunțe că s-a salvat:
         await self.send(text_data=json.dumps({
             "type": "info",
             "message": f"ShiftRequest a fost salvat la {timestamp}"

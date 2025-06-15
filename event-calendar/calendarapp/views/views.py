@@ -49,7 +49,7 @@ from calendarapp.views.utils import load_global_object
 from accounts.models.user import User
 
 from django.shortcuts import render
-# calendarapp/views_chat.py
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView
 from collections import defaultdict, Counter
@@ -59,19 +59,18 @@ class DashboardView(LoginRequiredMixin, ListView):
     login_url = "accounts:signin"
     template_name = "calendarapp/domains_dashboard.html"
     context_object_name = 'domains'
-    # model = GlobalObject
+
 
     def get_queryset(self):
-        # qs = super().get_queryset()
+
         qs=GlobalObject.objects.all()
         print(qs)
         for domain in qs:
             print("am intrat in for")
-            # forțăm calcul KPI domeniu
+            # fortez calcul KPI domeniu
             _ = domain.total_to_min
-            # luăm toate asistentele din domeniu
             nurses = Nurse.objects.filter(GlobalObject=domain)
-            # păstrăm doar pe cele cu deficit de minute
+            # pastrez doar pe cele cu deficit de minute
             domain.nurses_with_deficit = [
                 n for n in nurses if n.minutes_to_max > 0
             ]
@@ -104,10 +103,9 @@ import os
 # import cplex
 # print(cplex.__version__)
 
-# Adăugați manual CPLEX în PATH
+
 os.environ["PATH"] += r";C:\Program Files\IBM\ILOG\CPLEX_Studio2212\cplex\bin\x64_win64"
 
-# Debug: verificați variabila PATH
 print("PATH:", os.environ["PATH"])
 import sys
 print("Python exec:", sys.executable)
@@ -117,14 +115,12 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 
 from django.views.generic import View
-        # Get the current date
+
 today = datetime.now()
-# Calculate the date of Monday and Friday of the current week
+# calculez data de la ziua de luni - vineri
 monday = today - timedelta(days=today.weekday())
 friday = monday + timedelta(days=4)
-# Get the current year
 current_year = today.year
-# Format the dates
 monday_formatted = monday.strftime('%Y-%m-%d')
 friday_formatted = friday.strftime('%Y-%m-%d')
 
@@ -150,14 +146,13 @@ import pyomo.environ as pyo
 from pyomo.opt import SolverFactory, SolverStatus, TerminationCondition
 from django.shortcuts import render, redirect
 from calendarapp.models.cereri.shift_option import ShiftOption
-from calendarapp.models.cereri.shift_request import ShiftRequest  # modelul de la pasul anterior
+from calendarapp.models.cereri.shift_request import ShiftRequest
 def schedule_view(request):
     print("am intrat in post")
     if request.method == "POST":
         try:
             data = json.loads(request.body)
             print("data ",data)
-            # Extrage câmpurile din payload
             employee = data.get("nurse")
             date = data.get("day")
             shift_type = data.get("shift_type")
@@ -166,11 +161,9 @@ def schedule_view(request):
             department = data.get("department")
             nurse=Nurse.get(EmployeeID=int(employee))
             global_object=GlobalObject.get(id=nurse.GlobalObject_id)
-            # Validare minimală
             if not (employee and date and shift_type):
                 return JsonResponse({"error": "Missing required fields."}, status=400)
-            num= re.search(r'\d+', global_object.name).group()  # extrage numărul din data
-            # Creează instanța
+            num= re.search(r'\d+', global_object.name).group()  # extrage numarul  din numele unitatii
             day =int(str(num+int((date.split("-")[2]).split("T")[0])))
             print ("day",day)
             day =Day.objects.get(DayID=day)
@@ -179,8 +172,8 @@ def schedule_view(request):
                     department = global_object,
                     day        = day,
                     shift_type = shift_type,
-                    req_type   = req_type,    # sau orice logică ai tu
-                    weight     = int(weight),       # poți prelua alt weight, după nevoie
+                    req_type   = req_type,
+                    weight     = int(weight),
                     status     = 'P',
                 )
             schedule.save()
@@ -192,114 +185,56 @@ def schedule_view(request):
     return JsonResponse({"error": "Invalid method"}, status=405)
 @login_required
 def choose_shift_requests(request):
-    # 1) Obține shift-urile posibile (tocmai tipurile de shift, nelegat de zi)
+    # obtin shift-urile posibile
     shift_types = ShiftType.objects.all().order_by('ShiftID')
-    # Convertim într-o listă de dict-uri pentru JSON
     shift_types_list = [
         {'id': st.ShiftID, 'name': st.ShiftID}
         for st in shift_types
     ]
 
     if request.method == 'POST':
-        # Formularul va trimite multiple valori de formă "YYYY-MM-DD|ShiftID"
         selections = request.POST.getlist('selections')
-        # Preiau Nurse și Department ca exemplu
         nurse = Nurse.objects.get(EmployeeID=request.user.email.split("@")[0])
-        # Pentru demonstrație, presupunem că toate cererile merg la același departament:
-        # poți adapta după modelul tău (de ex. opt.department)
         department = GlobalObject.objects.first()
 
         created = 0
         for sel in selections:
-            # Desfac “YYYY-MM-DD|ShiftID”
             try:
                 day_str, shift_id = sel.split('|')
                 day_obj = datetime.strptime(day_str, '%Y-%m-%d').date()
                 day=str(day_obj).split("-")[2]
                 day=Day.objects.get(DayID=day)
                 stype = ShiftType.objects.get(ShiftID=shift_id)
-                # Creează cererea
                 ShiftRequest.objects.create(
                     nurse      = nurse,
                     department = department,
                     day        = day,
                     shift_type = stype,
-                    req_type   = 'ON',    # sau orice logică ai tu
-                    weight     = 1,       # poți prelua alt weight, după nevoie
+                    req_type   = 'ON',
+                    weight     = 1,
                     status     = 'P',
                 )
                 created += 1
             except Exception as e:
-                # Dacă datele nu sunt valide, sari peste
                 print(f"Error processing selection {sel}: {e}")
                 continue
-
-        # Poți afișa un mesaj cu câte cereri au fost create
         messages.success(request, f"{created} cereri au fost trimise.")
         return redirect('calendarapp:requests_submitted')
-
-    # Dacă nu e POST, trimitem template-ului doar lista de shift_types
     import json
     return render(request, 'calendarapp/choose_shift_requests.html', {
         'shift_types_json': json.dumps(shift_types_list),
     })
-# @login_required
-# def choose_dayoff_requests(request):
-#     # 1) identificăm asistenta
-#     uid = request.user.email.split("@")[0]
-#     print("DEBUG: user email prefix:", uid)
-#     nurse = get_object_or_404(Nurse, EmployeeID=uid)
-#     print("DEBUG: found nurse:", nurse)
-#
-#     # 2) aflăm zilele pentru care există deja cereri Pending sau Approved
-#     pending_days  = list(DayOffRequest.objects.filter(
-#         nurse=nurse, status='P'
-#     ).values_list('day_id', flat=True))
-#     approved_days = list(DayOffRequest.objects.filter(
-#         nurse=nurse, status='A'
-#     ).values_list('day_id', flat=True))
-#     print("DEBUG: pending_days IDs:", pending_days)
-#     print("DEBUG: approved_days IDs:", approved_days)
-#
-#     # 3) filtrăm opţiunile
-#     qs = DayOffOption.objects.filter(nurse=nurse)
-#     print("DEBUG: all options count:", qs.count(), "->", list(qs.values_list('day_id', flat=True)))
-#     options = qs.exclude(day_id__in=pending_days)
-#     options = qs.exclude(day_id__in=approved_days)
-#     print("DEBUG: filtered options count:", options.count(), "->", list(options.values_list('day_id', flat=True)))
-#
-#     if request.method == 'POST':
-#         selected = request.POST.getlist('options')
-#         print("DEBUG: POST selected option IDs:", selected)
-#         for opt_id in selected:
-#             opt = DayOffOption.objects.get(pk=opt_id)
-#             print(f"DEBUG: creating request for day {opt.day.DayID} (id={opt.day.DayID})")
-#             DayOffRequest.objects.create(
-#                 nurse      = nurse,
-#                 department = opt.department,
-#                 day        = opt.day,
-#                 status     = 'P',
-#             )
-#         return redirect('calendarapp:requests_submitted')
-#
-#     # înainte de render, mai un print
-#     print("DEBUG: rendering template with options:", list(options.values_list('id', 'day_id')))
-#     return render(request,
-#                   'calendarapp/choose_dayoff_requests.html',
-#                   {
-#                     'options': options,
-#                     'approved_days': set(approved_days),
-#                   })
+
 @login_required
 
 def choose_dayoff_requests(request):
-    # 1) identificăm asistenta
+
     uid = request.user.email.split("@")[0]
     print(f"DEBUG: Prefixul email-ului userului: {uid}")
     nurse = get_object_or_404(Nurse, EmployeeID=uid)
-    print(f"DEBUG: Nurse găsită: {nurse} (ID intern: {nurse.EmployeeID})")
+    print(f"DEBUG: Nurse gasita: {nurse} (ID nurse: {nurse.EmployeeID})")
 
-    # 2) găsim zilele deja în Pending sau Approved
+
     pending_qs = DayOffRequest.objects.filter(nurse=nurse, status='P')
     pending_days = list(pending_qs.values_list('day_id', flat=True))
     print(f"DEBUG: Pending DayOffRequest pentru nurse {nurse}: {pending_days}")
@@ -309,9 +244,9 @@ def choose_dayoff_requests(request):
     print(f"DEBUG: Approved DayOffRequest pentru nurse {nurse}: {approved_days}")
 
     used_days = set(pending_days) | set(approved_days)
-    print(f"DEBUG: Combined used_days (pending ∪ approved): {used_days}")
+    print(f"DEBUG: used_days (pending ∪ approved): {used_days}")
 
-    # 3) listă completă de opțiuni înainte de filtrare
+
     qs = DayOffOption.objects.filter(nurse=nurse)
     all_option_ids = list(qs.values_list('id', flat=True))
     all_days_ids = list(qs.values_list('day_id', flat=True))
@@ -319,7 +254,7 @@ def choose_dayoff_requests(request):
     print(f"DEBUG: DayOffOption IDs: {all_option_ids}")
     print(f"DEBUG: DayOffOption day_id list: {all_days_ids}")
 
-    # Filtrăm: excludem zilele care apar în used_days
+
     options = qs.exclude(day_id__in=used_days)
     filtered_option_ids = list(options.values_list('id', flat=True))
     filtered_days_ids = list(options.values_list('day_id', flat=True))
@@ -335,8 +270,6 @@ def choose_dayoff_requests(request):
             print(f"  - Procesăm opt_id = {opt_id}")
             opt = get_object_or_404(DayOffOption, pk=opt_id)
             print(f"    • DayOffOption găsit: {opt} → Ziua: {opt.day.DayID} (id={opt.day.DayID})")
-
-            # Verificare suplimentară: nu mai dăm drumul la adăugare dacă ziua e deja în used_days
             if opt.day.DayID not in used_days:
                 DayOffRequest.objects.create(
                     nurse      = nurse,
@@ -365,14 +298,12 @@ def read_instance_file(file_path: str):
     global raw_data, horizon_length
     global shifttype_input_start, shifttype_input_end
     global nurse_input_start, nurse_input_end,daysoff_input_start,daysoff_input_end,shifton_req_input_start,shifton_req_input_end
-    # …etc for all the other section‐markers…
     global global_object,shiftoff_req_input_start,shiftoff_req_input_end,cover_req_input_start,cover_req_input_end
 
-    # 1) read the file
+
     with open(file_path, 'r') as f:
         raw_data = f.readlines()
 
-    # 2) compute your globals
     horizon_length =int(raw_data[4])
     shifttype_input_start = raw_data.index('SECTION_SHIFTS\n') + 2
     shifttype_input_end = raw_data.index('SECTION_STAFF\n') - 1
@@ -386,9 +317,7 @@ def read_instance_file(file_path: str):
     shiftoff_req_input_end = raw_data.index('SECTION_COVER\n') - 1
     cover_req_input_start = raw_data.index('SECTION_COVER\n') + 2
     cover_req_input_end = len(raw_data)
-    # …and so on for daysoff_input_start/end, shifton_req_input_start/end, etc.
 
-    # 3) build your GlobalObject
     #global_object = GlobalObject(HorizonLength=horizon_length)
     print("a fost apelat timetable ")
     #GlobalObject.objects.all().delete()
@@ -399,7 +328,7 @@ def read_instance_file(file_path: str):
     global_object.save()
     global_object_id = GlobalObject.objects.all().last().id
     print(global_object_id)
-    #citire si creare shiftType
+
     for shifttype in raw_data[shifttype_input_start:shifttype_input_end]:
         shifttype_information = shifttype.split(',')
         shift_id = shifttype_information[0]
@@ -407,7 +336,6 @@ def read_instance_file(file_path: str):
         forbidden_shifts = shifttype_information[2].strip().split('|')
         forbidden_shifts = [i for i in forbidden_shifts if i]
 
-        # Create new ShiftType object
         new_shifttype = ShiftType(shift_id, length_in_mins, forbidden_shifts, global_object_id)
         #print(new_shifttype.ShiftID, ",", new_shifttype.LengthInMins)
         global_object.set_relation_shifttype(new_shifttype)
@@ -424,8 +352,6 @@ def read_instance_file(file_path: str):
         min_cons_shifts = int(nurse_information[5])
         max_cons_days_off = int(nurse_information[6])
         max_weekends = int(nurse_information[7])
-
-        # Create new Nurse object
         new_nurse = Nurse(employee_id, max_shifts, max_total_mins, min_total_mins, max_cons_shifts, min_cons_shifts,
                           max_cons_days_off, max_weekends,
                           float('inf'), global_object_id)
@@ -443,7 +369,6 @@ def read_instance_file(file_path: str):
     num = re.search(r'\d+', global_object_name).group()
     #citire si creare day
     for day in range(global_object.HorizonLength):
-        # Create new Day object
         d = Day(num+str(day), global_object_id)
         d.save()
         global_object.set_relation_day(d)
@@ -469,12 +394,10 @@ def read_instance_file(file_path: str):
     #creare nurse_day
     for nurse in global_object.Nurse:
         for day in global_object.Day:
-            # Create new NurseDay object
             nr = NurseDay(IsDayOff=False, Nurse=nurse, Day=day)
             nr.save()
 
     print("relatiile de ziua sunt create")
-    #
     print("nurse day salvate")
     #days_off
     for dayoff in raw_data[daysoff_input_start:daysoff_input_end]:
@@ -491,7 +414,6 @@ def read_instance_file(file_path: str):
             #print("off", int(num+str(off)))
             #print(global_object.Day)
             #day = [d for d in global_object.Day if d.DayID == (num+str(off))][0]
-            # Find NurseDay object
             # nurseday = [nd for nd in nurse.NurseDay if nd.Day == day][0]
             #
             # nurseday.IsDayOff = True
@@ -519,7 +441,6 @@ def read_instance_file(file_path: str):
         # day = [d for d in global_object.Day if d.DayID == (num+str(shiftonreq_day))][0]
         # shifttype = [s for s in global_object.ShiftType if s.ShiftID == shiftonreq_shift][0]
         #
-        # # Create new NurseShiftTypeDay object
         # nurseday = [nd for nd in nurse.NurseDay if nd.Day == day][0]
         #
         # nd = NurseDayShiftType(IsOnRequest=True, IsOffRequest=False, OnRequestWeight=shiftonreq_onrequestweight,
@@ -549,7 +470,6 @@ def read_instance_file(file_path: str):
         day = [d for d in global_object.Day if d.DayID ==(num+str(cover_day))][0]
         shifttype = [s for s in global_object.ShiftType if s.ShiftID == cover_shift][0]
 
-        # Create new DayShiftType object
         dst = DayShiftType(NrRequired=cover_req, UnderCoverWeight=cover_underweight, OverCoverWeight=cover_overweight,
                            ShiftType=shifttype, Day=day)
         dst.save()
@@ -557,17 +477,12 @@ def read_instance_file(file_path: str):
     print("shift type day salvate")
 
     all_shifttypes = [shifttype for shifttype in global_object.ShiftType]
-    #
-    for nurse in global_object.Nurse:  # Obținem toți medicii din baza de date
-        for nurseday in nurse.NurseDay:  # Obținem toate zilele de lucru ale fiecărui medic
-            # Obținem toate ShiftType-urile deja atribuite acelei zile
+
+    for nurse in global_object.Nurse:
+        for nurseday in nurse.NurseDay:
             nds_shifts = [nds.ShiftType for nds in nurseday.NurseDayShiftType]
             nds_shifts_to_create = [s for s in all_shifttypes if s not in nds_shifts]
-
-            # Găsim ShiftType-urile care nu sunt deja atribuite
-
             for shifttype in nds_shifts_to_create:
-                # Creăm un nou obiect NurseDayShiftType și îl salvăm
                 nds = NurseDayShiftType(
                     IsOffRequest=False,
                     IsOnRequest=False,
@@ -582,18 +497,13 @@ def read_instance_file(file_path: str):
     return global_object
 @login_required
 def instance_list(request):
-    base = settings.INSTANCE_DIR  # ex: r'C:\…\data\instances1_24'
-    # 1) enumerăm toate .txt
+    base = settings.INSTANCE_DIR
     files = [f for f in os.listdir(base) if f.endswith('.txt')]
-
-    # 2) construim lista de tupluri (path, display_name)
     instances = []
     for fn in files:
         full_path = os.path.normpath(os.path.join(base, fn))
-        # extragem "Instance1" din "Instance1.txt"
-        name, _ext = os.path.splitext(fn)   # name == "Instance1"
-        # extragem doar numărul (presupunem formatul "Instance<N>")
-        num = name.replace('Instance', '')  # num == "1"
+        name, _ext = os.path.splitext(fn)
+        num = name.replace('Instance', '')
         display = f'Unitate medicală {num}'
         instances.append((full_path, display))
 
@@ -606,8 +516,6 @@ def instance_detail(request, file_path):
     if not os.path.exists(file_path):
         raise Http404("Fișierul nu există")
     go = read_instance_file(file_path)
-
-    # Ia lista curentă din sesiune (sau creeaz-o dacă nu există)
     gos = request.session.get('global_object_ids', [])
     if go.id not in gos:
         gos.append(go.id)
@@ -617,22 +525,20 @@ def instance_detail(request, file_path):
         'file_path': file_path,
         'data': go,
     })
-# views_chat.py
+
 from django.views.decorators.http import require_POST
 
 @login_required
 @require_POST
 def select_instance(request):
     go_id = request.POST.get('unitate')
-    # sesiunea cu toate GO-urile încărcate
     gos = request.session.get('global_object_ids', [])
     if not go_id or int(go_id) not in gos:
         raise Http404("Setul de date nu există sau nu ai acces la el.")
-    # setează GO-ul activ
     request.session['global_object_id'] = int(go_id)
     req_ids = request.POST.get('request_ids', '')
     selected_req_ids = [int(x) for x in req_ids.split(',') if x.strip()]
-    # salvează-le în sesiune
+    # salvez în sesiune
     request.session['picked_shift_reqs'] = selected_req_ids
     print(selected_req_ids)
     without_algo = request.POST.get('without_algorithm') == 'true'
@@ -646,23 +552,19 @@ def select_instance(request):
 @login_required
 def unit_details_ajax(request, unit_id):
     go = get_object_or_404(GlobalObject, pk=unit_id)
-    # păstrăm selectarea în sesiune
+    # adaug in sesiune
     request.session['global_object_id'] = go.id
-
-    # statistici de bază
+    # cate din fiecare
     nurse_count     = Nurse.objects.filter(GlobalObject=go).count()
     shifttype_count = ShiftType.objects.filter(GlobalObject=go).count()
     last_log = ScheduleGenerationLog.objects.filter(department=go) \
                   .order_by('-generated_at') \
                   .first()
     last_gen = last_log.generated_at.strftime('%d.%m.%Y') if last_log else '–––'
-
-    # KPI-uri deja calculate şi stocate în GO
+    # calculez KPI
     total_minutes   = go.TotalMinutes
     to_min          = go.TotalMinutesToMin
     to_max          = go.TotalMinutesToMax
-
-    # cererile de shift
     pending_reqs = ShiftRequest.objects.filter(
         department=go,
         status='P'
@@ -692,24 +594,18 @@ def unit_details_ajax(request, unit_id):
 def choose_instance(request):
     go_ids = request.session.get('global_object_ids', [])
 
-    # 2) Preia toate GlobalObject-urile relevante (de ex. toate sau doar cele ale user-ului)
+    # periau doar GlobalObjecturile relevante
     all_go_ids = list(GlobalObject.objects.values_list('id', flat=True))
-
-    # 3) Adaugă în sesiune orice id nou
+    # daca am id nou il adaug - pentru requesturi
     for _id in all_go_ids:
         if _id not in go_ids:
             go_ids.append(_id)
-
-    # 4) Salvează în sesiune O DATĂ, după buclă
     request.session['global_object_ids'] = go_ids
-
-    # 5) Afișează în template exact obiectele din sesiune
     gos = GlobalObject.objects.filter(id__in=go_ids)
     gos_with_number = []
     for go in gos:
-        # Căutăm primul grup de cifre din go.Name
         match = re.search(r'(\d+)', go.Name)
-        number = match.group(1) if match else '-'  # în caz că nu găseşte
+        number = match.group(1) if match else '-'
         gos_with_number.append({
             'object': go,
             'number': number,
@@ -727,13 +623,10 @@ def choose_instance(request):
     if go_id:
         shift_reqs = ShiftRequest.objects.filter(
             department_id=go_id,
-            status='P'  # doar cele în aşteptare
+            status='P'  # doar cele in asteptare
         ).select_related('nurse', 'day', 'shift_type')
 
     kpi_results = request.session.pop('kpi_results', None)
-
-
-        # 5) Dai contextul către template
     return render(request, 'calendarapp/choose_instance.html', {
         'global_objects': gos_with_number,
         'generate_logs': generate_logs,
@@ -745,7 +638,7 @@ def choose_instance(request):
 @login_required
 def timetable(request):
     #citesc_fisier()
-
+    #trebuie citit fisier intai
     print("a fost apelat timetable ")
     start_time = time.perf_counter()
     picked = request.session.pop('picked_shift_reqs', [])
@@ -754,9 +647,7 @@ def timetable(request):
         NurseDay.objects.all().delete()
     go_ids = request.session.get('global_object_ids', [])
     active_go = request.session.get('global_object_id')
-
-    # dacă nu ai niciun GO activ, dar ai cel puţin unul în sesiune,
-    # setează-l pe primul (sau redirecţionează la 'choose_instance')
+    # setez prima unitate medicala daca nu am niciuna activa
     if not active_go:
         if len(go_ids) == 1:
             active_go = go_ids[0]
@@ -770,9 +661,6 @@ def timetable(request):
 
     with open(fr".\..\database\instances1_24\{global_object_name}", 'r') as f:
         raw_data = f.readlines()
-
-    # 2) compute your globals
-
 
     horizon_length = int(raw_data[4])
     shifttype_input_start = raw_data.index('SECTION_SHIFTS\n') + 2
@@ -795,8 +683,6 @@ def timetable(request):
         length_in_mins = shiftype.LengthInMins
         forbidden_shifts = shiftype.ForbiddenShifts
         forbidden_shifts = [i for i in forbidden_shifts if i]
-
-        # Create new ShiftType object
         new_shifttype = ShiftType(shift_id, length_in_mins, forbidden_shifts, global_object_id)
         print(new_shifttype.ShiftID, ",", new_shifttype.LengthInMins)
         global_object.set_relation_shifttype(new_shifttype)
@@ -890,28 +776,7 @@ def timetable(request):
             nd = NurseDayShiftType(IsOnRequest=True, IsOffRequest=False, OnRequestWeight=req.weight,
                                    OffRequestWeight=0.0, Nurse=nurse, Day=req.day, ShiftType=req.shift_type,
                                    NurseDay=nr)
-    # for d in global_object.Day:
-    #     print(f"\nDay {d.DayID}  (Next: {getattr(d.Next, 'DayID', None)}, Prev: {getattr(d.Previous, 'DayID', None)})")
-    #     print("  NurseDay-uri:")
-    #     for nd in d.NurseDay:
-    #         assigned = nd.AssignedShift.ShiftID if nd.AssignedShift else "None"
-    #         print(
-    #             f"    • NurseDay(Nurse={nd.Nurse.EmployeeID}, IsDayOff={nd.IsDayOff}, Assigned={assigned})")
-    #         print("      ↳ NurseDayShiftType:")
-    #         for ndst in nd.NurseDayShiftType:
-    #             print(
-    #                 f"         - ShiftType={ndst.ShiftType.ShiftID}, OnReq={ndst.IsOnRequest}, OffReq={ndst.IsOffRequest}")
-    #     print("  DayShiftType-uri:")
-    # print("\nNurses:")
-    # for n in global_object.Nurse:
-    #     print(f"\nNurse {n.EmployeeID}  (MinTotal={n.MinTotalMins}, MaxTotal={n.MaxTotalMins})")
-    #     print("  NurseShiftType-uri:")
-    #     for nst in n.NurseShiftType:
-    #         print(f"    • ShiftType={nst.ShiftType.ShiftID}, MaxShifts={nst.MaxShifts}")
-    #     print("  NurseDay-uri:")
-    #     for nd in n.NurseDay:
-    #         assigned = nd.AssignedShift.ShiftID if nd.AssignedShift else "None"
-    #         print(f"    • Day={nd.Day.DayID}, IsDayOff={nd.IsDayOff}, Assigned={assigned}")
+
 
 
     print("relatiile de ziua sunt create")
@@ -996,9 +861,8 @@ def timetable(request):
     print("shift type day salvate")
 
     all_shifttypes = [shifttype for shifttype in global_object.ShiftType]
-    #
-    for nurse in global_object.Nurse:  # Obținem toți medicii din baza de date
-        for nurseday in nurse.NurseDay:  # Obținem toate zilele de lucru ale fiecărui medic
+    for nurse in global_object.Nurse:
+        for nurseday in nurse.NurseDay:
             nds_shifts = [nds.ShiftType for nds in nurseday.NurseDayShiftType]
             nds_shifts_to_create = [s for s in all_shifttypes if s not in nds_shifts]
             for shifttype in nds_shifts_to_create:
@@ -1025,44 +889,6 @@ def timetable(request):
         for ndst in st.NurseDayShiftType:
             print(
                 f"    • NurseDay(Nurse={ndst.NurseDay.Nurse.EmployeeID}, Day={ndst.NurseDay.Day.DayID}), OnReq={ndst.IsOnRequest}, OffReq={ndst.IsOffRequest}")
-
-    # for d in global_object.Day:
-    #     print(
-    #         f"\nDay {d.DayID}  (Next: {getattr(d.Next, 'DayID', None)}, Prev: {getattr(d.Previous, 'DayID', None)})")
-    #     print("  NurseDay-uri:")
-    #     for nd in d.NurseDay:
-    #         assigned = nd.AssignedShift.ShiftID if nd.AssignedShift else "None"
-    #         print(
-    #             f"    • NurseDay(Nurse={nd.Nurse.EmployeeID}, IsDayOff={nd.IsDayOff}, Assigned={assigned})")
-    #         print("      ↳ NurseDayShiftType:")
-    #         for ndst in nd.NurseDayShiftType:
-    #             print(
-    #                 f"         - ShiftType={ndst.ShiftType.ShiftID}, OnReq={ndst.IsOnRequest}, OffReq={ndst.IsOffRequest}")
-    #     print("  DayShiftType-uri:")
-    # print("\nNurses:")
-    # for n in global_object.Nurse:
-    #     print(f"\nNurse {n.EmployeeID}  (MinTotal={n.MinTotalMins}, MaxTotal={n.MaxTotalMins})")
-    #     print("  NurseShiftType-uri:")
-    #     for nst in n.NurseShiftType:
-    #         print(f"    • ShiftType={nst.ShiftType.ShiftID}, MaxShifts={nst.MaxShifts}")
-    #     print("  NurseDay-uri:")
-    #     for nd in n.NurseDay:
-    #         assigned = nd.AssignedShift.ShiftID if nd.AssignedShift else "None"
-    #         print(f"    • Day={nd.Day.DayID}, IsDayOff={nd.IsDayOff}, Assigned={assigned}")
-    # print("\nShiftTypes:")
-    # for st in global_object.ShiftType:
-    #     print(f"\nShiftType {st.ShiftID}  (Len={st.LengthInMins}m)")
-    #     print("  DayShiftType-uri:")
-    #     for dst in st.DayShiftType:
-    #         print(f"    • Day={dst.Day.DayID}, Required={dst.NrRequired}")
-    #     print("  NurseShiftType-uri:")
-    #     for nst in st.NurseShiftType:
-    #         print(f"    • Nurse={nst.Nurse.EmployeeID}, MaxShifts={nst.MaxShifts}")
-    #     print("  NurseDayShiftType-uri:")
-    #     for ndst in st.NurseDayShiftType:
-    #         print(
-    #             f"    • NurseDay(Nurse={ndst.NurseDay.Nurse.EmployeeID}, Day={ndst.NurseDay.Day.DayID}), OnReq={ndst.IsOnRequest}, OffReq={ndst.IsOffRequest}")
-    #
 
     timelimit = dt.timedelta(seconds=120)
     maxiteration = 50
@@ -1096,9 +922,8 @@ def timetable(request):
 
 
 
-    base_date = datetime(2025, 5, 1)  # ajustează după necesități
+    base_date = datetime(2025, 5, 1)
 
-    # Salvează evenimentele în baza de date, folosind modelul Event
     #save_schedule_events(best_chrom, base_date, request.user)
     best_chrom.TotalMinutes=global_object.total_minutes()
     best_chrom.TotalMinutesToMin=global_object.total_to_min()
@@ -1106,8 +931,7 @@ def timetable(request):
     cache_key = f"unsaved_chrom_{request.session.session_key}"
     cache.set(cache_key, best_chrom, timeout=3600)
 
-    base_date = datetime(2025, 5, 1)  # sau din request
-    # store KPI results in session for display
+    base_date = datetime(2025, 5, 1)
     request.session['kpi_results'] = {
         'hard': best_chrom.TotalKPIHard,
         'soft': best_chrom.TotalKPISoft,
@@ -1133,8 +957,6 @@ def timetable(request):
                 'end': end_dt.isoformat(),
                 'description': f"Program {nurse.EmployeeID} în {start_dt:%Y-%m-%d}"
             })
-
-    # 3) Salvați în sesiune și redirecționați
     # print("preview_events", preview_events)
     request.session['preview_events'] = preview_events
     request.session.modified = True
@@ -1151,8 +973,6 @@ def timetable_without_algorithm(request):
     go_ids = request.session.get('global_object_ids', [])
     active_go = request.session.get('global_object_id')
 
-    # dacă nu ai niciun GO activ, dar ai cel puţin unul în sesiune,
-    # setează-l pe primul (sau redirecţionează la 'choose_instance')
     if not active_go:
         if len(go_ids) == 1:
             active_go = go_ids[0]
@@ -1165,10 +985,6 @@ def timetable_without_algorithm(request):
     global_object_name=global_object.Name
     with open(fr"C:\Users\bianc\PycharmProjects\licenta_sheet\GA_yt\data\instances1_24\{global_object_name}", 'r') as f:
         raw_data = f.readlines()
-
-    # 2) compute your globals
-
-
     horizon_length = int(raw_data[4])
     shifttype_input_start = raw_data.index('SECTION_SHIFTS\n') + 2
     shifttype_input_end = raw_data.index('SECTION_STAFF\n') - 1
@@ -1191,7 +1007,6 @@ def timetable_without_algorithm(request):
         forbidden_shifts = shiftype.ForbiddenShifts
         forbidden_shifts = [i for i in forbidden_shifts if i]
 
-        # Create new ShiftType object
         new_shifttype = ShiftType(shift_id, length_in_mins, forbidden_shifts, global_object_id)
         #print(new_shifttype.ShiftID, ",", new_shifttype.LengthInMins)
         global_object.set_relation_shifttype(new_shifttype)
@@ -1204,7 +1019,7 @@ def timetable_without_algorithm(request):
         min_cons_shifts = int(nurse.MinConsShifts)
         max_cons_days_off = int(nurse.MinConsDaysOff)
         max_weekends = int(nurse.MaxWeekends)
-        #     # Create new Nurse object
+
         new_nurse = Nurse(employee_id, max_shifts, max_total_mins, min_total_mins, max_cons_shifts, min_cons_shifts,
                           max_cons_days_off, max_weekends,
                           float('inf'), global_object_id)
@@ -1291,9 +1106,9 @@ def timetable_without_algorithm(request):
     print("shift type day salvate")
 
     all_shifttypes = [shifttype for shifttype in global_object.ShiftType]
-    #
-    for nurse in global_object.Nurse:  # Obținem toți medicii din baza de date
-        for nurseday in nurse.NurseDay:  # Obținem toate zilele de lucru ale fiecărui medic
+
+    for nurse in global_object.Nurse:
+        for nurseday in nurse.NurseDay:
             nds_shifts = [nds.ShiftType for nds in nurseday.NurseDayShiftType]
             nds_shifts_to_create = [s for s in all_shifttypes if s not in nds_shifts]
             for shifttype in nds_shifts_to_create:
@@ -1307,42 +1122,7 @@ def timetable_without_algorithm(request):
                     ShiftType=shifttype,
                     NurseDay=nurseday
                 )
-    # for d in global_object.Day:
-    #     print(
-    #         f"\nDay {d.DayID}  (Next: {getattr(d.Next, 'DayID', None)}, Prev: {getattr(d.Previous, 'DayID', None)})")
-    #     print("  NurseDay-uri:")
-    #     for nd in d.NurseDay:
-    #         assigned = nd.AssignedShift.ShiftID if nd.AssignedShift else "None"
-    #         print(
-    #             f"    • NurseDay(Nurse={nd.Nurse.EmployeeID}, IsDayOff={nd.IsDayOff}, Assigned={assigned})")
-    #         print("      ↳ NurseDayShiftType:")
-    #         for ndst in nd.NurseDayShiftType:
-    #             print(
-    #                 f"         - ShiftType={ndst.ShiftType.ShiftID}, OnReq={ndst.IsOnRequest}, OffReq={ndst.IsOffRequest}")
-    #     print("  DayShiftType-uri:")
-    # print("\nNurses:")
-    # for n in global_object.Nurse:
-    #     print(f"\nNurse {n.EmployeeID}  (MinTotal={n.MinTotalMins}, MaxTotal={n.MaxTotalMins})")
-    #     print("  NurseShiftType-uri:")
-    #     for nst in n.NurseShiftType:
-    #         print(f"    • ShiftType={nst.ShiftType.ShiftID}, MaxShifts={nst.MaxShifts}")
-    #     print("  NurseDay-uri:")
-    #     for nd in n.NurseDay:
-    #         assigned = nd.AssignedShift.ShiftID if nd.AssignedShift else "None"
-    #         print(f"    • Day={nd.Day.DayID}, IsDayOff={nd.IsDayOff}, Assigned={assigned}")
-    # print("\nShiftTypes:")
-    # for st in global_object.ShiftType:
-    #     print(f"\nShiftType {st.ShiftID}  (Len={st.LengthInMins}m)")
-    #     print("  DayShiftType-uri:")
-    #     for dst in st.DayShiftType:
-    #         print(f"    • Day={dst.Day.DayID}, Required={dst.NrRequired}")
-    #     print("  NurseShiftType-uri:")
-    #     for nst in st.NurseShiftType:
-    #         print(f"    • Nurse={nst.Nurse.EmployeeID}, MaxShifts={nst.MaxShifts}")
-    #     print("  NurseDayShiftType-uri:")
-    #     for ndst in st.NurseDayShiftType:
-    #         print(
-    #             f"    • NurseDay(Nurse={ndst.NurseDay.Nurse.EmployeeID}, Day={ndst.NurseDay.Day.DayID}), OnReq={ndst.IsOnRequest}, OffReq={ndst.IsOffRequest}")
+
 
 
     timelimit = dt.timedelta(seconds=120)
@@ -1364,7 +1144,7 @@ def timetable_without_algorithm(request):
     scopeselection_shiftoffreq = ScopeSelectionShiftOffRequest('ScopeSelectionShiftOffRequest', 15, 15, 10, optimizer,global_object)
     scopeselection_shiftunder = ScopeSelectionShiftUnderCover('ScopeSelectionShiftUnderCover', 15, 15, 10, optimizer,global_object)
     scopeselection_shiftover = ScopeSelectionShiftOverCover('ScopeSelectionShiftOverCover', 15, 15, 10, optimizer,global_object)
-    # Do iterations here
+
     while optimizer.get_continue():
         # Select Scope selection
         selected_scope_selection = optimizer.select_scope_selection()
@@ -1381,11 +1161,11 @@ def timetable_without_algorithm(request):
         # print([n.EmployeeID for n in nurses])
         # print([s.ShiftID for s in shifttypes])
 
-        # Create OptimizerIteration object
+        # creare OptimizerIteration
         optimizer_iteration = OptimizerIteration(optimizer.CurrentIteration, time.time(), optimizer,
                                                  selected_scope_selection,global_object)
 
-        # Create OptScope objects
+        # creare obiecte OptScope
         optimizer_iteration.create_optscope_objects(nurses, days, shifttypes)
 
         # Optimize OptScope
@@ -1397,8 +1177,7 @@ def timetable_without_algorithm(request):
         instance, results = optimizer_iteration.solve_mip(model, is_debug, filename)
         optimizer_iteration.handle_result(model, instance, results, is_debug, filename, True)
 
-        # Decide to rollback/accept solution
-        # Update attributes
+        # updatez atributele
         optimizer.CurrentIteration = optimizer.CurrentIteration + 1
         print(optimizer.CurrentIteration)
 
@@ -1440,7 +1219,7 @@ def timetable_without_algorithm(request):
     # selected_scope_selection = [ss for ss in optimizer.ScopeSelection if isinstance(ss, ScopeSelectionShiftUnderCover)][0]
     print(optimizer.CurrentIteration, selected_scope_selection.Name)
 
-    # Get OptScope
+    #  OptScope
     days, nurses, shifttypes = selected_scope_selection.get_opt_scope()
     global_object.reset_isinsideoptscope()
     global_object.set_isinsideoptscope(nurses, days, shifttypes)
@@ -1448,11 +1227,11 @@ def timetable_without_algorithm(request):
     print([n.EmployeeID for n in nurses])
     print([s.ShiftID for s in shifttypes])
 
-    # Create OptimizerIteration objecthandle
+    # creez  objecthandle OptimizerIteration
     optimizer_iteration = OptimizerIteration(optimizer.CurrentIteration, time.time(), optimizer,
                                              selected_scope_selection,global_object)
 
-    # Create OptScope objects
+    # creez obiecte OptScope
     optimizer_iteration.create_optscope_objects(nurses, days, shifttypes)
 
     # Optimize OptScope
@@ -1464,8 +1243,7 @@ def timetable_without_algorithm(request):
     instance, results = optimizer_iteration.solve_mip(model, is_debug, filename)
     optimizer_iteration.handle_result(model, instance, results, is_debug, filename, True)
 
-    # Decide to rollback/accept solution
-    # Update attributes
+    # updatez atribute
     optimizer.CurrentIteration = optimizer.CurrentIteration + 1
 
     print('\nOpt scope statistics')
@@ -1484,8 +1262,6 @@ def timetable_without_algorithm(request):
                 print(n.EmployeeID, nd.Day.DayID, nds.ShiftType.ShiftID, nds.NrSelectedInOptScope)
 
     optimizer.plan_up_to_iteration(1)
-
-    # Print in tabular format
     sorted_nurses = sorted(global_object.Nurse, key=lambda x: x.EmployeeID, reverse=False)
     sorted_days = sorted(global_object.Day, key=lambda x: x.DayID, reverse=False)
     for n in sorted_nurses:
@@ -1511,11 +1287,11 @@ def timetable_without_algorithm(request):
     global_object.reset_isinsideoptscope()
     global_object.set_isinsideoptscope(nurses, days, shifttypes)
 
-    # Create OptimizerIteration object
+    # creare OptimizerIteration
     scope_selection = [ss for ss in optimizer.ScopeSelection][0]
     optimizer_iteration = OptimizerIteration(99, time.time(), optimizer, scope_selection,global_object)
 
-    # Create OptScope objects
+    # creare obiecte OptScope
     optimizer_iteration.create_optscope_objects(nurses, days, shifttypes)
 
     print(type(optimizer_iteration.OptScopeNurse), [n.Nurse.EmployeeID for n in optimizer_iteration.OptScopeNurse])
@@ -1532,7 +1308,6 @@ def timetable_without_algorithm(request):
     from datetime import datetime, timedelta, time as dt_time
 
     def save_schedule_events(global_object, base_date, user):
-        # 1) Montăm lista de atribuiri
         schedule_data = []
         for day in sorted(global_object.Day, key=lambda d: d.DayID):
             for nurse in global_object.Nurse:
@@ -1545,10 +1320,9 @@ def timetable_without_algorithm(request):
                     "Shift": shift
                 })
 
-        # 2) Definim start + durată (minute) pentru fiecare ShiftID
         shift_defs = {
-            "a1": {"start": (7, 0), "dur": 480},  # 8h
-            "a2": {"start": (7, 0), "dur": 720},  # 12h
+            "a1": {"start": (7, 0), "dur": 480},
+            "a2": {"start": (7, 0), "dur": 720},
             "d1": {"start": (9, 0), "dur": 480},
             "d2": {"start": (10, 0), "dur": 480},
             "d3": {"start": (11, 0), "dur": 480},
@@ -1557,18 +1331,14 @@ def timetable_without_algorithm(request):
             "n1": {"start": (23, 0), "dur": 480},
         }
 
-        # 3) Salvăm în baza de date
         for entry in schedule_data:
             if entry["Shift"] == "Off":
                 continue
-
             # data zilei
             event_date = base_date + timedelta(days=entry["Day"])
             sid = entry["Shift"]
             defs = shift_defs.get(sid)
-
             if not defs:
-                # fallback generic 9–17
                 start_t, dur = dt_time(9, 0), 480
             else:
                 h, m = defs["start"]
@@ -1576,8 +1346,6 @@ def timetable_without_algorithm(request):
 
             start_dt = datetime.combine(event_date, start_t)
             end_dt = start_dt + timedelta(minutes=dur)
-
-            # titlu / descriere
             title = f"{sid} Shift pentru {entry['Nurse']}"
             desc = f"Programul {entry['Nurse']} în {event_date:%Y-%m-%d}"
             us=User.objects.filter(email=entry["NurseID"]+"@example.com")[0]
@@ -1590,16 +1358,13 @@ def timetable_without_algorithm(request):
                 department=global_object
             )
 
-        # 4) (Opţional) afişare DataFrame & CSV
         df = pd.DataFrame(schedule_data)
         df = df.pivot(index="Day", columns="Nurse", values="Shift").fillna("Off")
         print("\nOrarul Generat:\n", df, sep="")
         df.to_csv("nurse_schedule.csv")
         print("\nSalvat: nurse_schedule.csv")
 
-    base_date = datetime(2025, 5, 1)  # ajustează după necesități
-
-    # Salvează evenimentele în baza de date, folosind modelul Event
+    base_date = datetime(2025, 5, 1)
     save_schedule_events(global_object, base_date, request.user)
 
     exec_time = time.perf_counter() - start_time
@@ -1608,16 +1373,11 @@ def timetable_without_algorithm(request):
         'soft': global_object.calc_TotalKPISoft(True),
         'exec_time': round(exec_time, 2),
     }
-
-    # Deschide Django shell cu `python manage.py shell`
-
-    # Redirecționează către pagina principală pentru a afişa modalul KPI
     return redirect('calendarapp:choose_instance')
 
 @login_required
 def confirm_schedule(request):
     print("AM INTRAT ÎN confirm_schedule")
-    # 1) Preia lista din sesiune
     preview = request.session.get('preview_events')
     cache_key = f"unsaved_chrom_{request.session.session_key}"
     best_chrom = cache.get(cache_key)
@@ -1625,8 +1385,6 @@ def confirm_schedule(request):
         return redirect('calendarapp:choose_instance')
     NurseDayShiftType.objects.all().delete()
     NurseDay.objects.all().delete()
-
-    # 2) Salvează obiectul best_chrom (GlobalObject) și calculează KPI‐urile
     best_chrom.save()
     num= re.search(r'\d+', best_chrom.Name).group()
     for d in best_chrom.Day:
@@ -1645,11 +1403,11 @@ def confirm_schedule(request):
                 f"    • NurseDay(Nurse={nd.Nurse.EmployeeID}, IsDayOff={nd.IsDayOff}, Assigned={assigned})")
             print("      ↳ NurseDayShiftType:")
             for ndst in nd.NurseDayShiftType:
-                # NurseDayShiftType.objects.filter(
-                #     Day=day,
-                #     Nurse=ndst.Nurse,
-                #     ShiftType=ndst.ShiftType
-                # ).delete()
+                NurseDayShiftType.objects.filter(
+                    Day=day,
+                    Nurse=ndst.Nurse,
+                    ShiftType=ndst.ShiftType
+                ).delete()
 
                 ndst.Day=day
                 ndst.save()
@@ -1677,9 +1435,7 @@ def confirm_schedule(request):
         kpi_soft=kpi_soft,
     )
 
-    # 3) Salvează fiecare event în DB
     for ev in preview:
-        # Presupunem că title-ul are format "NurseID/..." → extragem prefixul dinaintea '/'
         nurse_prefix = ev['title'].split('/')[0]
         nurse=Nurse.objects.get(EmployeeID=ev['nurse_id'])
         shift_type=ShiftType.objects.get(ShiftID=ev['shift_id'])
@@ -1699,7 +1455,7 @@ def confirm_schedule(request):
 
         )
 
-    # 4) Numărul obiectului GlobalObject printr‐un regex
+
     num = re.search(r'\d+', best_chrom.Name).group()
 
     for nurse in best_chrom.Nurse:
@@ -1713,11 +1469,11 @@ def confirm_schedule(request):
 
 @login_required
 def cancel_schedule(request):
-    # Simplu: șterge preview-ul și înapoi
+
     request.session.pop('preview_events', None)
     return redirect('calendarapp:choose_instance')
 
-# Apelează funcția după ce algoritmul a generat un orar
+
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -1725,9 +1481,6 @@ from django.contrib.auth.decorators import login_required
 
 @login_required
 def schedule_log_events(request, log_id):
-    """
-    Returnează JSON-ul cu evenimentele pentru log-ul specificat.
-    """
     log = get_object_or_404(ScheduleGenerationLog, pk=log_id)
     print("log ",log.events_json)
     return JsonResponse(log.events_json, safe=False)
@@ -1739,33 +1492,30 @@ from django.http import JsonResponse
 
 @login_required
 def get_user_id(request):
-    # Accesăm ID-ul utilizatorului care este deja salvat în sesiune
+
     user_id = request.user.id
     return JsonResponse({'user_id': user_id})
 
 @login_required
 def choose_emergency_requests(request):
 
-    # 1. Omiterea de la pasul POST: dacă e GET fără ?date=…
+
     if request.method == 'GET' and 'date' not in request.GET:
-        # Afișez pagina doar cu selector de date
+
         return render(request, 'calendarapp/choose_emergency_requests.html', {
             'stage': 'select_date',
         })
 
-    # 2. Dacă e GET cu 'date', afișez listele de nurse
     if request.method == 'GET' and 'date' in request.GET:
         date_str = request.GET['date']
         try:
             chosen_date = datetime.strptime(date_str, '%Y-%m-%d').date()
         except ValueError:
-            # Data invalidă: re‐afișez formularul de selectare a datei cu mesaj de eroare
             return render(request, 'calendarapp/choose_emergency_requests.html', {
                 'stage': 'select_date',
                 'date_error': "Formatul datei nu e valid. Folosește YYYY-MM-DD.",
             })
 
-        # 3. Preiau asistenții cu tură în acea zi (NurseShift)\
         uid = request.user.email.split("@")[0]
         print(f"DEBUG: Prefixul email-ului userului: {uid}")
         nurse = get_object_or_404(Nurse, EmployeeID=uid)
@@ -1781,13 +1531,12 @@ def choose_emergency_requests(request):
             EmployeeID__in=nurse_shifts_qs.values_list('Nurse_id', flat=True)
         ).distinct()
 
-        # 4. Preiau asistenții cu zi liberă aprobată (DayOffRequest, status='A')
         nurse_dayoff_qs = NurseDayShiftType.objects.filter(Day=day, IsAssigned=0)
         nurses_on_dayoff = Nurse.objects.filter(
             EmployeeID__in=nurse_dayoff_qs.values_list('Nurse_id', flat=True)
         ).distinct()
 
-        # 5. Afișez pagina cu ambele liste
+
         return render(request, 'calendarapp/choose_emergency_requests.html', {
             'stage': 'show_lists',
             'chosen_date': chosen_date,
@@ -1795,17 +1544,15 @@ def choose_emergency_requests(request):
             'nurses_on_dayoff': nurses_on_dayoff,
         })
 
-    # 6. Dacă e POST, procesăm selecțiile din formular
+
     if request.method == 'POST':
         date_str = request.POST.get('date')
         print(date_str)
         try:
-            dt = datetime.strptime(date_str, "%B %d, %Y")  # %B coincide cu numele complet al lunii
+            dt = datetime.strptime(date_str, "%B %d, %Y")
 
-            # 2) Transformi obiectul date în șir ISO „YYYY-MM-DD”
             chosen_date = dt.strftime("%Y-%m-%d")
         except ValueError:
-            # Dacă nu se poate parsa data, redirecționăm la pasul 1
             return redirect('calendarapp:choose_emergency_requests')
 
         remove_nurses_ids = request.POST.getlist('remove_nurses')
@@ -1814,27 +1561,21 @@ def choose_emergency_requests(request):
         print("DEBUG: remove_nurses_ids:", remove_nurses_ids)
         print("DEBUG: call_nurses_ids:", call_nurses_ids)
 
-        # 7. Creăm EmergencyRequest
+        #  creez EmergencyRequest
         er = EmergencyRequest.objects.create(
             date=chosen_date,
             created_by=request.user
         )
-        # 8. Adăugăm în M2M
+        # ma uit daca nurse-uri de sters
         if remove_nurses_ids:
             for nid in remove_nurses_ids:
                 nurse = get_object_or_404(Nurse, pk=nid)
                 er.remove_nurses.add(nurse)
-                # Optional: putem marca acea zi ca off prin DayOffRequest cu un status special
-                # DayOffRequest.objects.create(nurse=nurse, department=nurse.department, day=chosen_date, status='E')
-                print(f"DEBUG: Added to remove_nurses → {nurse}")
 
         if call_nurses_ids:
             for nid in call_nurses_ids:
                 nurse = get_object_or_404(Nurse, pk=nid)
                 er.call_nurses.add(nurse)
-                # Optional: putem anunța sau crea o cerere de tip „call-in”
-                print(f"DEBUG: Added to call_nurses → {nurse}")
-
         er.save()
         print(f"DEBUG: EmergencyRequest creat pentru data {chosen_date}")
 

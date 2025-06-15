@@ -73,15 +73,11 @@ class NurseDay(models.Model):
 
     # Hard KPIs
     def calc_KPIHardShiftRotation(self):
-        # Return 0 immediately if:
-        # 1. There's no assigned shift on this NurseDay
-        # 2. There's assigned shift, but no forbidden shifts
-        # 3. This is the last day in planning horizon
-        # 4. There's no planned shift the next day
+
         value = 0.0
         if self.AssignedShift == [] or self.AssignedShift.ForbiddenShifts == [] or self.Next == [] or self.Next.AssignedShift == []:
             value = 0.0
-        else:  # Check if the next day's planned shift is forbidden
+        else:
             if self.Next.AssignedShift.ShiftID in self.AssignedShift.ForbiddenShifts:
                 value = 1.0
             else:
@@ -90,23 +86,17 @@ class NurseDay(models.Model):
         return value
 
     def calc_FirstWorkingBlock_ConsecutiveWorkingDays(self, is_outside_planning_all_shifts):
-        # Only calculate for the first day of a working block
         value = 0
-        # is_first_day_working_block:
-        # is_outside_planning_all_shifts = False --> if this is the first NurseDay, assume is_first_day_working_block always True
-        # is_outside_planning_all_shifts = True --> if this is the first NurseDay, assume is_first_day_working_block always False
         is_first_day_working_block = self.AssignedShift != [] and (
                     self.Previous == [] or self.Previous.AssignedShift == [])
         if is_outside_planning_all_shifts:
             is_first_day_working_block = self.AssignedShift != [] and self.Previous != [] and self.Previous.AssignedShift == []
 
         if is_first_day_working_block:
-            # Calculate consecutive working days
             pointer = self
             while pointer != [] and pointer.AssignedShift != []:
                 value += 1
                 pointer = pointer.Next
-                # If we've reached the last day of planning horizon, add infinite number to not penalize wrongly (only for MinConsShift)
                 if is_outside_planning_all_shifts and pointer == []:
                     value += float('inf')
         self.FirstWorkingBlock_ConsecutiveWorkingDays = value
@@ -132,21 +122,16 @@ class NurseDay(models.Model):
         return value
 
     def calc_FirstDayOffBlock_ConsecutiveDayOffs(self):
-        # Only calculate for the first day of a dayoff block
-        # If there's shift assigned, return 0
-        # If this is the first day of the planning horizon, return 0
-        # If there's no shift assigned but previous day also has no shift assigned, return 0
         if self.AssignedShift != [] or self.Previous == [] or (
                 self.AssignedShift == [] and self.Previous != [] and self.Previous.AssignedShift == []):
             value = 0
         else:
-            # Calculate consecutive day offs
             value = 0
             pointer = self
             while pointer != [] and pointer.AssignedShift == []:
                 value += 1
                 pointer = pointer.Next
-                if pointer == []:  # If we've reached the last day of planning horizon, add infinite number to not penalize wrongly
+                if pointer == []:
                     value += float('inf')
         self.FirstDayOffBlock_ConsecutiveDayOffs = value
 
@@ -185,11 +170,10 @@ class NurseDay(models.Model):
         return value
 
     class Meta:
-        # Variante posibile (alegeţi una dintre cele două)
-        # 1) unique_together (metodă compatibilă cu versiuni mai vechi de Django)
+
         unique_together = ('Nurse', 'Day')
 
-        # 2) UniqueConstraint (mai explicit și recomandat în Django ≥ 2.2)
+
         # constraints = [
         #     models.UniqueConstraint(
         #         fields=['Nurse', 'Day'],

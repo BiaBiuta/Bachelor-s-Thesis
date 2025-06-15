@@ -28,11 +28,9 @@
   </header>
 <div id="chat-pane" class="chat-pane p-6 space-y-4">
     <div class="flex items-start space-x-3">
-  <!-- chat-pane primeşte bulinele -->
   </div>
 </div>
 
-  <!-- input -->
     <div class=" chat-input-row border-t bg-gray-50 p-4">
                         <div class="flex space-x-3">
 
@@ -44,14 +42,12 @@
   </div>
     </div>
 </div>
-    <!-- Calendar Modal -->
+
  <div class="lg:col-span-1">
                 <div class="bg-white rounded-xl shadow-lg p-6">
                     <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
                         📅 Quick Date Selection
                     </h2>
-
-                    <!-- Month Navigation -->
                     <div class="flex justify-between items-center mb-4">
                         <button id="prevMonth" class="p-2 hover:bg-gray-100 rounded">
                             ← Prev
@@ -62,7 +58,7 @@
                         </button>
                     </div>
 
-                    <!-- Calendar -->
+
                     <div class="calendar-grid bg-gray-50 p-2 rounded-lg mb-4">
                         <div class="text-center font-semibold text-sm py-2">Sun</div>
                         <div class="text-center font-semibold text-sm py-2">Mon</div>
@@ -74,7 +70,7 @@
                     </div>
                     <div id="calendarDays" class="calendar-grid"></div>
 
-                    <!-- Quick Actions -->
+
                     <div class="mt-4 space-y-2">
                         <button onclick="selectDate('today')" class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition">
                             Select Today
@@ -85,7 +81,7 @@
                     </div>
                 </div>
 
-                <!-- Shift Types -->
+
                 <div class="bg-white rounded-xl shadow-lg p-6 mt-6">
                     <h3 class="text-lg font-semibold text-gray-800 mb-3">🕐 Shift Types</h3>
                     <div class="space-y-2 text-sm">
@@ -116,7 +112,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
  let currentDate = new Date();
         let selectedDate = null;
-        let currentNurse= "{{ request.user }}"; // Assuming you have the nurse's username available
+        let currentNurse= "{{ request.user }}";
  function updateCalendar() {
             const monthNames = ["January", "February", "March", "April", "May", "June",
                 "July", "August", "September", "October", "November", "December"];

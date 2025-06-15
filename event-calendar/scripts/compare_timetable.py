@@ -4,10 +4,6 @@ import time
 from contextlib import contextmanager
 from unittest.mock import patch
 
-# Use the test settings from ``ec_tests`` by default.  This can be overridden
-# by setting the ``DJANGO_SETTINGS_MODULE`` environment variable before running
-# this script.
-# os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ec_tests.test_settings')
 import django
 from django.conf import settings
 from django.test import RequestFactory
@@ -18,7 +14,7 @@ from django.core.management import call_command
 django.setup()
 call_command('migrate', interactive=False, run_syncdb=True, verbosity=0)
 
-# Directory with instance files
+
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'database', 'instances1_24'))
 settings.INSTANCE_DIR = BASE_DIR
 

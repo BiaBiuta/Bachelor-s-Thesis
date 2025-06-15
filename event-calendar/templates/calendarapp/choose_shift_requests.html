@@ -10,9 +10,9 @@
     rel="stylesheet"
   />
 
-  <!-- Stiluri personalizate pentru calendar și panou -->
+
   <style>
-    /* Mărime și centru pentru calendar */
+
     #calendar {
       max-width: 900px;
       margin: 1.5rem auto;
@@ -20,11 +20,11 @@
       border-radius: 4px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     }
-    /* Zile selectate (culoare de fundal) */
+
     .fc-daygrid-day.selected-day {
-      background-color: #d1ecf1 !important;  /* un albastru deschis */
+      background-color: #d1ecf1 !important;
     }
-    /* Panoul pentru shift-uri */
+
     #shifts-panel {
       max-width: 900px;
       margin: 2rem auto;
@@ -70,15 +70,12 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // 1) Preluăm lista de shift-uri primită din view (JSON serializat)
+
       const shiftTypes = JSON.parse('{{ shift_types_json|escapejs }}');
       console.log("shiftTypes:", shiftTypes);
 
-      // 2) Selectările de zile vor sta într-un obiect: cheia = "YYYY-MM-DD",
-      //    valoarea = un Set() de shiftID-uri pentru fiecare zi.
-      const selectedDays = {};
 
-      // 3) Inițializăm FullCalendar
+      const selectedDays = {};
       const calendarEl = document.getElementById('calendar');
       const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
@@ -95,35 +92,28 @@
       });
       calendar.render();
 
-      // 4) Funcție care marchează sau demarchează ziua în calendar
       function toggleDaySelection(dateStr, dayEl) {
         if (selectedDays[dateStr]) {
-          // deja exista – o demarchează
           delete selectedDays[dateStr];
           dayEl.classList.remove('selected-day');
         } else {
-          // adaugă ziua cu un Set gol de shift-uri
+
           selectedDays[dateStr] = new Set();
           dayEl.classList.add('selected-day');
         }
         renderShiftsPanel();
       }
 
-      // 5) Reconstruim conținutul panoului de shift-uri (#days-container)
       function renderShiftsPanel() {
         const container = document.getElementById('days-container');
-        container.innerHTML = ''; // golim conținutul
+        container.innerHTML = '';
 
         Object.keys(selectedDays).sort().forEach(dateStr => {
           const dayDiv = document.createElement('div');
           dayDiv.className = 'day-shifts';
-
-          // Titlul zilei
           const title = document.createElement('h5');
           title.textContent = `Zi: ${dateStr}`;
           dayDiv.appendChild(title);
-
-          // Wrapper pentru checkbox-uri
           const shiftsWrapper = document.createElement('div');
           shiftsWrapper.className = 'row row-cols-1 row-cols-md-2 g-2';
 
@@ -158,7 +148,7 @@
         attachCheckboxListeners();
       }
 
-      // 6) Attachează listener pe toate checkbox-urile din panou
+
       function attachCheckboxListeners() {
         document.querySelectorAll('#days-container .form-check-input').forEach(chk => {
           chk.onchange = function() {
@@ -173,9 +163,9 @@
         });
       }
 
-      // 7) Înainte de submit, construim input-urile hidden “selections”
+
       document.getElementById('shifts-form').addEventListener('submit', function(e) {
-        // Șterge input-urile hidden anterioare
+
         document.querySelectorAll('input[name="selections"]').forEach(el => el.remove());
 
         Object.keys(selectedDays).forEach(dateStr => {

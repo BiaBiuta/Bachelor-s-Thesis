@@ -15,7 +15,8 @@ class SchedulerView(TemplateView):
         }
         return ctx
 
-# partial htmx pentru debug refresh
+
 def debug_box(request):
-    state = json.loads(request.body or "{}")   # primeşte JSON din fetch
+    "'# partial htmx pentru debug refresh'"
+    state = json.loads(request.body or "{}")
     return render(request, "chat/partials/debug_box.html", {"state": state})

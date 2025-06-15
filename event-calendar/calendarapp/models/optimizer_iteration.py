@@ -57,11 +57,9 @@ class OptimizerIteration:
     def plan_optimizer_solution(self):
         for optscope_nurse in self.OptScopeNurse:
             for optscope_nurseday in optscope_nurse.OptScopeNurseDay:
-                # Unassign the currently planned shift if that currently planned shift is part of opt scope in this iteration
                 if optscope_nurseday.NurseDay.AssignedShift != [] and optscope_nurseday.NurseDay.AssignedShift.ShiftID in [
                     optscope_s.ShiftType.ShiftID for optscope_s in self.OptScopeShiftType]:
                     optscope_nurseday.NurseDay.unassign_shift()
-                # Plan according to optimizer
                 if optscope_nurseday.AssignedShift != []:
                     optscope_nurseday.NurseDay.assign_shift(optscope_nurseday.AssignedShift.ShiftType)
 
@@ -154,7 +152,6 @@ class OptimizerIteration:
         nurse = self.get_nurse(n)
         minutes_planned_outscope = 0.0
         for nd in nurse.NurseDay:
-            # If a nd is outside scope OR If a nd is inside scope but has shift outside scope assigned
             if (not nd.Day.IsInsideOptScope and nd.AssignedShift != []) or (
                     nd.AssignedShift != [] and not nd.AssignedShift.IsInsideOptScope):
                 minutes_planned_outscope = minutes_planned_outscope + nd.AssignedShift.LengthInMins
@@ -704,25 +701,25 @@ class OptimizerIteration:
             kpi_hard_before = self.global_object.TotalKPIHard
             kpi_soft_before = self.global_object.TotalKPISoft
             # Manually load the solution into the model
-            handle_result_1_start = time.time()  # jwo1
+            handle_result_1_start = time.time()
             model.solutions.load_from(results)
             if is_debug:
                 instance.display(filename='sol_' + filename + '.sol')
-            handle_result_1_end = time.time()  # jwo1
+            handle_result_1_end = time.time()
             print("handle result 1 duration in seconds", (handle_result_1_end - handle_result_1_start))  # jwo1
 
-            handle_result_2_start = time.time()  # jwo1
+            handle_result_2_start = time.time()
             self.unassign_shifts()
-            handle_result_2_end = time.time()  # jwo1
+            handle_result_2_end = time.time()
             print("handle result 2 duration in seconds", (handle_result_2_end - handle_result_2_start))  # jwo1
 
-            handle_result_3_start = time.time()  # jwo1
+            handle_result_3_start = time.time()
             sorted_nurses = sorted(instance.NURSES, key=lambda x: x, reverse=False)
             sorted_days = sorted(instance.DAYS, key=lambda x: x, reverse=False)
-            handle_result_3_end = time.time()  # jwo1
+            handle_result_3_end = time.time()
             print("handle result 3 duration in seconds", (handle_result_3_end - handle_result_3_start))  # jwo1
 
-            handle_result_4_start = time.time()  # jwo1
+            handle_result_4_start = time.time()
             for n in sorted_nurses:
                 optscope_nurse = [optscope_n for optscope_n in self.OptScopeNurse if optscope_n.Nurse.EmployeeID == n][
                     0]
@@ -738,17 +735,15 @@ class OptimizerIteration:
                             optscope_nurseday.AssignedShift = optscope_shifttype
                             #print(n, d, s)
                             break
-            handle_result_4_end = time.time()  # jwo1
+            handle_result_4_end = time.time()
             print("handle result 4 duration in seconds", (handle_result_4_end - handle_result_4_start))  # jwo1
 
             # Do the planning
-            handle_result_5_start = time.time()  # jwo1
+            handle_result_5_start = time.time()
             self.plan_optimizer_solution()
-            handle_result_5_end = time.time()  # jwo1
-            print("handle result 5 duration in seconds", (handle_result_5_end - handle_result_5_start))  # jwo1
-
-            # Print in tabular format
-            handle_result_6_start = time.time()  # jwo1
+            handle_result_5_end = time.time()
+            print("handle result 5 duration in seconds", (handle_result_5_end - handle_result_5_start))
+            handle_result_6_start = time.time()
             sorted_nurses = sorted(self.global_object.Nurse, key=lambda x: x.EmployeeID, reverse=False)
             sorted_days = sorted(self.global_object.Day, key=lambda x: x.DayID, reverse=False)
             for n in sorted_nurses:

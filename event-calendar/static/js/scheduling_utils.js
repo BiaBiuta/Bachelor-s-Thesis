@@ -6,28 +6,25 @@ export const requiredFields = ["day", "shiftType", "reqType", "weight"];
 export function extractSchedulingInfo(message) {
   const info = {};
 
-  // 1) day (ne păstrăm funcționalitatea existentă de recunoaștere),
-  //    dar pentru dialog putem detecta simplu un pattern de zi (“monday”, “2025-06-10” etc.)
+
   if (/\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i.test(message) ||
       /\b\d{4}[/-]\d{2}[/-]\d{2}\b/.test(message)) {
     info.day = "provided";
   }
 
-  // 2) shiftType: detectăm și returnăm valoarea găsită
+
   const stMatch = message.match(/\b(morning|afternoon|evening|night|day shift|night shift)\b/i);
   if (stMatch) {
     const st = stMatch[1].toLowerCase();
-    // normalizăm la forma "Morning", "Night" etc.
+
     info.shiftType = st.replace(" shift", "");
     info.shiftType = info.shiftType.charAt(0).toUpperCase() + info.shiftType.slice(1);
   }
 
-  // 3) reqType: detectăm “on” sau “off” când e clar
-  //    Atenție: să nu prindă “on” din propoziții obișnuite; mai precis:
-  //    căutăm expresii “shift on” și “shift off” sau “cerere on” / “cerere off”.
+
   if (/\b(shift on|request on)\b/i.test(message) ||
       /\b(shift off|request off)\b/i.test(message)) {
-    // dacă există “shift on” în text => reqType = “ON”, altfel “OFF”
+
     if (/\b(shift on|request on)\b/i.test(message)) {
       info.reqType = "ON";
     } else {
@@ -35,14 +32,11 @@ export function extractSchedulingInfo(message) {
     }
   }
 
-  // 4) weight: detectăm un număr zecimal singular sau întreagă („5”, „2.5” etc.)
-  //    Căutăm pattern care nu face parte din „date” (evităm să considerăm “2025” ca weight).
-  //    De exemplu un pattern simplu: un număr între paranteze după cuvântul “weight:”
+
   const weightMatch = message.match(/\bweight\s*[:=]\s*(\d+(\.\d+)?)\b/i);
   if (weightMatch) {
     info.weight = parseFloat(weightMatch[1]);
   } else {
-    // alt fallback: un număr zecimal urmat de “puncte” (punct -> poate fi “puncte” sau “pct”)
     const genericNumber = message.match(/\b(\d+(\.\d+)?)\s*(puncte|pct)\b/i);
     if (genericNumber) {
       info.weight = parseFloat(genericNumber[1]);

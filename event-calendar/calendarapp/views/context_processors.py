@@ -3,8 +3,8 @@ from calendarapp.models.nurse import Nurse
 
 def current_nurse_global_object(request):
     """
-    Extrage EmployeeID din email (partea dinainte de '@'),
-    găsește Nurse și returnează global_object_id în context.
+    extrage EmployeeID din email (partea dinainte de '@'),
+    gaseste Nurse si returneaza global_object_id în context
     """
     print("am intratin current_nurse_global_object")
     if not request.user.is_authenticated:

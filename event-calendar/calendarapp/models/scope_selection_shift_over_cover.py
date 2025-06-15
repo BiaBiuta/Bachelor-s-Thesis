@@ -18,7 +18,6 @@ class ScopeSelectionShiftOverCover(ScopeSelection):
         self.Optimizer.select_top_random(sorted_violating_dayshifttypes, self.Optimizer.TopRandomProbability, 1)[0]
         day = dayshifttype.Day
         shifttype = dayshifttype.ShiftType
-        # Select nurse: whose nurseday plans this shift
         qualified_nurse_days = sum(
             [n.NurseDay for n in self.Optimizer.GlobalObject.Nurse if n.can_plan_shifttype(shifttype)], [])
         qualified_nurse_days = [nd for nd in qualified_nurse_days if nd.Day == day and nd.AssignedShift == shifttype]

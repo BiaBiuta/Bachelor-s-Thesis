@@ -234,30 +234,24 @@
           right: 'dayGridMonth,timeGridWeek,timeGridDay,list'
         },
         initialDate: today,
-        navLinks: true, // can click day/week names to navigate views
+        navLinks: true,
         selectable: true,
         selectMirror: true,
         select: function(arg) {
-  // 1) Salvăm datele selectate în variabilele globale
-  fcSelectStart = arg.start;   // JS Date
-  fcSelectEnd   = arg.end;     // JS Date (poate fi null)
 
-  // 2) Deschidem modalul intermediar de alegere (chooseModal)
+  fcSelectStart = arg.start;
+  fcSelectEnd   = arg.end;
+
+
   $('#chooseModal').modal('show');
 
-  // 3) Renunțăm la evidențierea zonei selectate în calendar
+
   calendar.unselect();
 },
 
 
         
-        // THIS KEY WON'T WORK IN PRODUCTION!!!
-        // To make your own Google API key, follow the directions here:
-        // http://fullcalendar.io/docs/google_calendar/
-        // googleCalendarApiKey: 'AIzaSyCqCxjjLtjbtkX37aOtWB8OfwBLy_6QuYk',
-
-        // bangladesh Holidays
-        // events: 'bn.bd#holiday@group.v.calendar.google.com',
+        /
         eventClick: function(arg) {
           
           console.log('clicked')
@@ -292,19 +286,19 @@
           modal.style.display = 'block';
         },
         editable: true,
-        dayMaxEvents: true, // allow "more" link when too many events
+        dayMaxEvents: true, /
          eventSources: [
 
-          // 1) sursa de background events pentru zilele cu deficit
+
           {
             events: deficitDates.map(d => ({
               start: d,
               display: 'background',
-              color: '#ffcccc'      // culoarea de umbrire
+              color: '#ffcccc'
             }))
           },
 
-          // 2) sursa ta principală de evenimente
+
           {
             events: {{ events|safe }}
           }
@@ -349,33 +343,32 @@
 {#    socket.onerror = function(error) {#}
 {#        console.error('WebSocket error:', error);#}
 {#    };#}
-  // 4) Când utilizatorul apasă „Creează Eveniment” în chooseModal
+
 document.getElementById('chooseEventBtn').addEventListener('click', function() {
-  // 4.1) Închidem modalul de alegere
+
   $('#chooseModal').modal('hide');
 
-  // 4.2) Deschidem modalul de eveniment
   $('#eventModal').modal('show');
 
-  // 4.3) Dacă datele globale au fost setate, le copiem în câmpurile form-ului de eveniment
+
   if (fcSelectStart !== null) {
     document.getElementById('id_start_time').value = converterDataParaDjangoFormat(fcSelectStart);
 
     if (fcSelectEnd !== null) {
       document.getElementById('id_end_time').value = converterDataParaDjangoFormat(fcSelectEnd);
     } else {
-      // Dacă end e null (ex: simplu click fără drag), setăm un default (start + 1 oră)
+
       var plusOora = new Date(fcSelectStart.getTime() + 60*60*1000);
       document.getElementById('id_end_time').value = converterDataParaDjangoFormat(plusOora);
     }
   }
 
-  // 4.4) Resetăm variabilele globale
+
   fcSelectStart = null;
   fcSelectEnd   = null;
 });
 
-    // 5) Când utilizatorul apasă „Solicitare Shift” în chooseModal
+
      $('#chooseRequestBtn').on('click', function() {
       $('#chooseModal').modal('hide');
 
@@ -385,25 +378,21 @@ document.getElementById('chooseEventBtn').addEventListener('click', function() {
       }
       var nurse="{{ nurse }}";
       var ziSelectata = converterDataParaDjangoFormat(fcSelectStart);
-      // Setează ModelChoiceField‐ul #id_day (ModelChoiceField va trimite la POST PK-ul exact)
+
       $('#id_day').val(ziSelectata);
       $('#id_nurse').val(nurse);
 
-      // Setează departamentul și tipul cererii (exemplu)
+
       //document.getElementById('id_department').value={{ domain_pk }};
       $('#id_req_type').val('ON');
       // Dacă fișa nurse e un <select> sau <input>, setează-l corespunzător
       {#// $('#id_nurse').val(<ID nurse>);#}
 
-      // Golim momentan <select id="id_shift_type"> (ca să afișăm “Încarcare…”)
       $('#id_shift_type').html('<option value="">Încarcare tipuri de tură …</option>');
 
-      // Deschide modal‐ul de request
       $('#requestModal').modal('show');
 
-      // 4.d.i) Când modalul #requestModal e afișat (shown.bs.modal), atașează handler pe <select>
       $('#requestModal').on('shown.bs.modal.shifts', function() {
-        // Acum există #id_shift_type în DOM. Dacă sunt deja opțiuni, nu mai facem AJAX
         $('#id_shift_type').off('mousedown.ajax').on('mousedown.ajax', function() {
           if ($(this).find('option').length > 1) {
             return;
@@ -415,7 +404,7 @@ document.getElementById('chooseEventBtn').addEventListener('click', function() {
             method: 'GET',
             data: {
               department_id: {{ domain_pk }},
-              day_id:ziSelectata  // dacă DayID e de forma “2025-06-15”, endpoint ar trebui să accepte string
+              day_id:ziSelectata
             },
             success: function(response) {
               var optionsHtml = '<option value="">--- Selectează tură ---</option>';
@@ -436,7 +425,7 @@ document.getElementById('chooseEventBtn').addEventListener('click', function() {
         });
       });
 
-      // 4.d.ii) Când modalul #requestModal se închide, scoatem handler-ul atașat
+
       $('#requestModal').on('hidden.bs.modal.shifts', function() {
         $('#id_shift_type').off('mousedown.ajax');
         $('#requestModal').off('.shifts');
@@ -482,17 +471,15 @@ document.getElementById('chooseEventBtn').addEventListener('click', function() {
       }});
     const form = document.getElementById("event-form");
     form.addEventListener("submit", function(e) {
-      e.preventDefault();  // opreşte trimiterea normală
-      console.log('Form submitted');
-      // extragi valorile câmpurilor din formă
+      e.preventDefault();
+      console.log('Form submitted')
       const title = form.querySelector('input[name="title"]').value;
       const description = form.querySelector('textarea[name="description"]').value;
       const start = form.querySelector('input[name="start_time"]').value;
       const end = form.querySelector('input[name="end_time"]').value;
-      // 3) trimiţi payload-ul pe WebSocket
       socket.send(JSON.stringify({
           type: 'addEvent',
-          sender: '{{ request.user }}',        // definit deja în JS
+          sender: '{{ request.user }}',
           event: {
               title, description, start, end
           }
@@ -548,22 +535,20 @@ $(document).ready(function() {
       event.preventDefault();
       console.log('Form-request submitted');
       if (!raw) {
-        // Dacă nu a fost selectată nicio opțiune validă
+
         event.preventDefault();
         alert("Vă rugăm să selectați un tip de tură înainte de a trimite.");
       }
       socket.send(JSON.stringify({
           type: 'shift_request_add',
-          sender: '{{ request.user }}',        // definit deja în JS
+          sender: '{{ request.user }}',
           event: {
               raw
           }
       }));
       this.submit()
 
-  //event.preventDefault();
-  // În rest – NU mai apelați this.submit() și NU faceți preventDefault().
-  // Browser-ul va include automat în POST: shift_type=<valoarea selectată>
+
 });
 
 

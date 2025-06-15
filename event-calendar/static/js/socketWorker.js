@@ -16,14 +16,11 @@ function adaugaNotificareInDropdown(data, store) {
         console.warn("Container '.app-notification__content' nu a fost găsit pe pagină.");
         return;
       }
-
-      // Creăm elementele HTML
       var li = document.createElement('li');
       var a = document.createElement('a');
       a.classList.add('app-notification__item');
       a.href = 'javascript:;';
 
-      // Icon (folosind FontAwesome stacked icons)
       var spanIcon = document.createElement('span');
       spanIcon.classList.add('app-notification__icon');
       var iconClass = data.iconClass || 'fa fa-bell';
@@ -33,7 +30,7 @@ function adaugaNotificareInDropdown(data, store) {
           '<i class="' + iconClass + ' fa-stack-1x fa-inverse"></i>' +
         '</span>';
 
-      // Mesaj + metadate
+
       var wrapperDiv = document.createElement('div');
       var pMessage = document.createElement('p');
       pMessage.classList.add('app-notification__message');
@@ -45,16 +42,15 @@ function adaugaNotificareInDropdown(data, store) {
       wrapperDiv.appendChild(pMessage);
       wrapperDiv.appendChild(pMeta);
 
-      // Asamblăm structura
+
       a.appendChild(spanIcon);
       a.appendChild(wrapperDiv);
       li.appendChild(a);
 
-      // Adăugăm la container
+
       contentContainer.appendChild(li);
 
       if (store) {
-        // Actualizăm contorul numeric și salvăm
         actualizeazaNumarNotificari(1);
         storeNotification(data);
       }
@@ -83,7 +79,7 @@ function adaugaNotificareInDropdown(data, store) {
 
     list.push(data);
 
-    // sort by timestamp descending
+
     list.sort(function(a, b) {
       return new Date(b.timestamp) - new Date(a.timestamp);
     });
@@ -115,7 +111,7 @@ function adaugaNotificareInDropdown(data, store) {
     localStorage.setItem(COUNT_KEY, count.toString());
   }
     console.log("socketWorker.js loaded");
-  // Wait until the page is parsed
+
   function renderStoredNotifications() {
     const stored = loadStoredNotifications();
     var contentContainer = document.querySelector('.app-notification__content');
@@ -135,30 +131,28 @@ function adaugaNotificareInDropdown(data, store) {
       }
     });
 
-    // build the correct ws:// or wss:// URL
    const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
          window.socket = new WebSocket( "ws://" + window.location.hostname + ":5000/ws/notifications/");
 
     window.socket.onopen = () => {
       console.log("[WS] connected");
-             // îl activezi aici
     };
 
     window.socket.onmessage = function(e) {
             const data = JSON.parse(e.data);
             console.log("Mesaj primit:", data);
             adaugaNotificareInDropdown(data, true);
-            // Dacă expeditorul este altul decât utilizatorul curent, afișăm notificarea
+
             if (data.sender !== currentUser) {
                 //document.getElementById("notifications").innerText = data.message;
 
             console.log(window.location.pathname)
              if (data["type"] === "addEvent") {
                  console.log(data.url)
-                 // 3️⃣ Dacă vrei să te asiguri că suntem pe pagina aia:
+
                  if (window.location.pathname === data.url || data.url == "/calendar/") {
                      console.log("dau reload");
-                     // 4️⃣ Dă un reload
+
                      window.location.href="/calender/" ;
                  }
              }
@@ -168,7 +162,7 @@ function adaugaNotificareInDropdown(data, store) {
 
 
     /**
-     * Crește contorul de notificări cu un anumit increment (de obicei +1).
+     * Crește contorul de notificări cu un anumit increment ( +1).
      */
 
 

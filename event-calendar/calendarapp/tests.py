@@ -13,13 +13,12 @@ from calendarapp.models.nurse_day_shift_type import NurseDayShiftType
 from calendarapp.models.global_object import GlobalObject
 from django.utils import timezone
 
-User = get_user_model()  # Get the user model
+User = get_user_model()
 
 class EventListViewTests(TestCase):
-    """ Tests for the Event list views """
+    """ Tests  Event list views """
 
     def setUp(self):
-        # Create a test user
         self.user = User.objects.create_user(
             email='testuser@example.com',
             username='usercal',
@@ -44,41 +43,39 @@ class EventListViewTests(TestCase):
             IsAssigned=False, IsOnRequest=False, IsOffRequest=False, OnRequestWeight=0, OffRequestWeight=0
         )
 
-        # Create some test events
-        self.all_events_url = reverse('calendarapp:all_events')  # URL for AllEventsListView
-        self.running_events_url = reverse('calendarapp:running_events')  # URL for RunningEventsListView
-        self.upcoming_events_url = reverse('calendarapp:upcoming_events')  # URL for UpcomingEventsListView
-        self.completed_events_url = reverse('calendarapp:completed_events')  # URL for CompletedEventsListView
+        self.all_events_url = reverse('calendarapp:all_events')  # URL pentru AllEventsListView
+        self.running_events_url = reverse('calendarapp:running_events')  # URL pentru RunningEventsListView
+        self.upcoming_events_url = reverse('calendarapp:upcoming_events')  # URL pentru UpcomingEventsListView
+        self.completed_events_url = reverse('calendarapp:completed_events')  # URL pentru CompletedEventsListView
 
-        # Creating events for testing
         self.event1 = Event.objects.create(title="Past Event", user=self.user, department=self.department, NurseDayShiftType=self.ndst, start_time="2023-10-01", end_time="2023-10-01")
         self.event2 = Event.objects.create(title="Running Event", user=self.user, department=self.department, NurseDayShiftType=self.ndst, start_time="2024-11-01", end_time="2024-11-01")
         self.event3 = Event.objects.create(title="Upcoming Event", user=self.user, department=self.department, NurseDayShiftType=self.ndst, start_time="2024-12-01", end_time="2024-12-01")
         self.event4 = Event.objects.create(title="Another Completed Event", user=self.user, department=self.department, NurseDayShiftType=self.ndst, start_time="2023-09-01", end_time="2023-09-01")
 
     def test_all_events_view(self):
-        """ Test that all events are listed correctly """
+        """ test pentru all events """
         response = self.client.get(self.all_events_url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'calendarapp/events_list.html')
         self.assertEqual(response.status_code, 200)
 
     def test_running_events_view(self):
-        """ Test that only running events are listed """
+        """ tests pentru running events  """
         response = self.client.get(self.running_events_url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'calendarapp/events_list.html')
         self.assertEqual(response.status_code, 200)
 
     def test_upcoming_events_view(self):
-        """ Test that only upcoming events are listed """
+        """ test pentru upcoming events  """
         response = self.client.get(self.upcoming_events_url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'calendarapp/events_list.html')
         self.assertEqual(response.status_code, 200)
 
     def test_completed_events_view(self):
-        """ Test that only completed events are listed """
+        """ test pentru eventurile complete"""
         response = self.client.get(self.completed_events_url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'calendarapp/events_list.html')

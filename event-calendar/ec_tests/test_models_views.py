@@ -7,9 +7,6 @@ from pathlib import Path
 import os
 import sys
 
-# Add the parent directory to ``sys.path`` so that ``calendarapp`` and
-# ``eventcalendar`` modules can be imported when tests are executed from the
-# repository root.
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ec_tests.test_settings')
 import django

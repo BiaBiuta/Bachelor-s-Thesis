@@ -4,7 +4,7 @@ from calendarapp.models import Event
 
 @user_passes_test(lambda u: u.is_superuser)
 def approve_event(request, event_id):
-    """Approve an event if the user is an admin."""
+    """abrob evenimentul daca userul este administrator"""
     event = get_object_or_404(Event, id=event_id)
     if request.method == "POST":
         event.is_approved = True

@@ -46,47 +46,7 @@ class AddMemberForm(forms.ModelForm):
     class Meta:
         model = EventMember
         fields = ["user"]
-# class ShiftRequestForm(forms.ModelForm):
-#     class Meta:
-#         model = ShiftRequest
-#         fields = ['nurse', 'department', 'day', 'shift_type', 'req_type', 'weight']
-#         widgets = {
-#             'nurse': forms.Select(attrs={'class': 'form-control'}),
-#             'department': forms.Select(attrs={'class': 'form-control'}),
-#             'day': DateInput(
-#                 attrs={"type": "datetime-local", "class": "form-control"},
-#                 format="%Y-%m-%dT%H:%M",
-#             ),
-#             'shift_type': forms.Select(attrs={'class': 'form-control'}),
-#             'req_type': forms.Select(attrs={'class': 'form-control'}),
-#             'weight': forms.NumberInput(attrs={'class': 'form-control', 'step': '1'}),
-#         }
-#
-#     def __init__(self, *args, **kwargs):
-#         # 1) Extragem department_id (trebuie să fie transmis de view)
-#         department_id = kwargs.pop('department_id', None)
-#
-#         # 2) Inițializăm formularul prin apelul super
-#         super().__init__(*args, **kwargs)
-#
-#         # 3) Setăm valoarea inițială a câmpului 'department' (dacă exista)
-#         if department_id is not None:
-#             self.fields['department'].initial = department_id
-#             # Dacă vreți să îl faceți readonly/ disabled, puteți:
-#             # self.fields['department'].widget.attrs['readonly'] = True
-#             # Sau ca hidden:
-#             # self.fields['department'].widget = forms.HiddenInput()
-#
-#         # 4) În mod implicit, queryset gol pentru 'shift_type'
-#         qs = ShiftType.objects.none()
-#
-#         # 5) Dacă avem department_id, populează shift_type cu toate turele din acel departament
-#         if department_id:
-#             qs = ShiftType.objects.filter(GlobalObject_id=department_id)
-#
-#         # 6) Setăm queryset‐ul final pe câmpul 'shift_type'
-#         self.fields['shift_type'].queryset = qs
-# calendarapp/forms.py
+
 import re
 from datetime import datetime
 from django import forms
@@ -97,18 +57,10 @@ from calendarapp.models.shift_type import ShiftType
 from calendarapp.models.global_object import GlobalObject
 
 class ShiftRequestForm(forms.ModelForm):
-    # 1) Declari “day” ca un simplu CharField (browserul îţi poate trimite orice text)
     day = forms.CharField(
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'DD/MM/YYYY hh:mm AM/PM'}),
         required=True
     )
-
-    # # 2) Declari “shift_type” tot ca un CharField
-    # shift_type = forms.CharField(
-    #     widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex. E2'}),
-    #     required=True
-    # )
-
     class Meta:
         model = ShiftRequest
         fields = ['nurse', 'department', 'day', 'shift_type', 'req_type', 'weight']
@@ -157,76 +109,15 @@ class ShiftRequestForm(forms.ModelForm):
 
         return day_instance
 
-    # def clean_shift_type(self):
-    #     print("am intrat in clean_shift_type")
-    #     raw = self.cleaned_data.get('shift_type')
-    #     if not raw:
-    #         raise ValidationError("Câmpul 'Tip Tură' este obligatoriu.")
-    #     try:
-    #         st = ShiftType.objects.get(pk=raw)
-    #     except ShiftType.DoesNotExist:
-    #         raise ValidationError(f"Nu există nicio tură cu codul '{raw}'.")
-    #     return st
 
-    # def clean(self):
-    #     """
-    #     În clean() poți verifica coerența între day și shift_type:
-    #     de exemplu, dacă vrei doar turele cu deficit, la final poți verifica:
-    #     """
-    #     cleaned = super().clean()
-    #     day_obj = cleaned.get('day')           # este deja un instance of Day
-    #     shift_type_obj = cleaned.get('shift_type')  # instance of ShiftType
-    #     dept_obj = self.department_id
-    #
-    #     # Dacă nu s-au validat day/shift_type, oprește aici
-    #     if not day_obj or not shift_type_obj or not dept_obj:
-    #         return cleaned
-    #
-    #     # verifici că acel shift_type aparține aceluiași departament
-    #     if shift_type_obj.GlobalObject_id != dept_obj.pk:
-    #         raise ValidationError("ShiftType-ul ales nu corespunde departamentului selectat.")
-    #
-    #     # verifici deficit, dacă vrei
-    #     from calendarapp.models.day_shift_type import DayShiftType
-    #     try:
-    #         dst = DayShiftType.objects.get(Day=day_obj, ShiftType=shift_type_obj)
-    #     except DayShiftType.DoesNotExist:
-    #         raise ValidationError("Nu există nicio înregistrare DayShiftType pentru ziua și tipul de tură selectat.")
-    #     gap = dst.gap_required_vs_actual()
-    #     if gap <= 0:
-    #         raise ValidationError("În ziua aleasă nu există deficit pentru tura selectată.")
-    #
-    #     return cleaned
 
     def __init__(self, *args, **kwargs):
-        # 1) Extragem department_id (trebuie să fie transmis de view)
-
         self.department_id = kwargs.pop('department_id', None)
-
-        # 2) Inițializăm formularul prin apelul super
         super().__init__(*args, **kwargs)
-
-        # 3) Setăm valoarea inițială a câmpului 'department' (dacă exista)
         if self.department_id is not None:
             self.fields['department'].initial = self.department_id
-            # Dacă vreți să îl faceți readonly/ disabled, puteți:
             self.fields['department'].widget.attrs['readonly'] = True
-            # Sau ca hidden:
-            # self.fields['department'].widget = forms.HiddenInput()
 
-        # 4) În mod implicit, queryset gol pentru 'shift_type'
-        # qs = ShiftType.objects.none()
-        #
-        # # 5) Dacă avem department_id, populează shift_type cu toate turele din acel departament
-        # if self.department_id:
-        #     qs = ShiftType.objects.)
-        #
-        # # 6) Setăm queryset‐ul final pe câmpul 'shift_type'
-        # qs = ShiftType.objects.all()
-        # q=[]
-        # for st in qs:
-        #     q.append(st.pk)
-        # self.fields['shift_type'] = q
 
 
 class SanitationTaskForm(forms.ModelForm):

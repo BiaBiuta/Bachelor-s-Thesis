@@ -9,7 +9,7 @@ from calendarapp.models.scope_selection import ScopeSelection
 class ScopeSelectionShiftUnderCover(ScopeSelection):
     def get_opt_scope_anchor(self):
         violating_dayshifttypes = [d.DayShiftType for d in self.Optimizer.GlobalObject.Day if d.KPISoftUnderCover > 0]
-        violating_dayshifttypes = sum(violating_dayshifttypes, [])  # flatten to 1 dimensional
+        violating_dayshifttypes = sum(violating_dayshifttypes, [])
         violating_dayshifttypes = [ds for ds in violating_dayshifttypes if ds.KPISoftUnderCover > 0]
         sorted_violating_dayshifttypes = sorted([ds for ds in violating_dayshifttypes], key=lambda x: (
         x.NrSelectedInOptScope, -x.KPISoftUnderCover, random.random()))
@@ -17,7 +17,6 @@ class ScopeSelectionShiftUnderCover(ScopeSelection):
         self.Optimizer.select_top_random(sorted_violating_dayshifttypes, self.Optimizer.TopRandomProbability, 1)[0]
         day = dayshifttype.Day
         shifttype = dayshifttype.ShiftType
-        # Select nurse: whose nurseday has no plan and can plan this shift
         qualified_nurse_days = sum(
             [n.NurseDay for n in self.Optimizer.GlobalObject.Nurse if n.can_plan_shifttype(shifttype)], [])
         qualified_nurse_days = [nd for nd in qualified_nurse_days if

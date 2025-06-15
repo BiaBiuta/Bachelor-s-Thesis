@@ -84,15 +84,14 @@
     <script type="text/javascript" src="{% static 'js/plugins/dataTables.bootstrap.min.js' %}"></script>
     <script type="text/javascript">$('#sampleTable').DataTable();</script>
     <script>
-  // presupunem că ai deja:
-  // const socket = new WebSocket(...);
 
-  // 1) selectăm toate form‑urile de approve şi de deny
+
+
  document
     .getElementById('sampleTable')
     .addEventListener('submit', function(evt) {
       const form = evt.target;
-      // e un submit pe un <form> ?
+
       if (!form.matches('form.approve-form') && !form.matches('form.deny-form')) {
         return;
       }
@@ -109,17 +108,15 @@
       }
 
       const eventId = action.match(/\/(?:approve|deny)-event\/(\d+)/)[1];
-      const ownerId = form.dataset.owner;  // trebuie să pui în template: data-owner="{{ event.user.id }}"
+      const ownerId = form.dataset.owner;
 
-      // 1) trimitem WS
+
       socket.send(JSON.stringify({
         type:     type,
         event_id: eventId,
         ownerId:  ownerId,
         sender:   '{{ request.user }}'
       }));
-
-      // 2) după WS (sau imediat dacă vrei) trimitem HTTP
       form.submit();
   });
 </script>

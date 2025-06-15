@@ -73,13 +73,12 @@
       </div>
     </div>
 
-  <!-- Istoric generări -->
 <div class="card shadow-sm">
   <div class="card-header bg-white">
     <strong>Istoric Generări Orar</strong>
   </div>
   <ul class="list-group list-group-flush">
-    {# 1) Primii 3 items afișați mereu #}
+
     {% for log in generate_logs %}
       {% if forloop.counter <= 3 %}
         <li
@@ -98,7 +97,7 @@
           </button>
         </li>
       {% else %}
-        {# 2) Restul elementelor punem într-un container collapse, ascuns inițial #}
+
         {% if forloop.counter == 4 %}
           <div class="collapse" id="moreLogs">
         {% endif %}
@@ -128,7 +127,7 @@
     {% endfor %}
   </ul>
 
-  {# 3) Dacă există mai mult de 3 elemente, afișăm butonul de toggle #}
+
   {% if generate_logs|length > 3 %}
     <div class="card-footer bg-white text-center">
       <button
@@ -175,7 +174,6 @@
             </tr>
           </thead>
           <tbody id="requests-tbody">
-            <!-- rândurile vor fi generate din JS -->
           </tbody>
         </table>
       </div>
@@ -273,6 +271,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const tbodyReqs    = document.getElementById('requests-tbody');
 
   function loadUnitDetails(unitId) {
+      console.log("am intrat aici")
     fetch(`/ajax/unit_details/${unitId}/`)
       .then(resp => resp.json())
       .then(data => {
@@ -315,13 +314,9 @@ document.addEventListener('DOMContentLoaded', function() {
       })
       .catch(err => console.error('Eroare AJAX unit_details:', err));
   }
-
-  // la schimbarea unității
   selectUnit.addEventListener('change', () => {
     loadUnitDetails(selectUnit.value);
   });
-
-  // la încărcare, încarcă detaliile curente
   if (selectUnit.value) {
     loadUnitDetails(selectUnit.value);
   }
@@ -337,17 +332,19 @@ document.addEventListener('DOMContentLoaded', function() {
   const calendarCard = document.getElementById('calendarCard');
   const initialSources = [];
  {#console.log("echo preview_events:", {{ request.session.preview_events|safe }});#}
-  // Dacă există preview în sesiune, îl afișăm automat
+
 console.log("echo preview_events:", {{ request.session.preview_events|safe }});
+    {% if request.session.preview_events %}
     initialSources.push({
       id: 'preview',
       events: {{ request.session.preview_events|safe }},
       color: '#3788d8'
     });
     calendarCard.style.display = 'block';
+    {% endif %}
 
 
-  // Inițializează FullCalendar
+
   const masterCalendar = new FullCalendar.Calendar(calendarEl, {
     initialView: 'dayGridMonth',
     headerToolbar: {
@@ -359,25 +356,21 @@ console.log("echo preview_events:", {{ request.session.preview_events|safe }});
   });
   masterCalendar.render();
 
-  // La click pe fiecare buton “Vizualizează”, folosim data-url
+
   document.querySelectorAll('.btn-load-log').forEach(btn => {
     btn.addEventListener('click', e => {
       e.preventDefault();
       const url = btn.dataset.url;
       calendarCard.style.display = 'block';
       console.log("sunt aici te rog printeaza")
-      // Șterge preview-ul, dacă există
       const prev = masterCalendar.getEventSourceById('preview');
       if (prev) prev.remove();
-
-      // Fetch evenimentele și adaugă-le
        fetch(url, {credentials: 'same-origin'})
         .then(resp => {
           if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
           return resp.json();
         })
         .then(events => {
-          // Șterge orice sursă cu id 'log'
           const old = masterCalendar.getEventSourceById('log');
           if (old) old.remove();
 
@@ -395,11 +388,11 @@ console.log("echo preview_events:", {{ request.session.preview_events|safe }});
   });
   if (!toggleBtn || !collapseDiv) {
       console.log("sunt in if ")
-    // Dacă nu există în pagină, nu facem nimic
+
     return;
   }
 
-  // Când începe animația de expandare/collapse, schimbăm textul butonului
+
   collapseDiv.addEventListener('shown.bs.collapse', function () {
     toggleBtn.textContent = 'Colapsează';
     toggleBtn.setAttribute('aria-expanded', 'true');
@@ -412,7 +405,7 @@ console.log("echo preview_events:", {{ request.session.preview_events|safe }});
 });
 });
 document.getElementById('apply-requests').addEventListener('click', () => {
-    // adună toate checkbox-urile bifate
+
     const ids = Array.from(
       document.querySelectorAll('input[name="request_ids"]:checked')
     ).map(cb => cb.value);
@@ -420,7 +413,7 @@ document.getElementById('apply-requests').addEventListener('click', () => {
   });
 
   document.getElementById('genBtn').addEventListener('click', () => {
-    // înainte de submit, ne asigurăm că hidden e setat
+
     document.getElementById('without_algorithm').value = 'false';
     document.getElementById('apply-requests').click();
     document.getElementById('gen-form').submit();

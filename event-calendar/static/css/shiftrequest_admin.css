@@ -1,42 +1,37 @@
-/* ===================================== */
-/* 1. LAYOUT PRINCIPAL (Tabel + Filtre)  */
-/* ===================================== */
+
 .shiftwrapper {
   display: flex;
   flex-direction: row;
-  gap: 2rem;             /* spațiu între tabel și filtre */
-  margin: 1rem;          /* margine externă a întregii secțiuni */
+  gap: 2rem;
+  margin: 1rem;
   align-items: flex-start;
 }
 
-/* 1.a) Zona tabel: ocupă mai mult spațiu */
+
 .main-content {
-  flex: 3;               /* 3/4 din lățimea totală */
-  overflow-x: auto;      /* scroll orizontal dacă tabelul e prea lat */
+  flex: 3;
+  overflow-x: auto;
 }
 
-/* 1.b) Zona filtre: ocupă mai puțin spațiu */
+
 .filter-right {
-  flex: 1;               /* 1/4 din lățime */
-  min-width: 200px;      /* să nu se strângă prea tare */
+  flex: 1;
+  min-width: 200px;
   border: 1px solid #e0e0e0;
   border-radius: 4px;
   background-color: #ffffff;
   padding: 1rem;
-  max-height: calc(100vh - 150px); /* dacă e prea înalt, scroll intern vertical */
+  max-height: calc(100vh - 150px);
   overflow-y: auto;
 }
 
-/* ===================================== */
-/* 2. STILIZARE TABEL                     */
-/* ===================================== */
+
 .main-content table {
   width: 100%;
-  border-collapse: collapse;  /* granițele dintre celule se unesc */
-  font-size: 0.95rem;         /* ușor mai mic decât standard Admin */
+  border-collapse: collapse;
+  font-size: 0.95rem;
 }
 
-/* 2.a) Capul de tabel (thead) */
 .main-content table thead th {
   border: 1px solid #aaa;
   background-color: #f7f7f7;
@@ -46,7 +41,7 @@
   font-weight: 600;
 }
 
-/* 2.b) Celulele (tbody) */
+
 .main-content table tbody td {
   border: 1px solid #ddd;
   padding: 0.6rem 0.8rem;
@@ -54,46 +49,41 @@
   white-space: nowrap;
 }
 
-/* 2.c) Zebra striping */
+
 .main-content table tbody tr:nth-child(even) {
   background-color: #fafafa;
 }
 
-/* 2.d) Ajustarea lățimilor implicite pe coloane */
-/*     (în funcție de numărul de coloane din list_display) */
 .main-content table th:nth-child(1),
 .main-content table td:nth-child(1) {
-  width: 15%;   /* “nurse” */
+  width: 15%;
 }
 .main-content table th:nth-child(2),
 .main-content table td:nth-child(2) {
-  width: 15%;   /* “Departament” */
+  width: 15%;
 }
 .main-content table th:nth-child(3),
 .main-content table td:nth-child(3) {
-  width: 10%;   /* “Zi” */
+  width: 10%;
 }
 .main-content table th:nth-child(4),
 .main-content table td:nth-child(4) {
-  width: 15%;   /* “Tipul de schimb” */
+  width: 15%;
 }
 .main-content table th:nth-child(5),
 .main-content table td:nth-child(5) {
-  width: 10%;   /* “req_type” */
+  width: 10%;
 }
 .main-content table th:nth-child(6),
 .main-content table td:nth-child(6) {
-  width: 10%;   /* “weight” */
+  width: 10%;
 }
 .main-content table th:nth-child(7),
 .main-content table td:nth-child(7) {
-  width: 10%;   /* “status” */
+  width: 10%;
 }
 
-/* ===================================== */
-/* 3. STILIZARE FILTRE (custom-filter)    */
-/* ===================================== */
-/* Titlul general “Filtre” (h2 din change_list) */
+
 #changelist-filter h2 {
   margin-top: 0;
   font-size: 1.2rem;
@@ -103,38 +93,37 @@
   color: #333333;
 }
 
-/* Fiecare grup de filtre (CustomFilterSection) */
 .custom-filter-section {
   margin-bottom: 1.5rem;
 }
 
-/* Titlul secțiunii (h3), ex: “department” sau “status” */
+
 .custom-filter-section h3 {
   font-size: 1rem;
   margin-bottom: 0.5rem;
   color: #444444;
-  text-transform: capitalize;  /* primește “department” → “Department” */
+  text-transform: capitalize;
 }
 
-/* Lista propriu-zisă de opțiuni (<ul><li><a>) */
+
 .custom-filter-section ul {
   list-style-type: none;
   margin: 0;
-  padding-left: 0.5rem;  /* indent interior */
+  padding-left: 0.5rem;
 }
 
-/* Fiecare element de listă */
+
 .custom-filter-section ul li {
   margin-bottom: 0.4rem;
 }
 
-/* Dacă eitem‐ul e selectat (choice.selected), îi dăm un font‐weight mai mare */
+
 .custom-filter-section ul li.chosen a {
   font-weight: 600;
   color: #2a6ebb;
 }
 
-/* Link‐urile filtrului */
+
 .custom-filter-section ul li a {
   color: #2a6ebb;
   text-decoration: none;
@@ -144,7 +133,7 @@
   text-decoration: underline;
 }
 
-/* Dacă vrei să stilizezi scroll‐ul intern (opţional) */
+
 .filter-right::-webkit-scrollbar {
   width: 6px;
 }
@@ -153,10 +142,6 @@
   border-radius: 3px;
 }
 
-/* ===================================== */
-/* 4. PAGINARE (standard Admin)          */
-/* ===================================== */
-/* Ajustăm spațiu deasupra paginării */
 .paginator {
   margin-top: 1rem;
   display: flex;

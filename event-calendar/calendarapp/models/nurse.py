@@ -15,7 +15,7 @@ class Nurse(models.Model):
     MinConsShifts = models.IntegerField()
     MinConsDaysOff = models.IntegerField()
     MaxWeekends = models.IntegerField()
-    DaysOff = models.FloatField()  # Lista de zile libere
+    DaysOff = models.FloatField()
     GlobalObject=models.ForeignKey(GlobalObject, on_delete=models.CASCADE)
     TotalMins=models.IntegerField(default=0)
     def __init__(self, *args,  **kwargs):
@@ -160,27 +160,26 @@ class Nurse(models.Model):
 
     @property
     def minutes_to_min(self):
-        # Asigurăm TotalMins actualizat
         self.calc_TotalMinutes()
-        # Cât îi mai lipsește ca să ajungă la MINIMUM
+        # cat  mai lipseste ca sa ajunga la MINIMUM
         return max(self.MinTotalMins - self.TotalMins, 0)/60
 
     @property
     def minutes_to_max(self):
         #self.calc_TotalMinutes()
-        # Cât îi mai rămâne până la MAXIMUM
+        # cat  mai ramane pana la MAXIMUM
         return max(self.MaxTotalMins - self.TotalMins, 0)/60
 
     @property
     def total_assigned_shifts(self):
-        # Număr de zile în care AssignedShift nu e gol
+        # numar de zile în care AssignedShift nu e gol
         return sum(1 for nd in self.NurseDay if nd.AssignedShift)
 
 
     @property
     def shifts_to_max_total(self):
         """
-        Similar, câte ture mai puteţi aloca până la limita MaxTotalShifts
+         cate ture mai pot aloca până la limita MaxTotalShifts
         (câmp custom necesar):
         """
         return max(self.MaxConsShifts - self.total_assigned_shifts, 0)
