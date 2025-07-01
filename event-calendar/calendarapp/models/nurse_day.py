@@ -6,6 +6,7 @@ class NurseDay(models.Model):
     Nurse = models.ForeignKey(Nurse, to_field="EmployeeID",on_delete=models.CASCADE)
     Day = models.ForeignKey(Day,to_field="DayID", on_delete=models.CASCADE)
     IsDayOff = models.BooleanField()
+    GlobalObject = models.ForeignKey('GlobalObject', to_field='id', on_delete=models.CASCADE)
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.Nurse.set_relation_nurseday(self)

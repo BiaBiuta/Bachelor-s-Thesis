@@ -4,9 +4,10 @@ from calendarapp.models.nurse import  Nurse
 from calendarapp.models.shift_type import ShiftType
 from calendarapp.models.day import Day
 from calendarapp.models.nurse_day  import NurseDay
+from calendarapp.models.global_object  import GlobalObject
 class NurseDayShiftType(models.Model):
+    GlobalObject= models.ForeignKey(GlobalObject, to_field='id',on_delete=models.CASCADE)
     Nurse=models.ForeignKey(Nurse,to_field='EmployeeID', on_delete=models.CASCADE)
-
     Day=models.ForeignKey(Day,to_field='DayID', on_delete=models.CASCADE)
     ShiftType = models.ForeignKey(ShiftType, to_field='ShiftID', on_delete=models.CASCADE)
     NurseDay = models.ForeignKey(NurseDay, on_delete=models.CASCADE)
@@ -16,6 +17,7 @@ class NurseDayShiftType(models.Model):
     IsOffRequest = models.BooleanField()
     OnRequestWeight = models.FloatField()
     OffRequestWeight = models.FloatField()
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
