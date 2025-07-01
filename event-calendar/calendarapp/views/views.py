@@ -98,13 +98,14 @@ from datetime import datetime, timedelta
 import random as rnd
 from django.http import request, HttpResponseRedirect, Http404
 from django.shortcuts import render, redirect
+from django.conf import settings
 import prettytable
 import os
 # import cplex
 # print(cplex.__version__)
 
 
-os.environ["PATH"] += r";C:\Program Files\IBM\ILOG\CPLEX_Studio2212\cplex\bin\x64_win64"
+os.environ["PATH"] += settings.SOLVER_BINARY
 
 print("PATH:", os.environ["PATH"])
 import sys
@@ -659,7 +660,7 @@ def timetable(request):
     global_object_id=global_object.id
     global_object_name=global_object.Name
 
-    with open(fr".\..\database\instances1_24\{global_object_name}", 'r') as f:
+    with open(os.path.join(settings.INSTANCE_DIR, global_object_name), 'r') as f:
         raw_data = f.readlines()
 
     horizon_length = int(raw_data[4])
@@ -876,19 +877,19 @@ def timetable(request):
                     ShiftType=shifttype,
                     NurseDay=nurseday
                 )
-    print("\nShiftTypes:")
-    for st in global_object.ShiftType:
-        print(f"\nShiftType {st.ShiftID}  (Len={st.LengthInMins}m)")
-        print("  DayShiftType-uri:")
-        for dst in st.DayShiftType:
-            print(f"    • Day={dst.Day.DayID}, Required={dst.NrRequired}")
-        print("  NurseShiftType-uri:")
-        for nst in st.NurseShiftType:
-            print(f"    • Nurse={nst.Nurse.EmployeeID}, MaxShifts={nst.MaxShifts}")
-        print("  NurseDayShiftType-uri:")
-        for ndst in st.NurseDayShiftType:
-            print(
-                f"    • NurseDay(Nurse={ndst.NurseDay.Nurse.EmployeeID}, Day={ndst.NurseDay.Day.DayID}), OnReq={ndst.IsOnRequest}, OffReq={ndst.IsOffRequest}")
+    # print("\nShiftTypes:")
+    # for st in global_object.ShiftType:
+    #     print(f"\nShiftType {st.ShiftID}  (Len={st.LengthInMins}m)")
+    #     print("  DayShiftType-uri:")
+    #     for dst in st.DayShiftType:
+    #         print(f"    • Day={dst.Day.DayID}, Required={dst.NrRequired}")
+    #     print("  NurseShiftType-uri:")
+    #     for nst in st.NurseShiftType:
+    #         print(f"    • Nurse={nst.Nurse.EmployeeID}, MaxShifts={nst.MaxShifts}")
+    #     print("  NurseDayShiftType-uri:")
+    #     for ndst in st.NurseDayShiftType:
+    #         print(
+    #             f"    • NurseDay(Nurse={ndst.NurseDay.Nurse.EmployeeID}, Day={ndst.NurseDay.Day.DayID}), OnReq={ndst.IsOnRequest}, OffReq={ndst.IsOffRequest}")
 
     timelimit = dt.timedelta(seconds=120)
     maxiteration = 50
@@ -983,7 +984,7 @@ def timetable_without_algorithm(request):
     global_object = load_global_object(active_go)
     global_object_id=global_object.id
     global_object_name=global_object.Name
-    with open(fr"C:\Users\bianc\PycharmProjects\licenta_sheet\GA_yt\data\instances1_24\{global_object_name}", 'r') as f:
+    with open(os.path.join(settings.INSTANCE_DIR, global_object_name), 'r') as f:
         raw_data = f.readlines()
     horizon_length = int(raw_data[4])
     shifttype_input_start = raw_data.index('SECTION_SHIFTS\n') + 2
@@ -1383,20 +1384,23 @@ def confirm_schedule(request):
     best_chrom = cache.get(cache_key)
     if not preview:
         return redirect('calendarapp:choose_instance')
-    NurseDayShiftType.objects.all().delete()
-    NurseDay.objects.all().delete()
+    # NurseDayShiftType.objects.all().delete()
+    # NurseDay.objects.all().delete()
     best_chrom.save()
     num= re.search(r'\d+', best_chrom.Name).group()
     for d in best_chrom.Day:
         print(f"\nDay {d.DayID}  (Next: {getattr(d.Next, 'DayID', None)}, Prev: {getattr(d.Previous, 'DayID', None)})")
         print("  NurseDay-uri:")
         for nd in d.NurseDay:
+            print("nd ", nd)
             day=Day.objects.get(DayID=int(num+str(d.DayID)))
+            print("day ", day)  
             nd.Day=day
-            # NurseDay.objects.filter(
-            #     Day=day,
-            #     Nurse=nd.Nurse,
-            # ).delete()
+            NurseDay.objects.filter(
+                Day=day,
+                Nurse=nd.Nurse
+            ).delete()
+            print("am sters")
             nd.save()
             assigned = nd.AssignedShift.ShiftID if nd.AssignedShift else "None"
             print(
@@ -1415,15 +1419,15 @@ def confirm_schedule(request):
                     f"         - ShiftType={ndst.ShiftType.ShiftID}, OnReq={ndst.IsOnRequest}, OffReq={ndst.IsOffRequest}")
         print("  DayShiftType-uri:")
     print("\nNurses:")
-    for n in best_chrom.Nurse:
-        print(f"\nNurse {n.EmployeeID}  (MinTotal={n.MinTotalMins}, MaxTotal={n.MaxTotalMins})")
-        print("  NurseShiftType-uri:")
-        for nst in n.NurseShiftType:
-            print(f"    • ShiftType={nst.ShiftType.ShiftID}, MaxShifts={nst.MaxShifts}")
-        print("  NurseDay-uri:")
-        for nd in n.NurseDay:
-            assigned = nd.AssignedShift.ShiftID if nd.AssignedShift else "None"
-            print(f"    • Day={nd.Day.DayID}, IsDayOff={nd.IsDayOff}, Assigned={assigned}")
+    # for n in best_chrom.Nurse:
+    #     # print(f"\nNurse {n.EmployeeID}  (MinTotal={n.MinTotalMins}, MaxTotal={n.MaxTotalMins})")
+    #     print("  NurseShiftType-uri:")
+    #     for nst in n.NurseShiftType:
+    #         print(f"    • ShiftType={nst.ShiftType.ShiftID}, MaxShifts={nst.MaxShifts}")
+    #     print("  NurseDay-uri:")
+    #     for nd in n.NurseDay:
+    #         assigned = nd.AssignedShift.ShiftID if nd.AssignedShift else "None"
+    #         print(f"    • Day={nd.Day.DayID}, IsDayOff={nd.IsDayOff}, Assigned={assigned}")
 
     kpi_hard = best_chrom.calc_TotalKPIHard(True)
     kpi_soft = best_chrom.calc_TotalKPISoft(True)

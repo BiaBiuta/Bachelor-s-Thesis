@@ -108,7 +108,7 @@ CHANNEL_LAYERS = {
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.path.join("C:\\Users\\bianc\\PycharmProjects\\licenta_sheet\\time_nou\\project\\event-calendar", "db.sqlite3"),
+        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
     }
 }
 
@@ -173,4 +173,5 @@ STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/') # 'data' is my media folder
 MEDIA_URL = '/media/'
 # settings.py
-INSTANCE_DIR = '..\\database\\instances1_24'
+INSTANCE_DIR = os.path.join(BASE_DIR, 'database', 'instances1_24')
+SOLVER_BINARY = os.path.join(BASE_DIR, 'cplex.exe')

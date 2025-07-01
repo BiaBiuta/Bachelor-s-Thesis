@@ -165,10 +165,10 @@ class GeneticScheduler:
             else:
                 no_improve += 1
 
-            print(f"Gen {gen}: best hard={best_hard}, soft={best_soft}, stagnări={no_improve}")
+            print(f"Gen {gen}: best hard={best_hard}, soft={best_soft}, stagnari={no_improve}")
 
             if no_improve >= self.stag_limit and best_hard > 0:
-                print("[GA] fallback la MIP din cauza stagnării pe hard")
+                print("[GA] fallback la MIP din cauza stagnarii pe hard")
                 self._fallback_to_mip(best)
                 self.decode(best)  # sol nou după MIP
                 best = self.encode()

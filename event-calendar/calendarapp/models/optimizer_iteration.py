@@ -13,6 +13,8 @@ from calendarapp.models.opt_scope_nurseday import OptScopeNurseDay
 from calendarapp.models.opt_scope_nurse_shift_type import OptScopeNurseShiftType
 from calendarapp.models.opt_scope_shift_type import OptScopeShiftType
 from pyomo.core import quicksum
+from django.conf import settings
+
 # %%
 class OptimizerIteration:
     def __init__(self, iterationnr, startdt,
@@ -666,9 +668,9 @@ class OptimizerIteration:
         # print(model.values())
         # Execute solver
         print('execute solver start')
-        solver_path = r'"C:\Program Files\IBM\ILOG\CPLEX_Studio2212\cplex\bin\x64_win64\cplex.exe"'
+        solver_path = settings.SOLVER_BINARY
         opt = pyo.SolverFactory('cplex')
-        opt.set_executable(r"C:\Program Files\IBM\ILOG\CPLEX_Studio2212\cplex\bin\x64_win64\cplex.exe", validate=False)
+        opt.set_executable(settings.SOLVER_BINARY, validate=False)
 
         print("Solver available:", opt.available())
         print("Solver executable:", opt.executable())
