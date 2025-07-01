@@ -1,0 +1,115 @@
+Solver command line: ['C:\\Program Files\\IBM\\ILOG\\CPLEX_Studio2212\\cplex\\bin\\x64_win64\\cplex.exe']
+
+
+Welcome to IBM(R) ILOG(R) CPLEX(R) Interactive Optimizer 22.1.2.0
+  with Simplex, Mixed Integer & Barrier Optimizers
+5725-A06 5725-A29 5724-Y48 5724-Y49 5724-Y54 5724-Y55 5655-Y21
+Copyright IBM Corp. 1988, 2024.  All Rights Reserved.
+
+Type 'help' for a list of available commands.
+Type 'help' followed by a command name for more
+information on commands.
+
+CPLEX> Logfile 'cplex.log' closed.
+Logfile 'C:\Users\bianc\Documents\GitHub\Chestii\debug_output\cplexlog_99_14062025_200420.txt' open.
+CPLEX> Problem 'C:\Users\bianc\AppData\Local\Temp\tmpny3zn_sf.pyomo.lp' read.
+Read time = 0.00 sec. (0.44 ticks)
+CPLEX> Problem name         : C:\Users\bianc\AppData\Local\Temp\tmpny3zn_sf.pyomo.lp
+Objective sense      : Minimize
+Variables            :    3519  [Nneg: 1868,  Fix: 1,  Binary: 1650]
+Objective nonzeros   :    1784
+Linear constraints   :    4283  [Less: 1947,  Greater: 237,  Equal: 2099]
+  Nonzeros           :   12576
+  RHS nonzeros       :    1759
+
+Variables            : Min LB: 0.000000         Max UB: 1.000000       
+Objective nonzeros   : Min   : 1.000000         Max   : 1.000000e+07   
+Linear constraints   :
+  Nonzeros           : Min   : 1.000000         Max   : 480.0000       
+  RHS nonzeros       : Min   : 1.000000         Max   : 4320.000       
+CPLEX> Version identifier: 22.1.2.0 | 2024-11-25 | 0edbb82fd
+Tried aggregator 3 times.
+MIP Presolve eliminated 2657 rows and 2132 columns.
+MIP Presolve modified 146 coefficients.
+Aggregator did 398 substitutions.
+Reduced MIP has 1228 rows, 989 columns, and 6109 nonzeros.
+Reduced MIP has 885 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 0.01 sec. (9.79 ticks)
+Found incumbent of value 4.1040001e+11 after 0.05 sec. (15.76 ticks)
+Probing time = 0.00 sec. (1.42 ticks)
+Tried aggregator 1 time.
+Detecting symmetries...
+Reduced MIP has 1228 rows, 989 columns, and 6109 nonzeros.
+Reduced MIP has 885 binaries, 104 generals, 0 SOSs, and 0 indicators.
+Presolve time = 0.00 sec. (3.86 ticks)
+Probing time = 0.00 sec. (1.43 ticks)
+Clique table members: 2115.
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 8 threads.
+Root relaxation solution time = 0.05 sec. (32.23 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0+    0                       4.10400e+11        0.0000           100.00%
+*     0+    0                       3.60680e+11        0.0000           100.00%
+*     0+    0                       3.60160e+11        0.0000           100.00%
+*     0+    0                       3.59640e+11        0.0000           100.00%
+*     0+    0                       3.59120e+11        0.0000           100.00%
+*     0+    0                       3.58600e+11        0.0000           100.00%
+*     0+    0                       3.58080e+11        0.0000           100.00%
+*     0+    0                       3.57680e+11        0.0000           100.00%
+*     0+    0                       3.57420e+11        0.0000           100.00%
+*     0+    0                       3.57160e+11        0.0000           100.00%
+      0     0     1000.0000   258   3.57160e+11     1000.0000      669  100.00%
+*     0+    0                       3.04280e+11     1000.0000           100.00%
+*     0+    0                       3.03890e+11     1000.0000           100.00%
+      0     0     1000.0000   138   3.03890e+11      Cuts: 19      764  100.00%
+      0     0     1000.0000   203   3.03890e+11      Cuts: 70      978  100.00%
+*     0+    0                       9.60000e+09     1000.0000           100.00%
+      0     0     1000.0000   165   9.60000e+09      Cuts: 23     1077  100.00%
+*     0+    0                         1602.0000     1000.0000            37.58%
+      0     0     1000.0000   165     1602.0000      Cuts: 46     1192   37.58%
+*     0+    0                         1302.0000     1000.0000            23.20%
+*     0+    0                         1011.0000     1000.0000             1.09%
+Detecting symmetries...
+      0     2     1000.0000    34     1011.0000     1000.0000     1192    1.09%
+Elapsed time = 0.78 sec. (346.61 ticks, tree = 0.02 MB, solutions = 16)
+*    44+    3                         1010.0000     1000.0000             0.99%
+*   276   205      integral     0     1004.0000     1000.0000    20174    0.40%
+    404   251     1000.0000    83     1004.0000     1000.0000    30616    0.40%
+*   607   358      integral     0     1001.0000     1000.0000    42777    0.10%
+    875   238     1000.0000   102     1001.0000     1000.0000    70054    0.10%
+   1617   309     1000.0000    88     1001.0000     1000.0000   107576    0.10%
+   2658   333     1000.0000    42     1001.0000     1000.0000   153300    0.10%
+   3784   236     1000.0000    54     1001.0000     1000.0000   202315    0.10%
+   4907    99     1000.0000    76     1001.0000     1000.0000   243837    0.10%
+
+GUB cover cuts applied:  3
+Clique cuts applied:  42
+Cover cuts applied:  8
+Implied bound cuts applied:  19
+Mixed integer rounding cuts applied:  2
+Zero-half cuts applied:  58
+Lift and project cuts applied:  3
+Gomory fractional cuts applied:  7
+
+Root node processing (before b&c):
+  Real time             =    0.76 sec. (346.47 ticks)
+Parallel b&c, 8 threads:
+  Real time             =    3.27 sec. (1577.08 ticks)
+  Sync time (average)   =    0.29 sec.
+  Wait time (average)   =    0.00 sec.
+                          ------------
+Total (root+branch&cut) =    4.03 sec. (1923.55 ticks)
+
+Solution pool: 20 solutions saved.
+
+MIP - Integer optimal, tolerance (0.0001/1e-06):  Objective =  1.0010000000e+03
+Current MIP best bound =  1.0009000000e+03 (gap = 0.1, 0.01%)
+Solution time =    4.05 sec.  Iterations = 268556  Nodes = 5374 (5)
+Deterministic time = 1923.56 ticks  (475.31 ticks/sec)
+
+CPLEX> Incumbent solution written to file 'C:\Users\bianc\AppData\Local\Temp\tmpf2nq2fe_.cplex.sol'.
+CPLEX> 

@@ -1,0 +1,205 @@
+From c0422238433c139c17a47e5fd39335b461323bf3 Mon Sep 17 00:00:00 2001
+From: My Name <me@example.com>
+Date: Mon, 30 Jun 2025 20:24:51 +0300
+Subject: [PATCH] Dockerize websocket and chatbot servers
+
+---
+ event-calendar/Dockerfile         |  21 ++++++++----
+ event-calendar/docker-compose.yml |  54 +++++++++++++++++++-----------
+ event-calendar/entrypoint.ps1     |  20 +++++++----
+ event-calendar/requirements.txt   | Bin 1032 -> 3732 bytes
+ 4 files changed, 63 insertions(+), 32 deletions(-)
+
+diff --git a/event-calendar/Dockerfile b/event-calendar/Dockerfile
+index 3ccfa47..7cab59f 100644
+--- a/event-calendar/Dockerfile
++++ b/event-calendar/Dockerfile
+@@ -23,19 +23,26 @@ COPY . c:/eventcalendar/
+ # RUN mkdir -p c:/eventcalendar
+ WORKDIR c:/eventcalendar
+ 
+-# Configure DNS in the Container
++# ####
++# # These will be handled in the entrypoint script
++# ####
++
++# # Configure DNS in the Container
+ # RUN powershell -Command "Set-DnsClientServerAddress -InterfaceAlias 'Ethernet' -ServerAddresses ('8.8.8.8', '8.8.4.4')"
+ 
+-# Install module dependencies
++# # Install module dependencies
+ # RUN pip install --no-cache-dir -r requirements.txt
+ 
+-# Make migrations, as described in the install tutorial from the original repository
++# # Make migrations, as described in the install tutorial from the original repository
+ # RUN python manage.py makemigrations && python manage.py migrate
+ 
++# # Set the default command to run the Django dev server
++# CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
++
+ # Expose the port for public access
+ ENV DJANGO_DEV_SERVER_PORT 8000
+ EXPOSE $DJANGO_DEV_SERVER_PORT
+-
+-# Set the default command to run the Django dev server
+-# CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+-
++# Expose websocket server port
++EXPOSE 5000
++# Expose chatbot server port
++EXPOSE 8001
+\ No newline at end of file
+diff --git a/event-calendar/docker-compose.yml b/event-calendar/docker-compose.yml
+index fe7dc5d..f83380f 100644
+--- a/event-calendar/docker-compose.yml
++++ b/event-calendar/docker-compose.yml
+@@ -3,22 +3,41 @@ services:
+   # web service, frontend and backend included
+   web:
+     build: .  # build the docker, using the dockfile in current dir
+-    command: python manage.py runserver 0.0.0.0:8000
++    # command: python manage.py runserver 0.0.0.0:8000
+     ports:
+       - "8000:8000"
+     volumes:
+       - .:C:\eventcalendar  # mount the project dir to the docker
+     environment:
+       - DJANGO_DEV_SERVER_PORT=8000
+-    # dns:
+-    #   - 8.8.8.8
+-    #   - 8.8.4.4
++      - SERVICE_TYPE=django
++    entrypoint: ["powershell", "-File", "C:\\eventcalendar\\entrypoint.ps1"]
+     # networks:
+     #   - app-network
++
++  websocket:
++    build: .
++    ports:
++      - "5000:5000"
++    volumes:
++      - .:C:\eventcalendar
++    environment:
++      - SERVICE_TYPE=websocket
+     entrypoint: ["powershell", "-File", "C:\\eventcalendar\\entrypoint.ps1"]
++    # networks:
++    #   - app-network
+ 
+-    # depends_on:
+-    #   - db
++  chatbot:
++    build: .
++    ports:
++      - "8001:8001"
++    volumes:
++      - .:C:\eventcalendar
++    environment:
++      - SERVICE_TYPE=chatbot
++    entrypoint: ["powershell", "-File", "C:\\eventcalendar\\entrypoint.ps1"]
++    # networks:
++    #   - app-network
+ 
+ # networks:
+ #   app-network:
+@@ -26,19 +45,16 @@ services:
+ #     driver_opts:
+ #       com.docker.network.windowsshim.dnsservers: "8.8.8.8,8.8.4.4"
+ 
+-#   db:
+-#     image: postgres:latest
++  # db:
++  #   image: postgres:latest
+ 
+-#     environment:
+-#       POSTGRES_DB: calendar_db
+-#       POSTGRES_USER: user
+-#       POSTGRES_PASSWORD: "!!UZH_CNSP24_CALENDAR!!"
++  #   environment:
++  #     POSTGRES_DB: calendar_db
++  #     POSTGRES_USER: user
++  #     POSTGRES_PASSWORD: "!!UZH_CNSP24_CALENDAR!!"
+ 
+-#     ports:
+-#       - "5432:5432"
++  #   ports:
++  #     - "5432:5432"
+ 
+-#     volumes:
+-#       - db_data:/var/lib/postgresql/data  # pesistantly store the data even when the docker is deleted or stopped
+-  
+-# volumes:
+-#  db_data:
+\ No newline at end of file
++  #   volumes:
++  #     - db_data:/var/lib/postgresql/data  # pesistantly store the data even when the docker is deleted or stopped
+\ No newline at end of file
+diff --git a/event-calendar/entrypoint.ps1 b/event-calendar/entrypoint.ps1
+index fa96dad..c13bc62 100644
+--- a/event-calendar/entrypoint.ps1
++++ b/event-calendar/entrypoint.ps1
+@@ -26,9 +26,17 @@ try {
+     pip install --no-cache-dir -r requirements.txt --index-url https://mirrors.aliyun.com/pypi/simple/
+ }
+ 
+-Write-Output "Running Django migrations..."
+-python manage.py makemigrations
+-python manage.py migrate
+-
+-Write-Output "Starting Django server..."
+-python manage.py runserver 0.0.0.0:8000
+\ No newline at end of file
++Write-Output "Starting service..."
++if ($env:SERVICE_TYPE -eq "websocket") {
++    Write-Output "Starting Daphne WebSocket server..."
++    daphne -p 5000 eventcalendar.asgi:application
++} elseif ($env:SERVICE_TYPE -eq "chatbot") {
++    Write-Output "Starting Uvicorn server..."
++    uvicorn intent_api.main:app --reload --port 8001
++} else {
++    Write-Output "Running Django migrations..."
++    python manage.py makemigrations
++    python manage.py migrate
++    Write-Output "Starting Django development server..."
++    python manage.py runserver 0.0.0.0:8000
++}
+\ No newline at end of file
+diff --git a/event-calendar/requirements.txt b/event-calendar/requirements.txt
+index 916fad7ed0bcb0e01d641a717b7634e0ba37f8b3..9d682ceea69faabcf3e1013ee803f613d3071239 100644
+GIT binary patch
+literal 3732
+zcmb7{OKT%n5QXnLkpB?Kx@}38El(hjKvp3kfyv%TYT43Q4@Zx&tskG{e092f+YGY^
+zLa5z!Zaq#tZu#GTre&+ot{lr$-$iLlqu<x^q~}BVQJ+D%C=-1L<=gU&P+Lh?I)QAg
+z_aAz)LwS&Fue0|dzv|A8y0b^=-gkOO<yuk@sre-7uFPa(DJ$q7g$1lw!_UQ-O?Ybr
+zT0jiTO<0+gwS2JeL%pvS=5cB&`A&YG<fS#>0q5<<T<`btWThBZ9bzE+*trSZb=a9p
+zo(Sv=gQa07TLx2G=~{QbIEsv9t{A7m#X`24$ico47v7)42fV}k8vi_`^YR#e-AXnJ
+z%VY-GPEobW9l2Zvb{0tD8_7ewG<Fy0y^z?%5*RF*#kq8C72iU7;ex*sg`VVq_Xi=U
+zi=%YD25J<3!zen_;^&BJD(=lZRRyDo*hk$_0}o<msyLRNzHzYM*Y+yE7y7=>prdQM
+zv#^gmnRkAXQt7ZnEs||eL<O6!v|q|6$+z;PR=T-1KW$Imh@)NTYUJ@k=i1Qf8pL|-
+zpZDjman@%ehRv_5HS@I4+q+KtLQl`qJJat$C%!8`>AO@cN5yg|Ka@*-=s$9Q67C{S
+zZuE9hUWB1O4qYxU^#lWRG2BSoE_|j|FBJ(@OB}Gnn^y8?`GN+bL*v&yYa;tp=iq-J
+z8~O99lkNp_*T@#r=0diq=I`YTT|+P4M8-Y{&x{yp3bl%OqNj<T#(JhZuk^gorxkvt
+zzs8F9Uf+Q<w0fdvCptUU^H`d%bsqdozc+!sm2^~YC7<Z;p)dnI&-BI}aIZJ6|0gk9
+zJ7g$1S#)hL^)&2Bsd`r<70#^PD?Vz#o$X$w-i=zx+pR32p9;xY#ff?3i*BF;nIE7$
+zIjK9>Gsu;&?&_85#3*#7m0!aHYH}1(Tgr*>NoPG<JySddvQpPNMYmu9&RzRxfCopB
+zn3J%~fIA`SMaP9cS3mQDskE0r2mNv*@$7ESK6S4f_b5%S&_+1sDYcYrRUUs2t&i%C
+zr}9zH%(p(uTy3Q76d6IrY1_14NH!s-7O6;3AdI|<dAAi}^X3JU!)&6%efOx-bStc(
+z!8eSV0<jHt%wwKU=~~(!^l^;Xt`$X}*Vw5$+oY@UmTu_BoVE0%xVVeB{mBWruIzBT
+zW**^|$hXp+3?WTRReIM=mQ(0*EU;8>G<3~_k^U_99CkK9P$yJ36>P4sM%<Gwy7!nm
+zGZTFk{9EIn()b|H+%c8mVeB&1>Mp!T1JSYPRM{W$ne!j@`K|NG9p7h(dxq(N4(1_o
+zSC&%RD84Um8^_m2FQa=w`vzkdTD|pqZekbmj5&Yox(@!1x?{{lZZeL9jMIrPJ*j<k
+zO;I^u{#Ly?lFAm7H}7t`lZ^%&%slsktMwqsN^{M9>3d}_=8Wy%jYi^c%KBC3oBDHD
+z;%;CjI)iBT8Baa@O54=?S|9fr9qXNe_{f*%Gq<8S;Jr7w)ZhujOxblg$2%q~*hDd1
+zy$^a{Kvp}x-nE?NJ=Ngat+FP%<Uu}iD<{%Z#rb-VWlth|xl!An+|3Tk+Pc?S=tEbX
+z$A>tX(*o99!DQWc8n=>Xf+vA{mu|2>Y#P3U&`wOm<_!rMwZpzZMY3_SOZt8?F8Mpk
+z*S5<H)pOJFizk2S_U9h(e<#@Sq^xlqmAk1hX1>3vb3Xr@@s?*c>nyX>)j>_M&C=Ol
+zZoRd4`)BTieF@(<={?y!V!V67ew@3`^?f%|HtcJ1c@{T2S<XA02x|@bMxv70WXwZ9
+zo2TO5U=yvo`c*IA&(h3&I+G60yVkLRf6uZE)2*U$C&Lw0F?>VhPUsxE8gimN%Pu>+
+cr=4}z{o}02;PpZlnB-I~yA%Iy;Y&sS2T&Rxf&c&j
+
+delta 78
+zcmV-U0I~m+9f$}5|NfCqAd?gUDwA3PSd;nzB$I9e9+MgahLflT9Fy(^Ad^}LmXi_)
+kB$M_CM3Z0%q?0HLAd?6S9FyJ)Ad_qjAd{>OAd?IZA~^9G-2eap
+
+-- 
+2.45.1.windows.1
+
