@@ -65,6 +65,7 @@ class CalendarView(LoginRequiredMixin, generic.ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         d = get_date(self.request.GET.get("month", None))
+        print("Date from request:", d)
         cal = Calendar(d.year, d.month)
         html_cal = cal.formatmonth(withyear=True)
         context["calendar"] = mark_safe(html_cal)
@@ -115,7 +116,7 @@ def add_shift_request(request):
         print(">>> request.POST:", request.POST)
         form = ShiftRequestForm(request.POST)
         print(">> [DEBUG] Render HTML al formularului (as_p):")
-        print(form.as_p())
+        # print(form.as_p())
         departament = request.POST['department']
 
         if form.is_valid():
@@ -267,7 +268,7 @@ class CalendarViewNew(LoginRequiredMixin, generic.View):
                         deficits_by_day[int(str(day.DayID)[1:])] += gap
                 except DayShiftType.DoesNotExist:
                     continue
-        base_date = datetime(2025, 5, 1)
+        base_date = datetime(2025, 7, 1)
         deficit_dates = [
             (base_date + timedelta(days=offset)).strftime("%Y-%m-%d")
             for offset in deficits_by_day.keys()
@@ -404,7 +405,9 @@ def schedule_view(request):
     try:
         dt = datetime.fromisoformat(data["day"].replace("Z", "+00:00"))
         num= re.search(r'\d+', global_object.Name).group()
-        day_pk = int(num+str(int((date.split("-")[2]).split("T")[0])))
+        d=int((date.split("-")[2]).split("T")[0])%14
+        day_pk = int(num+str(int(d)))
+        print("day_pk",day_pk)
         day_obj = Day.objects.get(pk=day_pk)
 
         shift = ShiftType.objects.get(ShiftID="D1")

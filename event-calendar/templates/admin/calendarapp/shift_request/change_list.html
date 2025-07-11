@@ -9,8 +9,14 @@
 
 {% endblock %}
 {% block content %}
-    {{ block.super }}
+  {{ block.super }}
+  <p>ID-uri selectate:
+  {% for id in selected_ids %}
+    {{ id }}{% if not forloop.last %} {% endif %}
+  {% endfor %}
+  </p>
 {% endblock %}
+
 {% block extrascripts %}
 
 

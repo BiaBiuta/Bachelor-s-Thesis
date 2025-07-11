@@ -74,7 +74,7 @@ class DashboardView(LoginRequiredMixin, ListView):
             domain.nurses_with_deficit = [
                 n for n in nurses if n.minutes_to_max > 0
             ]
-            print(domain)
+            print("domain",domain)
             if domain.id!=112:
                 deficits_by_day = defaultdict(list)
                 for day in Day.objects.filter(GlobalObject=domain):
@@ -87,11 +87,13 @@ class DashboardView(LoginRequiredMixin, ListView):
                                 'shift_type': day_shift_type.ShiftType_id,
                                 'gap': gap,
                             })
+
                 domain.shift_deficits = [
                     {'day_id': day_id, 'needs': needs}
                     for day_id, needs in deficits_by_day.items()
                 ]
-
+                print(domain.shift_deficits)
+            print("domain", domain)
         return qs
 
 from datetime import datetime, timedelta
@@ -245,7 +247,7 @@ def choose_dayoff_requests(request):
     print(f"DEBUG: Approved DayOffRequest pentru nurse {nurse}: {approved_days}")
 
     used_days = set(pending_days) | set(approved_days)
-    print(f"DEBUG: used_days (pending ∪ approved): {used_days}")
+    print(f"DEBUG: used_days (pending  approved): {used_days}")
 
 
     qs = DayOffOption.objects.filter(nurse=nurse)
@@ -268,9 +270,9 @@ def choose_dayoff_requests(request):
         print(f"DEBUG: POST received selected option IDs: {selected}")
 
         for opt_id in selected:
-            print(f"  - Procesăm opt_id = {opt_id}")
+            print(f"  - Procesam opt_id = {opt_id}")
             opt = get_object_or_404(DayOffOption, pk=opt_id)
-            print(f"    • DayOffOption găsit: {opt} → Ziua: {opt.day.DayID} (id={opt.day.DayID})")
+            print(f"     DayOffOption gasit: {opt}  Ziua: {opt.day.DayID} (id={opt.day.DayID})")
             if opt.day.DayID not in used_days:
                 DayOffRequest.objects.create(
                     nurse      = nurse,
@@ -278,15 +280,15 @@ def choose_dayoff_requests(request):
                     day        = opt.day,
                     status     = 'P',
                 )
-                print(f"    ✓ Am creat DayOffRequest pentru ziua {opt.day.DayID}")
+                # print(f"    ✓ Am creat DayOffRequest pentru ziua {opt.day.DayID}")
             else:
-                print(f"    ✗ Ziua {opt.day.DayID} este deja în used_days → nu se creează duplicate")
+                print(f"     Ziua {opt.day.DayID} este deja in used_days  nu se creeaza duplicate")
 
         return redirect('calendarapp:requests_submitted')
 
-    print("DEBUG: Rendăm choose_dayoff_requests.html cu următoarele context values:")
-    print(f"  • options IDs: {filtered_option_ids}")
-    print(f"  • approved_days set: {approved_days}")
+    print("DEBUG: Rendam choose_dayoff_requests.html cu urmatoarele context values:")
+    print(f"   options IDs: {filtered_option_ids}")
+    print(f"   approved_days set: {approved_days}")
     return render(request, 'calendarapp/choose_dayoff_requests.html', {
         'options': options,
         'approved_days': set(approved_days),
@@ -389,13 +391,15 @@ def read_instance_file(file_path: str):
             # shifttype = ShiftType.objects.filter(ShiftID=shiftID).first()
             shifttype = [s for s in global_object.ShiftType if s.ShiftID == shiftID][0]
             maxs = int(maxshift[equal_index + 1:])
-            nur = NurseShiftType(Nurse=nurse, ShiftType=shifttype, MaxShifts=maxs)
+            nur = NurseShiftType(Nurse=nurse, ShiftType=shifttype, MaxShifts=maxs)\
+            # nur.GlobalObject=global_object
             nur.save()
     print("nurse_shift_type salvate")
     #creare nurse_day
     for nurse in global_object.Nurse:
         for day in global_object.Day:
             nr = NurseDay(IsDayOff=False, Nurse=nurse, Day=day)
+            nr.GlobalObject= global_object
             nr.save()
 
     print("relatiile de ziua sunt create")
@@ -505,7 +509,7 @@ def instance_list(request):
         full_path = os.path.normpath(os.path.join(base, fn))
         name, _ext = os.path.splitext(fn)
         num = name.replace('Instance', '')
-        display = f'Unitate medicală {num}'
+        display = f'Unitate medicala {num}'
         instances.append((full_path, display))
 
     return render(request, 'calendarapp/instance_list.html', {
@@ -515,7 +519,7 @@ def instance_list(request):
 @login_required
 def instance_detail(request, file_path):
     if not os.path.exists(file_path):
-        raise Http404("Fișierul nu există")
+        raise Http404("Fisierul nu exista")
     go = read_instance_file(file_path)
     gos = request.session.get('global_object_ids', [])
     if go.id not in gos:
@@ -770,7 +774,7 @@ def timetable(request):
                 if n.EmployeeID==nurse.EmployeeID:
                     print("sunt in nurse ")
                     for nd in n.NurseDay:
-                        print(f"  • DayID: {nd.Day.DayID}")
+                        print(f"   DayID: {nd.Day.DayID}")
                         print("req.day" ,req.day.DayID)
                         if int(nd.Day.DayID)==int(str(req.day.DayID)[1:]) :
                             nr=nd
@@ -815,7 +819,7 @@ def timetable(request):
         shifttype = [s for s in global_object.ShiftType if s.ShiftID == shiftonreq_shift][0]
         nurseday=[]
         for nd in nurse.NurseDay:
-            print(f"  • DayID: {nd.Day.DayID}")
+            print(f"   DayID: {nd.Day.DayID}")
             if int(nd.Day.DayID) == int(day.DayID):
                 print("a intrat aici")
                 nurseday.append(nd)
@@ -882,14 +886,14 @@ def timetable(request):
     #     print(f"\nShiftType {st.ShiftID}  (Len={st.LengthInMins}m)")
     #     print("  DayShiftType-uri:")
     #     for dst in st.DayShiftType:
-    #         print(f"    • Day={dst.Day.DayID}, Required={dst.NrRequired}")
+    #         print(f"     Day={dst.Day.DayID}, Required={dst.NrRequired}")
     #     print("  NurseShiftType-uri:")
     #     for nst in st.NurseShiftType:
-    #         print(f"    • Nurse={nst.Nurse.EmployeeID}, MaxShifts={nst.MaxShifts}")
+    #         print(f"     Nurse={nst.Nurse.EmployeeID}, MaxShifts={nst.MaxShifts}")
     #     print("  NurseDayShiftType-uri:")
     #     for ndst in st.NurseDayShiftType:
     #         print(
-    #             f"    • NurseDay(Nurse={ndst.NurseDay.Nurse.EmployeeID}, Day={ndst.NurseDay.Day.DayID}), OnReq={ndst.IsOnRequest}, OffReq={ndst.IsOffRequest}")
+    #             f"     NurseDay(Nurse={ndst.NurseDay.Nurse.EmployeeID}, Day={ndst.NurseDay.Day.DayID}), OnReq={ndst.IsOnRequest}, OffReq={ndst.IsOffRequest}")
 
     timelimit = dt.timedelta(seconds=120)
     maxiteration = 50
@@ -930,7 +934,7 @@ def timetable(request):
     best_chrom.TotalMinutesToMin=global_object.total_to_min()
     best_chrom.TotalMinutesToMax=global_object.total_to_max()
     cache_key = f"unsaved_chrom_{request.session.session_key}"
-    cache.set(cache_key, best_chrom, timeout=3600)
+    cache.set(cache_key, best_chrom, timeout=10000)
 
     base_date = datetime(2025, 7, 1)
     request.session['kpi_results'] = {
@@ -1101,7 +1105,7 @@ def timetable_without_algorithm(request):
                 if n.EmployeeID == nurse.EmployeeID:
                     print("sunt in nurse ")
                     for nd in n.NurseDay:
-                        print(f"  • DayID: {nd.Day.DayID}")
+                        print(f"   DayID: {nd.Day.DayID}")
                         print("req.day", req.day.DayID)
                         if int(nd.Day.DayID) == int(str(req.day.DayID)[1:]):
                             nr = nd
@@ -1144,7 +1148,7 @@ def timetable_without_algorithm(request):
         shifttype = [s for s in global_object.ShiftType if s.ShiftID == shiftonreq_shift][0]
         nurseday = []
         for nd in nurse.NurseDay:
-            print(f"  • DayID: {nd.Day.DayID}")
+            print(f"   DayID: {nd.Day.DayID}")
             if int(nd.Day.DayID) == int(day.DayID):
                 print("a intrat aici")
                 nurseday.append(nd)
@@ -1211,14 +1215,14 @@ def timetable_without_algorithm(request):
     #     print(f"\nShiftType {st.ShiftID}  (Len={st.LengthInMins}m)")
     #     print("  DayShiftType-uri:")
     #     for dst in st.DayShiftType:
-    #         print(f"    • Day={dst.Day.DayID}, Required={dst.NrRequired}")
+    #         print(f"     Day={dst.Day.DayID}, Required={dst.NrRequired}")
     #     print("  NurseShiftType-uri:")
     #     for nst in st.NurseShiftType:
-    #         print(f"    • Nurse={nst.Nurse.EmployeeID}, MaxShifts={nst.MaxShifts}")
+    #         print(f"     Nurse={nst.Nurse.EmployeeID}, MaxShifts={nst.MaxShifts}")
     #     print("  NurseDayShiftType-uri:")
     #     for ndst in st.NurseDayShiftType:
     #         print(
-    #             f"    • NurseDay(Nurse={ndst.NurseDay.Nurse.EmployeeID}, Day={ndst.NurseDay.Day.DayID}), OnReq={ndst.IsOnRequest}, OffReq={ndst.IsOffRequest}")
+    #             f"     NurseDay(Nurse={ndst.NurseDay.Nurse.EmployeeID}, Day={ndst.NurseDay.Day.DayID}), OnReq={ndst.IsOnRequest}, OffReq={ndst.IsOffRequest}")
 
 
     timelimit = dt.timedelta(seconds=120)
@@ -1461,12 +1465,20 @@ def confirm_schedule(request):
     best_chrom = cache.get(cache_key)
     if not preview:
         return redirect('calendarapp:choose_instance')
-    NurseDay.objects.filter(
-        GlobalObject=active_go
-    ).delete()
-    count, info =NurseDayShiftType.objects.filter(
-        GlobalObject=active_go
-    ).delete()
+    try:
+        NurseDay.objects.filter(
+            GlobalObject=active_go
+        ).delete()
+    except Exception as e:
+         "No NurseDayShiftType found to delete"
+    try:
+        count, info =NurseDayShiftType.objects.filter(
+            GlobalObject=active_go
+        ).delete()
+    except Exception as e:
+        count, info = 0, "No NurseDayShiftType found to delete"
+
+    print("nurseDay",NurseDay.objects.filter(GlobalObject=active_go).count())
     print(count,info)
 
     best_chrom.save()
@@ -1474,49 +1486,49 @@ def confirm_schedule(request):
     num= re.search(r'\d+', best_chrom.Name).group()
     print (num)
     for d in best_chrom.Day:
-        print(f"\nDay {d.DayID}  (Next: {getattr(d.Next, 'DayID', None)}, Prev: {getattr(d.Previous, 'DayID', None)})")
-        print("  NurseDay-uri:")
+        # print(f"\nDay {d.DayID}  (Next: {getattr(d.Next, 'DayID', None)}, Prev: {getattr(d.Previous, 'DayID', None)})")
+        # print("  NurseDay-uri:")
         for nd in d.NurseDay:
             print("nd ", nd)
             day=Day.objects.get(DayID=int(num+str(d.DayID)))
             print("day ", day)
             nd.GlobalObject=global_obj
             nd.Day=day
-            # NurseDay.objects.filter(
-            #     Day=day,
-            #     Nurse=nd.Nurse
-            # ).delete()
-            # print("am sters")
+            NurseDay.objects.filter(
+                Day=day,
+                Nurse=nd.Nurse
+            ).delete()
+            print("am sters")
             nd.save()
             assigned = nd.AssignedShift.ShiftID if nd.AssignedShift else "None"
-            print(
-                f"    • NurseDay(Nurse={nd.Nurse.EmployeeID}, IsDayOff={nd.IsDayOff}, Assigned={assigned})")
-            print("      ↳ NurseDayShiftType:")
+            # print(
+            #     f"     NurseDay(Nurse={nd.Nurse.EmployeeID}, IsDayOff={nd.IsDayOff}, Assigned={assigned})")
+            # print("       NurseDayShiftType:")
             for ndst in nd.NurseDayShiftType:
-                # NurseDayShiftType.objects.filter(
-                #     Day=day,
-                #     Nurse=ndst.Nurse,
-                #     ShiftType=ndst.ShiftType,
-                #     GlobalObject=active_go
-                # ).delete()
+                NurseDayShiftType.objects.filter(
+                    Day=day,
+                    Nurse=ndst.Nurse,
+                    ShiftType=ndst.ShiftType,
+                    GlobalObject=active_go
+                ).delete()
 
                 ndst.Day=day
 
                 ndst.GlobalObject=global_obj
                 ndst.save()
-                print(
-                    f"         - ShiftType={ndst.ShiftType.ShiftID}, OnReq={ndst.IsOnRequest}, OffReq={ndst.IsOffRequest}")
-        print("  DayShiftType-uri:")
-    print("\nNurses:")
+        #         print(
+        #             f"         - ShiftType={ndst.ShiftType.ShiftID}, OnReq={ndst.IsOnRequest}, OffReq={ndst.IsOffRequest}")
+        # print("  DayShiftType-uri:")
+    # print("\nNurses:")
     # for n in best_chrom.Nurse:
     #     # print(f"\nNurse {n.EmployeeID}  (MinTotal={n.MinTotalMins}, MaxTotal={n.MaxTotalMins})")
     #     print("  NurseShiftType-uri:")
     #     for nst in n.NurseShiftType:
-    #         print(f"    • ShiftType={nst.ShiftType.ShiftID}, MaxShifts={nst.MaxShifts}")
+    #         print(f"     ShiftType={nst.ShiftType.ShiftID}, MaxShifts={nst.MaxShifts}")
     #     print("  NurseDay-uri:")
     #     for nd in n.NurseDay:
     #         assigned = nd.AssignedShift.ShiftID if nd.AssignedShift else "None"
-    #         print(f"    • Day={nd.Day.DayID}, IsDayOff={nd.IsDayOff}, Assigned={assigned}")
+    #         print(f"     Day={nd.Day.DayID}, IsDayOff={nd.IsDayOff}, Assigned={assigned}")
 
     kpi_hard = best_chrom.calc_TotalKPIHard(True)
     kpi_soft = best_chrom.calc_TotalKPISoft(True)

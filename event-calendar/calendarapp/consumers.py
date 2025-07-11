@@ -203,7 +203,7 @@ class RoleBasedNotificationConsumer(AsyncWebsocketConsumer):
         timestamp = event["timestamp"]
         await self.send(text_data=json.dumps({
             "type": "info",
-            "message": f"ShiftRequest a fost salvat la {timestamp}"
+            "message": f"ShiftRequest a fost salvat "
         }))
 class TypingConsumer(AsyncWebsocketConsumer):
     async def connect(self):

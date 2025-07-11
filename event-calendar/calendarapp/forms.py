@@ -99,12 +99,12 @@ class ShiftRequestForm(forms.ModelForm):
 
         try:
             day_instance = Day.objects.get(pk=day_pk)
-            print(f">>> [DEBUG clean_day] Am găsit instanţa Day: {day_instance!r}")
+            print(f">>> [DEBUG clean_day] Am gasit instanta Day: {day_instance!r}")
             aw = self.cleaned_data.get('shift_type')
             print("raw shift_type", aw)
         except Day.DoesNotExist:
-            print(f">>> [DEBUG clean_day] Nu există niciun Day cu PK={day_pk}")
-            raise ValidationError(f"Nu există nicio zi cu ID={day_pk} în baza de date.")
+            print(f">>> [DEBUG clean_day] Nu exista niciun Day cu PK={day_pk}")
+            raise ValidationError(f"Nu exista nicio zi cu ID={day_pk} in baza de date.")
 
 
         return day_instance

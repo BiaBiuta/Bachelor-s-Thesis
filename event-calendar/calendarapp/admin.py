@@ -1,5 +1,5 @@
 import re
-
+# from django.db.models.fields.related import RelatedObjectDoesNotExist
 from django.contrib import admin
 from calendarapp import models
 from django.contrib import admin
@@ -11,9 +11,12 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, path
 from django.utils.html import format_html
 from django.http import HttpResponse
+# from django.db.models.fields.related_descriptors import RelatedObjectDoesNotExist
 import csv
-
+from django.db.models.base import ModelState
+from django import forms
 from calendarapp.models.global_object import GlobalObject
+from calendarapp.models.shift_type import ShiftType
 
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
@@ -127,19 +130,83 @@ class DayShiftTypeFilter(BaseGlobalObjectFilter):
 
 
 class DayOffRequestFilter(BaseGlobalObjectFilter):
-    field_path = 'department'
+    field_path = 'get_department_name'
 
 
 class NurseFilter(BaseGlobalObjectFilter):
     field_path = 'GlobalObject'
 
+# # Monkey-patch ShiftType __init__ to avoid errors when GlobalObject is missing in admin add view
+# _orig_shift_init = ShiftType.__init__
+# def _safe_shift_init(self, *args, **kwargs):
+#     try:
+#         _orig_shift_init(self, *args, **kwargs)
+#     except RelatedObjectDoesNotExist:
+#         # Skip relation setup when GlobalObject is not yet assigned
+#         pass
+# ShiftType.__init__ = _safe_shift_init
+# 1) Delegate __init__ to the base Model so you don't need to explicitly set up lists there
+ShiftType.__init__ = lambda self, *args, **kwargs: Model.__init__(self, *args, **kwargs)
+
+# 2) On first access, create empty lists for each of your custom-relations
+def _shifttype_getattr(self, name):
+    if name in (
+        "OptScopeShiftType",
+        "NurseDayShiftType",
+        "DayShiftType",
+        "NurseShiftType",
+        "AssignedNurseDay",
+    ):
+        lst = []
+        object.__setattr__(self, name, lst)
+        return lst
+    # Fallback to the normal attribute lookup
+    return object.__getattribute__(self, name)
+
+ShiftType.__getattr__ = _shifttype_getattr
+
+
+@admin.register(ShiftType)
+class ShiftTypeAdmin(admin.ModelAdmin):
+    # expose exactly the fields you want, with GlobalObject restored as a dropdown
+    fields = (
+        "ShiftID",
+        "GlobalObject",
+        "LengthInMins",
+        "ForbiddenShifts",
+    )
+    autocomplete_fields = ["GlobalObject"]
+    list_display = ('ShiftID', 'LengthInMins', 'ForbiddenShifts', 'get_department_name')
+
+    def get_changeform_initial_data(self, request):
+        # pre-select the first GlobalObject if one exists
+        go = GlobalObject.objects.first()
+        return {"GlobalObject": go.pk} if go else {}
+
+    def save_model(self, request, obj, form, change):
+        # ensure you don't violate the NOT NULL on GlobalObject_id
+        if obj.GlobalObject_id is None:
+            obj.GlobalObject = GlobalObject.objects.first()
+        super().save_model(request, obj, form, change)
+
+
+    @admin.display(description='Departament')
+    def get_department_name(self, obj):
+        return "Unitate " + re.search(r'\d+', obj.GlobalObject.Name.split('.')[0]).group()
+
+    def get_queryset(self, request):
+        """Override to filter by GlobalObject."""
+        qs = super().get_queryset(request)
+        return qs.filter(GlobalObject__isnull=False)
 @admin.register(DayShiftType)
 class DayShiftTypeAdmin(admin.ModelAdmin):
     list_display  = ('Day', 'ShiftType', 'NrRequired', 'UnderCoverWeight', 'OverCoverWeight')
     list_editable = ('NrRequired', 'UnderCoverWeight', 'OverCoverWeight')
     list_filter   = (DayShiftTypeFilter, )
     ordering      = ('Day__DayID', 'ShiftType__ShiftID')
-
+import re
+from datetime import datetime, timedelta
+from datetime import date, timedelta
 @admin.register(ShiftRequest)
 class ShiftRequestAdmin(admin.ModelAdmin):
     change_list_template = "admin/calendarapp/shift_request/change_list.html"
@@ -153,14 +220,73 @@ class ShiftRequestAdmin(admin.ModelAdmin):
 
     @admin.display(description='Departament')
     def get_department_name(self, obj):
-        return obj.department.Name
+        return "Unitate "+re.search(r'\d+', obj.department.Name.split('.')[0]).group()
 
     @admin.display(description='Zi')
     def get_day_repr(self, obj):
-        return obj.day.DayID
+
+        # start = date(2025, 7, 1)
+        # # 2) converteşti DayID la int
+        # try:
+        #     offset = int(obj.day.DayID[1:])
+        # except (ValueError, TypeError):
+        #     offset = 0  # fallback
+        # # 3) adaugi offset-ul
+        # actual = start + timedelta(days=offset)
+        # # 4) formatezi string-ul cum vrei
+        # return actual.strftime('%d.%m.%Y')
+        return obj.day.DayID[1:]
     @admin.display(description='Tipul de schimb')
     def get_shift_type(self, obj):
-        return obj.shift_type.ShiftID
+        return "      " + obj.shift_type.ShiftID+"     "
+
+    @admin.action(description="Approve selected")
+    def approve_requests(self, request, queryset):
+        for obj in queryset:
+            print(f">>> SELECTAT: {obj}, STATUS: {obj.status}")
+        raise Exception("TEST FINAL — FUNCȚIONEAZĂ")
+
+    @admin.action(description="Deny selected")
+    def deny_requests(self, request, queryset):
+        updated = queryset.filter(status='P').update(status='D')
+        self.message_user(request, f"{updated} cereri respinse.")
+
+    class Media:
+        js = ('/static/js/shiftrequest_admin.js',)
+
+
+
+@admin.register(NurseDayShiftType)
+class NurseDayShiftTypeAdmin(admin.ModelAdmin):
+    # change_list_template = "admin/calendarapp/shift_request/change_list.html"
+    list_display = ('Nurse','get_department_name',
+        'get_day_repr','get_shift_type','NurseDay','IsAssigned','IsOnRequest','IsOffRequest')
+    list_display_links = ('Nurse',)
+
+    # list_editable = ('status',)
+    # list_filter  = ('Department',)
+    actions      = ('approve_requests','deny_requests',)
+
+    @admin.display(description='Departament')
+    def get_department_name(self, obj):
+        return "Unitate "+re.search(r'\d+', obj.GlobalObject.Name.split('.')[0]).group()
+
+    @admin.display(description='Zi')
+    def get_day_repr(self, obj):
+
+        start = date(2025, 7, 1)
+
+        try:
+            offset = int(obj.Day.DayID[1:])
+        except (ValueError, TypeError):
+            offset = 0  # fallback
+        # 3) adaugi offset-ul
+        actual = start + timedelta(days=offset)
+        # 4) formatezi string-ul cum vrei
+        return actual.strftime('%d.%m.%Y')
+    @admin.display(description='Tipul de schimb')
+    def get_shift_type(self, obj):
+        return "      " + obj.ShiftType.ShiftID+"     "
 
     @admin.action(description="Approve selected")
     def approve_requests(self, request, queryset):
@@ -177,11 +303,27 @@ class ShiftRequestAdmin(admin.ModelAdmin):
         js = ('/static/js/shiftrequest_admin.js',)
 @admin.register(DayOffRequest)
 class DayOffRequestAdmin(admin.ModelAdmin):
-    list_display  = ('nurse','department','day','status','from_file')
+    list_display  = ('nurse','get_department_name','get_day_repr','status','from_file')
     list_editable = ('status',)
     list_filter   = (DayOffRequestFilter,'status','from_file')
     actions       = ('approve','deny',)
 
+    @admin.display(description='Zi')
+    def get_day_repr(self, obj):
+
+        start = date(2025, 7, 1)
+        # 2) converteşti DayID la int
+        try:
+            offset = int(obj.day.DayID[1:])
+        except (ValueError, TypeError):
+            offset = 0  # fallback
+        # 3) adaugi offset-ul
+        actual = start + timedelta(days=offset)
+        # 4) formatezi string-ul cum vrei
+        return actual.strftime('%d.%m.%Y')
+    @admin.display(description='department')
+    def get_department_name(self, obj):
+        return "Unitate " + re.search(r'\d+', obj.department.Name.split('.')[0]).group()
     @admin.action(description="Approve selected")
     def approve(self, request, qs):
         cnt = qs.filter(status='P', from_file=True).update(status='A')
@@ -219,19 +361,19 @@ class EmergencyRequestAdmin(admin.ModelAdmin):
 
     def get_remove_nurses(self, obj):
         return ", ".join(str(n) for n in obj.remove_nurses.all())
-    get_remove_nurses.short_description = 'Nurse de scos din tură'
+    get_remove_nurses.short_description = 'Nurse de scos din tura'
 
     @admin.action(description="Approve selected Emergency Requests")
     def approve_requests(self, request, queryset):
         pending = queryset.filter(status='P')
         cnt = pending.update(status='A')
-        self.message_user(request, f"{cnt} cereri de urgență au fost aprobate.")
+        self.message_user(request, f"{cnt} cereri de urgenta au fost aprobate.")
 
     @admin.action(description="Deny selected Emergency Requests")
     def deny_requests(self, request, queryset):
         pending = queryset.filter(status='P')
         cnt = pending.update(status='D')
-        self.message_user(request, f"{cnt} cereri de urgență au fost respinse.")
+        self.message_user(request, f"{cnt} cereri de urgenta au fost respinse.")
 
     def process_button(self, obj):
         """
@@ -240,10 +382,10 @@ class EmergencyRequestAdmin(admin.ModelAdmin):
         """
         url = reverse('admin:process_emergency_request', args=[obj.pk])
         return format_html(
-            '<a class="button" href="{}" style="background-color:#5A8DEE; color:white; padding:2px 6px; text-decoration:none; border-radius:4px;">Procesează</a>',
+            '<a class="button" href="{}" style="background-color:#5A8DEE; color:white; padding:2px 6px; text-decoration:none; border-radius:4px;">Proceseaza</a>',
             url
         )
-    process_button.short_description = 'Acțiune'
+    process_button.short_description = 'Actiune'
     process_button.allow_tags = True
 
     def get_urls(self):
@@ -280,7 +422,7 @@ class EmergencyRequestAdmin(admin.ModelAdmin):
         for nurse in call_nurses :
             # caut evenimente care se suprapun pentru aceasta asistenta in aceeasi zi+shift
             # daca gasim >=1  evenimente in baza de date, inseamna ca nu e libera
-            print("Verificăm disponibilitatea asistentei:", nurse)
+            print("Verificam disponibilitatea asistentei:", nurse)
             global_object=GlobalObject.objects.get(id=nurse.GlobalObject_id)
             num = re.search(r'\d+', global_object.Name).group()
             data=int(num+str(int(str(data_tura).split("-")[2])))
@@ -298,7 +440,7 @@ class EmergencyRequestAdmin(admin.ModelAdmin):
             nume_neliberi = ", ".join(str(n) for n in unavailable)
             self.message_user(
                 request,
-                f"Operațiunea a eșuat: următoarea asistentă(ți) nu sunt disponibile pe {data_tura} : {nume_neliberi}.",
+                f"Operatiunea a esuat: urmatoarea asistenta(ti) nu sunt disponibile pe {data_tura} : {nume_neliberi}.",
                 level=messages.ERROR
             )
             return redirect('..')  # revin la lista de obiecte
@@ -331,39 +473,67 @@ class EmergencyRequestAdmin(admin.ModelAdmin):
         except Event.DoesNotExist:
             self.message_user(
                 request,
-                f"Operațiunea a eșuat: nu am găsit niciun eveniment existent pentru asistentă(țile) {', '.join(str(n) for n in remove_nurses)} pe {data_tura} ({shift_type}).",
+                f"Operatiunea a esuat: nu am gait niciun eveniment existent pentru asistenta(tile) {', '.join(str(n) for n in remove_nurses)} pe {data_tura} ({shift_type}).",
                 level=messages.ERROR
             )
             return redirect('..')
         self.message_user(
             request,
-            f"S-au procesat cu succes cererile de pe {data_tura} ). Asistentele din ‘remove_nurses’ au fost înlocuite cu cele din ‘call_nurses’.",
+            f"S-au procesat cu succes cererile de pe {data_tura} ). Asistentele din ‘remove_nurses’ au fost inlocuite cu cele din ‘call_nurses’.",
             level=messages.WARNING
         )
         emergency.delete()
         return redirect('..')
 
-
+import calendarapp.models.nurse as nurse_module
 from calendarapp.models.nurse import Nurse
+from django.db.models import Model
+# Înlocuim constructorul complex cu unul care apelează doar Model.__init__
+# 1) Replace the complex __init__ so Admin's add‐view won't call your constructor
+Nurse.__init__ = lambda self, *args, **kwargs: Model.__init__(self, *args, **kwargs)
+
+# 2) Provide default empty lists for all of your custom relations
+def _nurse_getattr(self, name):
+    if name in ("NurseDay", "NurseShiftType", "NurseDayShiftType", "OptScopeNurse"):
+        lst = []
+        object.__setattr__(self, name, lst)
+        return lst
+    # anything else—fall back to normal behavior
+    return object.__getattribute__(self, name)
+
+Nurse.__getattr__ = _nurse_getattr
 
 
 @admin.register(Nurse)
 class NurseAdmin(admin.ModelAdmin):
-    list_display = (
-        'EmployeeID',
-        'GlobalObject',
-        'MaxShifts',
-        'MaxTotalMins',
-        'MinTotalMins',
-        'TotalMins',
-        'minutes_to_min',
-        'minutes_to_max',
+    # restore the GlobalObject dropdown so you can actually pick one
+    fields = (
+        "EmployeeID",
+        "GlobalObject",
+        "MaxShifts",
+        "MaxTotalMins",
+        "MinTotalMins",
+        "MaxConsShifts",
+        "MinConsShifts",
+        "MinConsDaysOff",
+        "MaxWeekends",
+        "DaysOff",
     )
-    list_editable = ('MaxShifts', 'MaxTotalMins', 'MinTotalMins')
-    list_filter = (NurseFilter,)
-    search_fields = ('EmployeeID',)
-    actions = ['export_nurses_csv']
+    autocomplete_fields = ["GlobalObject"]
+    list_display = ("EmployeeID", "get_department_name")
 
+    def get_changeform_initial_data(self, request):
+        go = GlobalObject.objects.first()
+        return {'GlobalObject': go.pk} if go else {}
+    def save_model(self, request, obj, form, change):
+        # ensure you don't violate the NOT NULL on GlobalObject_id
+        if obj.GlobalObject_id is None:
+            obj.GlobalObject = GlobalObject.objects.first()
+        super().save_model(request, obj, form, change)
+
+    @admin.display(description='department')
+    def get_department_name(self, obj):
+        return "Unitate " + re.search(r'\d+', obj.GlobalObject.Name.split('.')[0]).group()
     def export_nurses_csv(self, request, queryset):
         field_names = [
             'EmployeeID',

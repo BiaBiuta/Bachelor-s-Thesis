@@ -29,7 +29,7 @@ try {
 Write-Output "Starting service..."
 if ($env:SERVICE_TYPE -eq "websocket") {
     Write-Output "Starting Daphne WebSocket server..."
-    daphne -p 5000 eventcalendar.asgi:application
+    daphne -b 0.0.0.0 -p 5000 eventcalendar.asgi:application
 } elseif ($env:SERVICE_TYPE -eq "chatbot") {
     Write-Output "Installing Visual C++ Redistributable..."
     try {
